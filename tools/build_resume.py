@@ -127,9 +127,9 @@ def build(source_path: Path, output_path: Path):
     for certification in data['certifications']:
         story.append(Paragraph(f'• {certification}', small_style))
 
-    story += section('Technologies')
+    story += section('Architecture & Technology')
     technology_rows = [[Paragraph(label, tech_label), Paragraph(value, tech_body)] for label, value in data['technologies']]
-    technology_table = Table(technology_rows, colWidths=[1.25 * inch, 6.1 * inch], hAlign='LEFT')
+    technology_table = Table(technology_rows, colWidths=[1.45 * inch, 5.9 * inch], hAlign='LEFT')
     technology_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
