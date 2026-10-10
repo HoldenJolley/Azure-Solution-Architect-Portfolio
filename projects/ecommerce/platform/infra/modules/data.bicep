@@ -50,19 +50,44 @@ resource commerceDb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-
   name: cosmosDatabaseName
   parent: cosmos
   properties: {
-    resource: { id: cosmosDatabaseName }
-    options: { throughput: cosmosDatabaseThroughput }
+    resource: {
+      id: cosmosDatabaseName
+    }
+    options: {
+      throughput: cosmosDatabaseThroughput
+    }
   }
 }
 
 var containers = [
-  { name: 'products', partitionKey: '/category' }
-  { name: 'carts', partitionKey: '/userId' }
-  { name: 'orders', partitionKey: '/userId' }
-  { name: 'userProfiles', partitionKey: '/id' }
-  { name: 'inventory', partitionKey: '/sku' }
-  { name: 'reservations', partitionKey: '/sku' }
-  { name: 'processedMessages', partitionKey: '/consumer' }
+  {
+    name: 'products'
+    partitionKey: '/category'
+  }
+  {
+    name: 'carts'
+    partitionKey: '/userId'
+  }
+  {
+    name: 'orders'
+    partitionKey: '/userId'
+  }
+  {
+    name: 'userProfiles'
+    partitionKey: '/id'
+  }
+  {
+    name: 'inventory'
+    partitionKey: '/sku'
+  }
+  {
+    name: 'reservations'
+    partitionKey: '/sku'
+  }
+  {
+    name: 'processedMessages'
+    partitionKey: '/consumer'
+  }
 ]
 
 resource cosmosContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [for container in containers: {
@@ -71,12 +96,25 @@ resource cosmosContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   properties: {
     resource: {
       id: container.name
-      partitionKey: { paths: [container.partitionKey], kind: 'Hash' }
+      partitionKey: {
+        paths: [
+          container.partitionKey
+        ]
+        kind: 'Hash'
+      }
       indexingPolicy: {
         indexingMode: 'consistent'
         automatic: true
-        includedPaths: [{ path: '/*' }]
-        excludedPaths: [{ path: '/"_etag"/?' }]
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
       }
     }
   }
@@ -86,7 +124,14 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
   name: serviceBusNamespaceName
   location: location
   tags: tags
-  sku: serviceBusSkuName == 'Premium' ? { name: 'Premium', tier: 'Premium', capacity: 1 } : { name: 'Standard', tier: 'Standard' }
+  sku: serviceBusSkuName == 'Premium' ? {
+    name: 'Premium'
+    tier: 'Premium'
+    capacity: 1
+  } : {
+    name: 'Standard'
+    tier: 'Standard'
+  }
   properties: {
     minimumTlsVersion: '1.2'
     publicNetworkAccess: publicNetworkAccess
@@ -111,7 +156,13 @@ resource commerceEvents 'Microsoft.ServiceBus/namespaces/topics@2024-01-01' = {
   }
 }
 
-var subscriptions = ['inventory' 'payment' 'shipping' 'analytics']
+var subscriptions = [
+  'inventory'
+  'payment'
+  'shipping'
+  'analytics'
+]
+
 resource commerceSubscriptions 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' = [for subscriptionName in subscriptions: {
   name: subscriptionName
   parent: commerceEvents
@@ -130,7 +181,9 @@ resource dataLake 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   location: location
   tags: tags
   kind: 'StorageV2'
-  sku: { name: dataLakeSkuName }
+  sku: {
+    name: dataLakeSkuName
+  }
   properties: {
     accessTier: 'Hot'
     allowBlobPublicAccess: false
@@ -147,16 +200,29 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01'
   name: 'default'
   parent: dataLake
   properties: {
-    deleteRetentionPolicy: { enabled: true, days: 7 }
-    containerDeleteRetentionPolicy: { enabled: true, days: 7 }
+    deleteRetentionPolicy: {
+      enabled: true
+      days: 7
+    }
+    containerDeleteRetentionPolicy: {
+      enabled: true
+      days: 7
+    }
   }
 }
 
-var lakeContainers = ['bronze' 'silver' 'gold']
+var lakeContainers = [
+  'bronze'
+  'silver'
+  'gold'
+]
+
 resource lakeContainerResources 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = [for containerName in lakeContainers: {
   name: containerName
   parent: blobService
-  properties: { publicAccess: 'None' }
+  properties: {
+    publicAccess: 'None'
+  }
 }]
 
 resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
@@ -165,7 +231,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
   tags: tags
   properties: {
     tenantId: tenant().tenantId
-    sku: { family: 'A', name: 'standard' }
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
     enableRbacAuthorization: true
     enablePurgeProtection: true
     enableSoftDelete: true
