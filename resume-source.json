@@ -7,22 +7,22 @@
     "Jolleyholden@gmail.com",
     "github.com/HoldenJolley"
   ],
-  "summary": "Cloud & security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation. Led enterprise modernization supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs.",
+  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes and developed Azure reference architectures validated through Bicep and CI.",
   "projects": [
     {
       "title": "Azure E-Commerce Reference Architecture",
-      "focus": "Distributed systems, security & resiliency",
-      "description": "Designed a modular Azure platform using Front Door + WAF, App Service API/workers, Cosmos DB, Service Bus, Key Vault, Data Lake, private networking, managed identity/RBAC, observability, and dev/test/prod Bicep. Infrastructure lint/build and parameter validation are green in GitHub Actions."
+      "focus": "Resiliency, secure scale & operational continuity",
+      "description": "Designed a distributed Azure commerce platform to protect internet-facing traffic, decouple transactional workloads, support regional recovery, and allow application and data components to scale independently. Implemented with Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity/RBAC, observability, and dev/test/prod Bicep; CI validation is green."
     },
     {
       "title": "Privacy-Preserving AI Age Assurance Platform",
-      "focus": "Security, privacy & AI landing zone",
-      "description": "Designed client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, Private Link, and no intentional image retention. Foundation/workload Bicep and all environment parameters compile cleanly in CI."
+      "focus": "Privacy risk reduction & secure AI integration",
+      "description": "Designed a privacy-first age assurance landing zone that minimizes exposure and retention of verification images while returning only a binary approval decision. Uses client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, Private Link, and no intentional image retention; foundation/workload Bicep compiles cleanly in CI."
     },
     {
       "title": "Cost-Optimized Azure Static Portfolio",
-      "focus": "Cost optimization & secure delivery",
-      "description": "Architected Azure Static Web Apps Free with managed HTTPS, security headers, GitHub Actions/OIDC, curated deployment artifacts, and source-control recovery. Deliberately omits paid compute, Azure DNS, Front Door, databases, and dedicated observability to target $0/month Azure hosting within Free quotas."
+      "focus": "Right-sizing, cost control & secure delivery",
+      "description": "Designed portfolio hosting to meet availability, HTTPS, custom-domain, CI/CD, and recovery requirements at a target of $0/month Azure hosting within Free quotas. Uses Azure Static Web Apps Free, security headers, GitHub Actions/OIDC, curated deployment artifacts, and source-control recovery while deliberately avoiding paid compute, Azure DNS, Front Door, databases, and unnecessary observability services."
     }
   ],
   "certifications": [
@@ -30,10 +30,10 @@
     "Microsoft Azure Solutions Architect Expert (AZ-305) - In progress"
   ],
   "technologies": [
-    ["Azure & Cloud", "Azure VMs · VNets · NSGs · VPN · Azure Monitor · Hybrid Cloud · Bicep · Cost Optimization"],
-    ["Identity & Security", "Microsoft Entra ID · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker · Windows Hello · Passkeys"],
-    ["Endpoint", "Intune · Autopilot · MDT · Jamf"],
-    ["Automation & ITSM", "PowerShell · Freshservice · UiPath"]
+    ["Azure Architecture", "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"],
+    ["Data & Integration", "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"],
+    ["Identity & Security", "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"],
+    ["IaC & Automation", "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"]
   ],
   "experience": [
     {
@@ -42,15 +42,14 @@
       "scope": "Azure Cloud Infrastructure, Identity & Security",
       "dates": "2022-Present",
       "bullets": [
-        "Led migration of a ~100-VM RDS environment to Azure, architecting infrastructure, networking, NSGs, VPN connectivity, monitoring, remediation, and cost strategy across four teams; selected site-to-site VPN over ExpressRoute based on workload requirements, resiliency needs, and total cost, and implemented reserved/pre-purchased compute capacity to reduce ongoing infrastructure costs.",
-        "Automated VM health monitoring, reboot remediation, and failure escalation to improve operational resilience and reduce manual intervention.",
-        "Led 1,500+ device migration to Entra ID, Intune & Autopilot from MDT/on-prem AD.",
-        "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment.",
-        "Implemented MFA, BitLocker, LAPS, Windows Hello, passkeys, EPM, JIT, and multi-admin approval.",
-        "Built Freshservice -> Entra -> Intune provisioning automation, reducing deployment from 2.5-3 hours to 15-20 minutes.",
-        "Implemented Microsoft Global Secure Access to modernize cloud-based network connectivity and provide secure access to enterprise resources without relying solely on traditional network infrastructure.",
-        "Administer Freshservice and Jamf across ~50 Macs and 300 iPads.",
-        "Lead cross-functional cloud, security, identity, endpoint, and automation projects."
+        "Architected and led migration of a ~100-VM RDS environment to Azure across four teams, covering infrastructure, networking, NSGs, VPN connectivity, monitoring, remediation, and cost strategy; selected site-to-site VPN over ExpressRoute based on workload resiliency requirements and total cost, and implemented reserved/pre-purchased compute capacity to reduce ongoing infrastructure spend.",
+        "Automated VM health monitoring, reboot remediation, and failure escalation to improve service resilience, accelerate recovery from common failures, and reduce manual operational effort.",
+        "Led modernization of 1,500+ endpoints from MDT/on-prem AD to Entra ID, Intune, and Autopilot, standardizing provisioning and moving the device lifecycle toward cloud-based management.",
+        "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment patterns to create a repeatable, policy-driven endpoint architecture.",
+        "Built Freshservice -> Entra -> Intune provisioning automation that reduced device deployment time from 2.5-3 hours to 15-20 minutes - roughly a 90% reduction - accelerating onboarding while reducing technician effort.",
+        "Implemented MFA, BitLocker, LAPS, Windows Hello, passkeys, EPM, JIT, and multi-admin approval to reduce credential exposure, standing privilege, and endpoint security risk.",
+        "Implemented Microsoft Global Secure Access to modernize secure connectivity to enterprise resources and reduce reliance on traditional network access paths.",
+        "Led cross-functional cloud, security, identity, endpoint, and automation initiatives, translating operational requirements into platform, security, and delivery decisions."
       ]
     },
     {
@@ -59,10 +58,10 @@
       "scope": "",
       "dates": "2021-2022",
       "bullets": [
-        "Led UiPath automation and onboarding/offboarding process redesign.",
-        "Administered Freshservice workflows, automations, service requests, and integrations.",
-        "Built MDT -> Password Manager Pro automation for unique device administrator credentials.",
-        "Transitioned credential management to Intune during the Autopilot modernization."
+        "Led UiPath automation and onboarding/offboarding process redesign to standardize workflows and reduce manual service-desk effort.",
+        "Administered Freshservice workflows, automations, service requests, and integrations supporting repeatable service delivery and process automation.",
+        "Built MDT -> Password Manager Pro automation for unique device administrator credentials, reducing manual credential handling and improving consistency.",
+        "Supported transition of device credential management to Intune as part of the broader Autopilot modernization."
       ]
     }
   ],
