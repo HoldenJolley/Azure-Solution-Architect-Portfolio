@@ -1,1 +1,52 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Resume Portfolio | Holden Jolley</title><link rel="stylesheet" href="../../styles.css"></head><body><header class="topbar"><div class="brand"><div class="azure-mark"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header><main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px"><div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>Resume Portfolio</strong></div><section class="hero"><div><div class="eyebrow">PROJECT</div><h1>Resume Portfolio</h1><p class="hero-copy">Personal portfolio and resume site.</p><a class="button primary" href="../../">Back to portfolio</a></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio.">
+  <title>Resume Portfolio | Holden Jolley</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+  </header>
+  <main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>Resume Portfolio</strong></div>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">COST-OPTIMIZED AZURE PROJECT</div>
+        <h1>Resume Portfolio</h1>
+        <p class="hero-copy">The portfolio itself is an architecture project: a globally delivered Azure Static Web App designed to stay on the Free tier while retaining HTTPS, custom-domain support, CI/CD, pull-request previews, Infrastructure as Code, and a documented upgrade path.</p>
+        <div class="hero-actions"><a class="button primary" href="../../">Back to portfolio</a></div>
+      </div>
+      <div class="hero-panel">
+        <div class="panel-header"><span>Cost profile</span><span class="panel-menu">$0</span></div>
+        <div class="info-card" style="box-shadow:none;border:0;padding:16px 0">
+          <div><span>Hosting</span><strong>Static Web Apps Free</strong></div>
+          <div><span>Edge delivery</span><strong>Included</strong></div>
+          <div><span>TLS</span><strong>Managed certificate</strong></div>
+          <div><span>Azure target</span><strong>$0/month in quota</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">ARCHITECTURE</div>
+      <h2>Use less Azure on purpose.</h2>
+      <p>The design deliberately avoids App Service, Functions, databases, Azure DNS, paid CDN services, and a dedicated observability stack because this workload does not require them. GitHub is the source of truth, GitHub Actions handles deployment, and Azure Static Web Apps serves the static site globally.</p>
+      <div class="capability-grid">
+        <div class="capability"><strong>Free-tier hosting</strong><span>Azure Static Web Apps Free with documented quota guardrails.</span></div>
+        <div class="capability"><strong>Secure delivery</strong><span>Managed HTTPS plus CSP and browser security headers.</span></div>
+        <div class="capability"><strong>CI/CD</strong><span>GitHub OIDC and runtime deployment-token retrieval.</span></div>
+        <div class="capability"><strong>Recovery</strong><span>Version control + revert/redeploy; no stateful data to restore.</span></div>
+      </div>
+    </section>
+
+    <section class="section split">
+      <div><div class="eyebrow">TRADEOFFS</div><h2>Free is a design choice, not a claim of enterprise SLA.</h2><p>The Free plan is appropriate because this is a personal portfolio. The architecture documents explicit triggers for moving to Standard if bandwidth, domain count, private networking, preview capacity, or availability requirements change.</p></div>
+      <div class="quote-card"><span>“</span><p>The cheapest reliable architecture is often the one that omits services you do not need.</p></div>
+    </section>
+  </main>
+</body>
+</html>

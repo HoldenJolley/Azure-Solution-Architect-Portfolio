@@ -4,7 +4,7 @@ Personal portfolio for Holden Jolley showcasing Azure architecture, cloud infras
 
 ## Portfolio projects
 
-- **Resume Portfolio** — the portfolio/resume experience itself, including the downloadable resume.
+- **Resume Portfolio / Static Hosting** — the portfolio itself, hosted on Azure Static Web Apps Free as a cost-optimization reference architecture with Bicep, GitHub OIDC, security headers, preview deployments, and a documented $0/month Azure hosting target within quota.
 - **E-Commerce Platform** — a production-oriented Azure reference architecture with modular Bicep, CI/CD, security, observability, reliability, and architecture documentation.
 - **AI Age Assurance Platform** — a production-oriented privacy and security landing zone for bring-your-own AI age models, with client-side encryption, private inference, no image retention, HSM-backed keys, anti-replay state, and signed binary attestations.
 
@@ -16,56 +16,39 @@ Personal portfolio for Holden Jolley showcasing Azure architecture, cloud infras
 ├── styles.css
 ├── script.js
 ├── resume.pdf
+├── staticwebapp.config.json
 ├── projects/
 │   ├── resume/
+│   │   ├── index.html
+│   │   └── platform/
 │   ├── ecommerce/
 │   │   ├── index.html
 │   │   └── platform/
-│   │       ├── infra/
-│   │       ├── scripts/
-│   │       ├── docs/
-│   │       └── src/
 │   └── age-verification/
 │       ├── index.html
 │       └── platform/
-│           ├── infra/
-│           ├── contracts/
-│           ├── docs/
-│           ├── scripts/
-│           └── src/
 └── .github/workflows/
+```
+
+## Resume Portfolio / Static Hosting
+
+The portfolio hosting project under [`projects/resume/platform`](projects/resume/platform/README.md) demonstrates cost-first architecture. The baseline contains one Azure Resource Group and one Azure Static Web Apps resource on the Free SKU. The design intentionally avoids paid compute, Azure DNS, Front Door, databases, Functions, and a dedicated observability stack until requirements justify them.
+
+Validation:
+
+```powershell
+./projects/resume/platform/scripts/validate.ps1 -RunWhatIf
 ```
 
 ## E-Commerce infrastructure
 
-The e-commerce project contains a deployable Infrastructure-as-Code foundation under [`projects/ecommerce/platform`](projects/ecommerce/platform/README.md). It includes:
+The e-commerce project contains a deployable Infrastructure-as-Code foundation under [`projects/ecommerce/platform`](projects/ecommerce/platform/README.md), including Front Door/WAF, App Service, Cosmos DB, Service Bus, Key Vault, Data Lake, monitoring, private networking, managed identities, CI/CD, and architecture documentation.
 
-- Azure Front Door and WAF
-- Regional App Service API and worker tiers
-- Azure Cosmos DB
-- Azure Service Bus
-- Azure Key Vault
-- Azure Data Lake Storage Gen2
-- Application Insights and Log Analytics
-- Regional VNets, private endpoints, and private DNS
-- Managed identities and RBAC
-- Dev, test, and production parameter sets
-- Architecture Decision Records (ADRs)
-- Security, disaster recovery, testing, operations, and cost documentation
-
-## Local portfolio preview
-
-Open `index.html` in a browser or serve the repository with any static web server.
-
-## E-Commerce validation
-
-From the repository root:
+Validation:
 
 ```powershell
 ./projects/ecommerce/platform/scripts/validate.ps1 -Environment dev -RunWhatIf
 ```
-
-See [`projects/ecommerce/platform/README.md`](projects/ecommerce/platform/README.md) for prerequisites, deployment steps, and current limitations.
 
 ## AI Age Assurance infrastructure
 
@@ -76,3 +59,7 @@ Validation:
 ```powershell
 ./projects/age-verification/platform/scripts/validate.ps1 -Environment dev
 ```
+
+## Local portfolio preview
+
+Open `index.html` in a browser or serve the repository with any static web server.

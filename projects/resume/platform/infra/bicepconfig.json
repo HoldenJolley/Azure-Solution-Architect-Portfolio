@@ -1,0 +1,12 @@
+{
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": true,
+      "rules": {
+        "no-hardcoded-env-urls": { "level": "off" },
+        "secure-secrets-in-params": { "level": "error" }
+      }
+    }
+  }
+}
