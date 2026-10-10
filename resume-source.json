@@ -47,9 +47,9 @@
         "Led modernization of 1,500+ endpoints from MDT/on-prem AD to Entra ID, Intune, and Autopilot, standardizing provisioning and moving the device lifecycle toward cloud-based management.",
         "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment patterns to create a repeatable, policy-driven endpoint architecture.",
         "Built Freshservice -> Entra -> Intune provisioning automation that reduced device deployment time from 2.5-3 hours to 15-20 minutes - roughly a 90% reduction - accelerating onboarding while reducing technician effort.",
+        "Designed and automated identity lifecycle management for employee onboarding and inactive-account cleanup, replacing recurring manual administration and saving several staff-hours per day. Retained manager-approval checkpoints before stale Active Directory accounts were removed, preserving business ownership while reducing orphaned-access risk.",
         "Implemented MFA, BitLocker, LAPS, Windows Hello, passkeys, EPM, JIT, and multi-admin approval to reduce credential exposure, standing privilege, and endpoint security risk.",
-        "Implemented Microsoft Global Secure Access to modernize secure connectivity to enterprise resources and reduce reliance on traditional network access paths.",
-        "Led cross-functional cloud, security, identity, endpoint, and automation initiatives, translating operational requirements into platform, security, and delivery decisions."
+        "Implemented Microsoft Global Secure Access to modernize secure connectivity to enterprise resources and reduce reliance on traditional network access paths."
       ]
     },
     {
