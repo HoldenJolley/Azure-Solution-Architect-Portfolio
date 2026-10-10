@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Holden Jolley — Azure Solution Architect portfolio">
+  <meta name="description" content="Holden Jolley — Azure Solution Architect portfolio featuring secure, resilient, cost-aware Azure reference architectures and Infrastructure as Code.">
   <title>Holden Jolley | Azure Solution Architect</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,7 +19,7 @@
     <div class="top-actions">
       <a href="#projects">Projects</a>
       <a href="#resume">Resume</a>
-      <a href="#about">About</a>
+      <a href="#architecture">Capabilities</a>
       <a class="icon-link" href="mailto:Jolleyholden@gmail.com" aria-label="Email">✉</a>
       <button class="profile" aria-label="Profile">HJ</button>
     </div>
@@ -32,7 +32,7 @@
         <a class="nav-item active" href="#home"><span>⌂</span> Overview</a>
         <a class="nav-item" href="#projects"><span>▦</span> Projects</a>
         <a class="nav-item" href="#resume"><span>▤</span> Resume</a>
-        <a class="nav-item" href="#architecture"><span>◇</span> Architecture</a>
+        <a class="nav-item" href="#architecture"><span>◇</span> Capabilities</a>
         <a class="nav-item" href="#about"><span>◎</span> About</a>
       </nav>
       <div class="sidebar-divider"></div>
@@ -40,7 +40,7 @@
       <nav>
         <a class="nav-item" href="#contact"><span>✉</span> Contact</a>
         <a class="nav-item" href="https://github.com/HoldenJolley" target="_blank" rel="noreferrer"><span>↗</span> GitHub</a>
-        <a class="nav-item" href="#resume"><span>↓</span> Download Resume</a>
+        <a class="nav-item" href="resume.pdf"><span>↓</span> Download Resume</a>
       </nav>
       <div class="sidebar-footer">
         <div class="status-dot"></div>
@@ -54,54 +54,65 @@
       <section class="hero">
         <div>
           <div class="eyebrow">AZURE SOLUTION ARCHITECT</div>
-          <h1>Designing secure, scalable cloud solutions.</h1>
-          <p class="hero-copy">A portfolio of cloud architecture work, professional experience, and personal projects built around Microsoft Azure.</p>
+          <h1>Architecture decisions, not just diagrams.</h1>
+          <p class="hero-copy">I design Azure solutions around security, resiliency, cost, operations, and the tradeoffs that make an architecture practical. This portfolio includes three Infrastructure-as-Code projects covering distributed commerce, privacy-preserving AI, and cost-optimized static hosting.</p>
           <div class="hero-actions">
-            <a class="button primary" href="#projects">View projects</a>
-            <a class="button" href="#resume">View resume</a>
+            <a class="button primary" href="#projects">Explore the projects</a>
+            <a class="button" href="resume.pdf">Download resume</a>
           </div>
         </div>
-        <div class="hero-panel">
-          <div class="panel-header"><span>Architecture overview</span><span class="panel-menu">•••</span></div>
-          <div class="architecture-mini">
-            <div class="arch-node client">Users</div>
-            <div class="arch-line"></div>
-            <div class="arch-node azure">Azure</div>
-            <div class="arch-line"></div>
-            <div class="arch-row">
-              <div class="arch-node">Apps</div><div class="arch-node">Data</div><div class="arch-node">Security</div>
-            </div>
+        <div class="hero-panel validation-panel">
+          <div class="panel-header"><span>Portfolio validation</span><span class="status-chip success">CI green</span></div>
+          <div class="validation-list">
+            <div><span>Projects</span><strong>3 Azure architectures</strong></div>
+            <div><span>Infrastructure</span><strong>Bicep lint + build validated</strong></div>
+            <div><span>Delivery</span><strong>GitHub Actions · OIDC-ready</strong></div>
+            <div><span>Next cloud gate</span><strong>Azure What-If</strong></div>
           </div>
         </div>
       </section>
 
       <section class="section" id="projects">
         <div class="section-heading">
-          <div><div class="eyebrow">PORTFOLIO</div><h2>Projects</h2></div>
+          <div><div class="eyebrow">PORTFOLIO</div><h2>Featured Azure projects</h2><p class="section-copy">Each project is built around a different architecture priority and includes documented decisions, operational tradeoffs, and deployable Infrastructure as Code.</p></div>
           <span class="count">3 projects</span>
         </div>
         <div class="project-grid">
           <a class="project-card" href="projects/resume/">
-            <div class="card-top"><span class="number">01</span><span class="arrow">→</span></div>
+            <div class="card-top"><span class="number">01 · COST OPTIMIZATION</span><span class="arrow">→</span></div>
             <div class="service-icon">▤</div>
-            <h3>Resume Portfolio</h3>
-            <p>Personal portfolio and resume site showcasing my professional experience and cloud architecture work.</p>
-            <div class="tags"><span>Portfolio</span><span>Azure</span></div>
+            <h3>Cost-Optimized Portfolio Hosting</h3>
+            <p>Azure Static Web Apps Free architecture designed to target $0/month Azure hosting cost while preserving HTTPS, CI/CD, preview environments, security headers, and a deliberate upgrade path.</p>
+            <div class="card-status"><span class="status-chip success">Bicep validated</span><span class="status-note">Free-tier first</span></div>
+            <div class="tags"><span>Static Web Apps</span><span>Cost</span><span>GitHub Actions</span></div>
           </a>
+
           <a class="project-card" href="projects/ecommerce/">
-            <div class="card-top"><span class="number">02</span><span class="arrow">→</span></div>
+            <div class="card-top"><span class="number">02 · RELIABILITY</span><span class="arrow">→</span></div>
             <div class="service-icon">▦</div>
-            <h3>E-Commerce Platform</h3>
-            <p>A deployable Azure e-commerce reference platform focused on distributed application architecture, security, resiliency, and Infrastructure as Code.</p>
-            <div class="tags"><span>Bicep</span><span>Distributed Systems</span></div>
+            <h3>Distributed E-Commerce Platform</h3>
+            <p>Production-oriented Azure reference architecture for a distributed commerce backend using Front Door, App Service, Cosmos DB, Service Bus, private networking, observability, and multi-region design.</p>
+            <div class="card-status"><span class="status-chip success">Dev/Test/Prod validated</span><span class="status-note">What-If next</span></div>
+            <div class="tags"><span>Front Door</span><span>Cosmos DB</span><span>Service Bus</span></div>
           </a>
+
           <a class="project-card" href="projects/age-verification/">
-            <div class="card-top"><span class="number">03</span><span class="arrow">→</span></div>
+            <div class="card-top"><span class="number">03 · SECURITY &amp; PRIVACY</span><span class="arrow">→</span></div>
             <div class="service-icon">◇</div>
-            <h3>AI Age Assurance Platform</h3>
-            <p>A privacy-preserving Azure landing zone for bring-your-own AI age models with client-side encryption, private inference, and no image retention.</p>
-            <div class="tags"><span>Privacy</span><span>Security</span><span>AI</span></div>
+            <h3>Privacy-Preserving AI Age Assurance</h3>
+            <p>Azure landing zone for bring-your-own age-estimation models using client-side envelope encryption, private inference, HSM-backed keys, anti-replay controls, managed identity, and no intentional image retention.</p>
+            <div class="card-status"><span class="status-chip success">Foundation + workloads validated</span><span class="status-note">What-If next</span></div>
+            <div class="tags"><span>Container Apps</span><span>Key Vault</span><span>Private Link</span></div>
           </a>
+        </div>
+      </section>
+
+      <section class="section evidence-section">
+        <div class="section-heading"><div><div class="eyebrow">ARCHITECTURE EVIDENCE</div><h2>Designed to be reviewed, challenged, and operated.</h2></div></div>
+        <div class="evidence-grid">
+          <div class="evidence-card"><span class="evidence-number">01</span><strong>Infrastructure as Code</strong><p>Modular Bicep, environment parameterization, repeatable deployment scripts, and CI compiler gates instead of portal-only diagrams.</p></div>
+          <div class="evidence-card"><span class="evidence-number">02</span><strong>Decision records</strong><p>ADRs document why services were selected, what was intentionally omitted, and which assumptions would trigger a future redesign.</p></div>
+          <div class="evidence-card"><span class="evidence-number">03</span><strong>Operational thinking</strong><p>Security, reliability, cost, observability, failure modes, recovery, and deployment runbooks are treated as architecture—not afterthoughts.</p></div>
         </div>
       </section>
 
@@ -109,35 +120,35 @@
         <div>
           <div class="eyebrow">PROFESSIONAL PROFILE</div>
           <h2>Resume</h2>
-          <p>Cloud &amp; security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation.</p>
-          <a class="text-link" href="resume.pdf">Download resume →</a>
+          <p>Cloud &amp; security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation—now applying that operational background to solution architecture and Infrastructure as Code.</p>
+          <div class="hero-actions compact-actions"><a class="button primary" href="resume.pdf">Download resume</a><a class="button" href="#projects">Review projects</a></div>
         </div>
         <div class="info-card">
-          <div><span>Focus</span><strong>Azure Architecture</strong></div>
-          <div><span>Cloud</span><strong>Azure · Hybrid Cloud</strong></div>
-          <div><span>Identity</span><strong>Entra ID · Security</strong></div>
-          <div><span>Automation</span><strong>PowerShell · Bicep</strong></div>
+          <div><span>Architecture</span><strong>Azure · Hybrid Cloud</strong></div>
+          <div><span>Security</span><strong>Entra ID · RBAC · Private Link</strong></div>
+          <div><span>Infrastructure as Code</span><strong>Bicep · PowerShell</strong></div>
+          <div><span>Delivery</span><strong>GitHub Actions · OIDC</strong></div>
         </div>
       </section>
 
       <section class="section" id="architecture">
         <div class="eyebrow">CAPABILITIES</div>
-        <h2>Architecture</h2>
+        <h2>Architecture capabilities</h2>
         <div class="capability-grid">
-          <div class="capability"><strong>Cloud &amp; Infrastructure</strong><span>Azure VMs · VNets · NSGs · VPN · Monitoring</span></div>
-          <div class="capability"><strong>Identity &amp; Security</strong><span>Entra ID · Conditional Access · MFA · LAPS</span></div>
-          <div class="capability"><strong>Endpoint</strong><span>Intune · Autopilot · MDT · Jamf</span></div>
-          <div class="capability"><strong>Automation &amp; ITSM</strong><span>PowerShell · Freshservice · UiPath</span></div>
+          <div class="capability"><strong>Platform &amp; Networking</strong><span>Azure Front Door · WAF · App Service · Container Apps · VNets · Private Link · Private DNS</span></div>
+          <div class="capability"><strong>Data &amp; Integration</strong><span>Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake · distributed workflow patterns</span></div>
+          <div class="capability"><strong>Identity &amp; Security</strong><span>Entra ID · Managed Identity · RBAC · Key Vault · HSM-backed keys · OIDC · application security controls</span></div>
+          <div class="capability"><strong>Delivery &amp; Operations</strong><span>Bicep · GitHub Actions · PowerShell · monitoring · disaster recovery · cost optimization · runbooks</span></div>
         </div>
       </section>
 
       <section class="section split" id="about">
-        <div><div class="eyebrow">ABOUT</div><h2>About me</h2><p>I'm focused on translating business and technical requirements into practical, secure cloud solutions. This site documents the projects and experience behind that work.</p></div>
+        <div><div class="eyebrow">ABOUT</div><h2>From operations to architecture.</h2><p>My approach is grounded in operating real infrastructure: understand the requirement, reduce unnecessary complexity, secure the trust boundaries, automate the deployment, and document the tradeoffs so the next engineer can understand the system.</p></div>
         <div class="quote-card"><span>“</span><p>Build the solution, document the decisions, and make the architecture understandable.</p></div>
       </section>
 
       <section class="section contact-section" id="contact">
-        <div><div class="eyebrow">GET IN TOUCH</div><h2>Contact</h2><p>Interested in discussing cloud architecture or one of these projects?</p></div>
+        <div><div class="eyebrow">GET IN TOUCH</div><h2>Contact</h2><p>Interested in discussing Azure architecture, cloud security, or one of these projects?</p></div>
         <a class="button primary" href="mailto:Jolleyholden@gmail.com">Email me</a>
       </section>
 
