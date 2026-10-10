@@ -3,34 +3,98 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Privacy-preserving AI age assurance Azure reference architecture">
+  <meta name="description" content="Privacy-preserving AI age assurance Azure reference architecture by Holden Jolley using client-side encryption, private inference, HSM-backed keys, and no intentional image retention.">
   <title>AI Age Assurance Platform | Holden Jolley</title>
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><div class="azure-mark"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header>
-  <main class="content" style="margin-left:0;width:100%;max-width:1100px;margin-right:auto;margin-left:auto;padding-top:50px">
-    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>AI Age Assurance Platform</strong></div>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="mailto:Jolleyholden@gmail.com">Contact</a></div>
+  </header>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>AI Age Assurance</strong></div>
+
     <section class="hero">
       <div>
-        <div class="eyebrow">SECURITY &amp; PRIVACY REFERENCE ARCHITECTURE</div>
+        <div class="project-kicker"><div class="eyebrow">SECURITY · PRIVACY · AI</div></div>
         <h1>Privacy-Preserving AI Age Assurance</h1>
-        <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own AI age models. Images are encrypted on the client, remain ciphertext through the edge and gateway, are decrypted only in isolated inference memory, and are never intentionally stored.</p>
-        <div class="hero-actions"><a class="button primary" href="platform/README.md">Architecture package</a><a class="button" href="../../">Back to portfolio</a></div>
+        <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own age-estimation models where the verification image is encrypted before upload, remains ciphertext through the public edge, is decrypted only inside isolated inference memory, and is never intentionally retained.</p>
+        <div class="project-status"><span class="status-chip success">Foundation + workloads validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="hero-actions"><a class="button primary" href="#privacy-flow">Explore privacy flow</a><a class="button" href="../../">Back to portfolio</a></div>
+      </div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Security profile</span><span class="status-chip success">CI green</span></div>
+        <div class="validation-list">
+          <div><span>Edge</span><strong>Front Door Premium + WAF</strong></div>
+          <div><span>Inference</span><strong>Private Container Apps</strong></div>
+          <div><span>Key protection</span><strong>Key Vault Premium / HSM</strong></div>
+          <div><span>Replay defense</span><strong>Azure Managed Redis</strong></div>
+          <div><span>Retention</span><strong>No verification image store</strong></div>
+        </div>
       </div>
     </section>
-    <section class="section">
-      <div class="section-heading"><div><div class="eyebrow">PRIVACY CONTRACT</div><h2>Plaintext exists only where it must.</h2></div></div>
-      <div class="project-grid">
-        <div class="project-card"><div class="service-icon">◇</div><h3>Encrypted before upload</h3><p>The browser re-encodes the frame, generates a one-time AES-256-GCM key, and encrypts the image before it leaves the device. TLS provides an additional transport layer.</p></div>
-        <div class="project-card"><div class="service-icon">▦</div><h3>Private inference</h3><p>Front Door Premium reaches a private Azure Container Apps environment over Private Link. The gateway never decrypts the photograph; only the private inference process can unwrap the session key.</p></div>
-        <div class="project-card"><div class="service-icon">▤</div><h3>No image retention</h3><p>No image datastore is provisioned. Plaintext, ciphertext, embeddings, tensors, raw age estimates, and session keys are prohibited from logs and persistent application storage.</p></div>
-      </div>
-    </section>
+
     <section class="section split">
-      <div><div class="eyebrow">AZURE SERVICES</div><h2>Production landing zone</h2><p>Front Door Premium + WAF, private Container Apps, Key Vault Premium/HSM-backed RSA keys, Azure Managed Redis for two-minute anti-replay state, ACR Premium, managed identities, Private DNS/endpoints, Application Insights, and Log Analytics.</p></div>
-      <div class="info-card"><div><span>Result</span><strong>Approved / Denied attestation</strong></div><div><span>Model</span><strong>Bring your own container</strong></div><div><span>Storage</span><strong>No verification image store</strong></div><div><span>Data in use</span><strong>Confidential compute option</strong></div></div>
+      <div>
+        <div class="eyebrow">ARCHITECTURE PROBLEM</div>
+        <h2>Verify an age signal without turning the image into a platform asset.</h2>
+        <p>The architecture treats the image as highly sensitive transient input rather than application data. Application-layer envelope encryption protects it beyond TLS, the public gateway never needs the plaintext, and the inference boundary is deliberately narrow so the model receives only what it must process.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Client crypto</span><strong>AES-256-GCM + RSA-OAEP</strong></div>
+        <div><span>Gateway</span><strong>Ciphertext only</strong></div>
+        <div><span>Inference</span><strong>Transient plaintext in memory</strong></div>
+        <div><span>Output</span><strong>Signed approval / denial attestation</strong></div>
+      </div>
     </section>
+
+    <section class="section" id="privacy-flow">
+      <div class="eyebrow">PRIVACY FLOW</div>
+      <h2>Plaintext exists only where inference requires it.</h2>
+      <div class="architecture-flow seven" aria-label="Age assurance privacy flow">
+        <div class="flow-node">Browser<br>encrypts image</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Front Door<br>+ WAF</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Private gateway<br>ciphertext only</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Inference<br>decrypt + attest</div>
+      </div>
+      <div class="service-list" aria-label="Azure services used">
+        <span>Azure Front Door Premium</span><span>WAF</span><span>Azure Container Apps</span><span>Private Link</span><span>Key Vault Premium</span><span>Managed HSM-backed keys</span><span>Azure Managed Redis</span><span>Azure Container Registry</span><span>Managed Identity</span><span>Private DNS</span><span>Application Insights</span><span>Log Analytics</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">PRIVACY CONTRACT</div>
+      <h2>Security controls are part of the data lifecycle.</h2>
+      <div class="project-grid">
+        <div class="project-card"><div class="service-icon">◇</div><h3>Encrypted before upload</h3><p>The client generates a one-time symmetric key, encrypts the re-encoded frame with AES-256-GCM, and wraps that session key for the inference boundary. TLS remains an additional transport layer.</p></div>
+        <div class="project-card"><div class="service-icon">▦</div><h3>Private inference boundary</h3><p>Front Door reaches a private Container Apps environment over Private Link. The gateway handles request policy and routing without decrypting the photograph; only the inference process can unwrap the session key.</p></div>
+        <div class="project-card"><div class="service-icon">▤</div><h3>No intentional image retention</h3><p>No verification-image datastore is provisioned. The design prohibits plaintext, ciphertext, embeddings, tensors, raw age estimates, and session keys from application logs or persistent storage.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">KEY DECISIONS</div>
+      <h2>Reduce trust instead of asking every layer to be trusted.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Application-layer encryption beyond TLS</strong><p>TLS protects transport, but the architecture also keeps the image encrypted through the edge and gateway so those components do not need access to the underlying photograph.</p></div>
+        <div class="decision-card"><strong>No image storage service</strong><p>The safest retention policy for this use case is architectural omission: there is no image database, blob container, or queue intended to persist verification imagery.</p></div>
+        <div class="decision-card"><strong>Short-lived anti-replay state only</strong><p>Azure Managed Redis holds opaque session and nonce state with short TTLs. It is not used to store images, biometric material, or raw model outputs.</p></div>
+        <div class="decision-card"><strong>Bring-your-own model boundary</strong><p>The platform defines the inference contract and isolation boundary without claiming that an arbitrary customer model is fair, compliant, non-exfiltrating, or suitable for a particular jurisdiction.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="status-banner">
+        <span class="status-chip success">Validated</span>
+        <div><strong>Both infrastructure stages compile cleanly in GitHub Actions.</strong><p>The foundation and workload Bicep templates lint and build successfully, and all dev, test, and production parameter files compile. Azure Resource Manager What-If remains the next validation gate once GitHub OIDC is connected.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Project scope:</strong> this is an architecture, contract, and Infrastructure-as-Code package. No production age-estimation model is bundled, and the current source does not claim to provide a complete reference gateway/inference implementation. Legal compliance, model fairness, and customer-model behavior remain customer responsibilities.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>Privacy-Preserving AI Age Assurance Architecture</span></footer>
   </main>
 </body>
 </html>
