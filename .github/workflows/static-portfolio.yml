@@ -39,7 +39,9 @@ jobs:
   validate-infrastructure:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install Bicep
         run: az bicep install
       - name: Lint Bicep
@@ -56,7 +58,9 @@ jobs:
     env:
       AZURE_CLIENT_ID_VALUE: ${{ secrets.AZURE_CLIENT_ID }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Check Azure deployment configuration
         id: azure-config
@@ -82,7 +86,7 @@ jobs:
 
       - name: Azure login with OIDC
         if: steps.azure-config.outputs.enabled == 'true'
-        uses: azure/login@v3
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -98,7 +102,7 @@ jobs:
 
       - name: Deploy portfolio
         if: steps.azure-config.outputs.enabled == 'true'
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
           azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -125,7 +129,7 @@ jobs:
           fi
       - name: Azure login with OIDC
         if: steps.azure-config.outputs.enabled == 'true'
-        uses: azure/login@v3
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -139,7 +143,7 @@ jobs:
           echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
       - name: Close preview environment
         if: steps.azure-config.outputs.enabled == 'true'
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
           azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
           action: close
