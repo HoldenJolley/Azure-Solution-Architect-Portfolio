@@ -1,0 +1,25 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Azure/Bicep generated output
+*.jsonc
+infra/out/
+
+# Local configuration and secrets
+.env
+.env.*
+appsettings.Local.json
+local.settings.json
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test output
+TestResults/
+coverage/
