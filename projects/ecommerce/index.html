@@ -3,16 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Azure E-Commerce Platform reference architecture by Holden Jolley">
+  <meta name="description" content="Production-oriented Azure e-commerce reference architecture by Holden Jolley covering distributed systems, security, resiliency, observability, and Infrastructure as Code.">
   <title>E-Commerce Platform | Holden Jolley</title>
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header>
-  <main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px">
-    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>E-Commerce Platform</strong></div>
-    <section class="hero"><div><div class="eyebrow">AZURE REFERENCE ARCHITECTURE</div><h1>E-Commerce Platform</h1><p class="hero-copy">A deployable, production-oriented Azure e-commerce backend reference implementation covering Infrastructure as Code, distributed inventory, asynchronous processing, security, observability, analytics, and disaster recovery.</p><div class="hero-actions"><a class="button primary" href="platform/README.md">View technical package</a><a class="button" href="../../">Back to portfolio</a></div></div><div class="hero-panel"><div class="panel-header"><span>Architecture focus</span><span class="panel-menu">•••</span></div><div class="info-card" style="box-shadow:none;border:0;padding:0"><div><span>Edge</span><strong>Front Door + WAF</strong></div><div><span>Application</span><strong>App Service + Workers</strong></div><div><span>Data</span><strong>Cosmos DB + Data Lake</strong></div><div><span>Messaging</span><strong>Service Bus</strong></div><div><span>IaC</span><strong>Bicep + GitHub Actions</strong></div></div></div></section>
-    <section class="section"><div class="eyebrow">PROJECT DELIVERABLES</div><h2>What this project demonstrates</h2><div class="capability-grid"><div class="capability"><strong>Infrastructure as Code</strong><span>Modular Bicep with dev, test, and production parameter sets.</span></div><div class="capability"><strong>Distributed Commerce</strong><span>Inventory reservation, asynchronous workflows, idempotency, and failure handling.</span></div><div class="capability"><strong>Security Architecture</strong><span>Managed identity, RBAC, Key Vault, WAF, private connectivity, and least privilege.</span></div><div class="capability"><strong>Operations</strong><span>Monitoring, diagnostics, resilience testing, disaster recovery, cost, and runbooks.</span></div></div></section>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="mailto:Jolleyholden@gmail.com">Contact</a></div>
+  </header>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>E-Commerce Platform</strong></div>
+
+    <section class="hero">
+      <div>
+        <div class="project-kicker"><div class="eyebrow">RELIABILITY · DISTRIBUTED SYSTEMS</div></div>
+        <h1>Distributed E-Commerce Platform</h1>
+        <p class="hero-copy">A production-oriented Azure reference architecture for a commerce backend that balances availability, inventory consistency, asynchronous processing, private connectivity, observability, and disaster recovery without defaulting to Kubernetes complexity.</p>
+        <div class="project-status"><span class="status-chip success">Dev / Test / Prod Bicep validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="hero-actions"><a class="button primary" href="#architecture">Explore architecture</a><a class="button" href="../../">Back to portfolio</a></div>
+      </div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Architecture profile</span><span class="status-chip success">CI green</span></div>
+        <div class="validation-list">
+          <div><span>Edge</span><strong>Front Door + WAF</strong></div>
+          <div><span>Compute</span><strong>App Service API + workers</strong></div>
+          <div><span>Data</span><strong>Cosmos DB + Data Lake</strong></div>
+          <div><span>Integration</span><strong>Service Bus</strong></div>
+          <div><span>Operations</span><strong>App Insights + Log Analytics</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section split">
+      <div>
+        <div class="eyebrow">ARCHITECTURE PROBLEM</div>
+        <h2>Keep checkout responsive without losing control of inventory.</h2>
+        <p>The design separates synchronous customer-facing API work from asynchronous fulfillment. Front Door provides a global edge and WAF boundary, regional App Service instances host the API and background workers, Cosmos DB holds commerce state, and Service Bus decouples inventory, payment, shipping, and analytics processing.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Availability</span><strong>Optional multi-region application stack</strong></div>
+        <div><span>Consistency</span><strong>Authoritative inventory write boundary</strong></div>
+        <div><span>Security</span><strong>Managed identity + private endpoints</strong></div>
+        <div><span>Delivery</span><strong>Bicep + GitHub Actions</strong></div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="eyebrow">REQUEST &amp; EVENT FLOW</div>
+      <h2>One platform, separate failure domains.</h2>
+      <div class="architecture-flow seven" aria-label="E-commerce architecture flow">
+        <div class="flow-node">Customers</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Front Door<br>+ WAF</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Regional API<br>App Service</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Cosmos DB<br>+ Service Bus</div>
+      </div>
+      <div class="service-list" aria-label="Azure services used">
+        <span>Azure Front Door</span><span>WAF</span><span>App Service</span><span>Cosmos DB</span><span>Service Bus</span><span>Key Vault</span><span>Data Lake Storage</span><span>VNets</span><span>Private Endpoints</span><span>Private DNS</span><span>Application Insights</span><span>Log Analytics</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">SOLUTION ARCHITECTURE</div>
+      <h2>What this project demonstrates</h2>
+      <div class="capability-grid">
+        <div class="capability"><strong>Infrastructure as Code</strong><span>Subscription-scoped modular Bicep, reusable modules, environment-specific dev/test/prod parameters, deployment scripts, and compiler-gated CI.</span></div>
+        <div class="capability"><strong>Distributed workflows</strong><span>Service Bus-driven workers, inventory reservation boundaries, idempotency expectations, asynchronous analytics, and explicit failure handling.</span></div>
+        <div class="capability"><strong>Security architecture</strong><span>WAF, managed identities, RBAC, Key Vault, private endpoints, private DNS, network segmentation, and least-privilege design.</span></div>
+        <div class="capability"><strong>Reliability &amp; operations</strong><span>Regional failure planning, optional secondary region, monitoring, diagnostics, DR guidance, cost analysis, and operational runbooks.</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">KEY DECISIONS</div>
+      <h2>Complexity is introduced only where the requirement earns it.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>App Service instead of AKS</strong><p>The workload needs independently deployable API and worker processes, not a Kubernetes control plane. App Service keeps the operational surface smaller while preserving scale and managed identity.</p></div>
+        <div class="decision-card"><strong>Service Bus for asynchronous commerce work</strong><p>Payment, shipping, inventory, and analytics can fail or retry independently without making the customer request wait for every downstream dependency.</p></div>
+        <div class="decision-card"><strong>Cosmos DB with a clear inventory authority</strong><p>The design prioritizes a defined inventory-consistency boundary rather than enabling multi-master writes everywhere and creating ambiguous stock ownership.</p></div>
+        <div class="decision-card"><strong>Private networking for production-oriented data services</strong><p>Private endpoints and DNS keep data-plane services off unnecessary public paths while managed identities remove application secrets from service-to-service authentication.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="status-banner">
+        <span class="status-chip success">Validated</span>
+        <div><strong>Compiler-level infrastructure validation is complete.</strong><p>GitHub Actions successfully lints and builds the Bicep template and all dev, test, and production parameter files. The next cloud validation gate is an Azure Resource Manager What-If after GitHub OIDC is connected to the subscription.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Project scope:</strong> this repository contains the architecture, Infrastructure as Code, contracts, deployment tooling, ADRs, testing guidance, and operational documentation. It is a reference architecture package; a complete production commerce application implementation is intentionally outside the current scope.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>E-Commerce Azure Reference Architecture</span></footer>
   </main>
 </body>
 </html>
