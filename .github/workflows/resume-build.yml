@@ -38,6 +38,7 @@ jobs:
           if len(reader.pages) != 2:
               raise SystemExit(f'Expected a 2-page resume, got {len(reader.pages)} pages')
           text = '\n'.join((page.extract_text() or '') for page in reader.pages)
+          normalized = text.casefold()
           required = [
               'Selected Azure Architecture Projects',
               'Azure E-Commerce Reference Architecture',
@@ -45,7 +46,7 @@ jobs:
               'Cost-Optimized Azure Static Portfolio',
               'University of North Carolina at Pembroke',
           ]
-          missing = [item for item in required if item not in text]
+          missing = [item for item in required if item.casefold() not in normalized]
           if missing:
               raise SystemExit(f'Missing expected resume content: {missing}')
           print('Resume verification passed: 2 pages and required sections present.')
