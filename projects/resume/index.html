@@ -3,50 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio.">
-  <title>Resume Portfolio | Holden Jolley</title>
+  <meta name="description" content="Cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio with a Free-tier-first design, GitHub Actions, OIDC readiness, and security headers.">
+  <title>Cost-Optimized Portfolio Hosting | Holden Jolley</title>
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="mailto:Jolleyholden@gmail.com">Contact</a></div>
   </header>
-  <main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px">
-    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>Resume Portfolio</strong></div>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>Portfolio Hosting</strong></div>
+
     <section class="hero">
       <div>
-        <div class="eyebrow">COST-OPTIMIZED AZURE PROJECT</div>
-        <h1>Resume Portfolio</h1>
-        <p class="hero-copy">The portfolio itself is an architecture project: a globally delivered Azure Static Web App designed to stay on the Free tier while retaining HTTPS, custom-domain support, CI/CD, pull-request previews, Infrastructure as Code, and a documented upgrade path.</p>
-        <div class="hero-actions"><a class="button primary" href="../../">Back to portfolio</a></div>
+        <div class="project-kicker"><div class="eyebrow">COST OPTIMIZATION · STATIC HOSTING</div></div>
+        <h1>Cost-Optimized Portfolio Hosting</h1>
+        <p class="hero-copy">The portfolio itself is an Azure architecture project: a globally delivered static site designed around Azure Static Web Apps Free so the hosting target stays at $0/month while the workload remains within included quotas.</p>
+        <div class="project-status"><span class="status-chip success">Bicep validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="hero-actions"><a class="button primary" href="#architecture">Explore architecture</a><a class="button" href="../../">Back to portfolio</a></div>
       </div>
-      <div class="hero-panel">
-        <div class="panel-header"><span>Cost profile</span><span class="panel-menu">$0</span></div>
-        <div class="info-card" style="box-shadow:none;border:0;padding:16px 0">
-          <div><span>Hosting</span><strong>Static Web Apps Free</strong></div>
-          <div><span>Edge delivery</span><strong>Included</strong></div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Cost profile</span><span class="status-chip success">Free-tier first</span></div>
+        <div class="validation-list">
+          <div><span>Hosting</span><strong>Azure Static Web Apps Free</strong></div>
+          <div><span>Global delivery</span><strong>Included</strong></div>
           <div><span>TLS</span><strong>Managed certificate</strong></div>
+          <div><span>Deployment</span><strong>GitHub Actions</strong></div>
           <div><span>Azure target</span><strong>$0/month in quota</strong></div>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="eyebrow">ARCHITECTURE</div>
-      <h2>Use less Azure on purpose.</h2>
-      <p>The design deliberately avoids App Service, Functions, databases, Azure DNS, paid CDN services, and a dedicated observability stack because this workload does not require them. GitHub is the source of truth, GitHub Actions handles deployment, and Azure Static Web Apps serves the static site globally.</p>
-      <div class="capability-grid">
-        <div class="capability"><strong>Free-tier hosting</strong><span>Azure Static Web Apps Free with documented quota guardrails.</span></div>
-        <div class="capability"><strong>Secure delivery</strong><span>Managed HTTPS plus CSP and browser security headers.</span></div>
-        <div class="capability"><strong>CI/CD</strong><span>GitHub OIDC and runtime deployment-token retrieval.</span></div>
-        <div class="capability"><strong>Recovery</strong><span>Version control + revert/redeploy; no stateful data to restore.</span></div>
+    <section class="section split">
+      <div>
+        <div class="eyebrow">ARCHITECTURE PROBLEM</div>
+        <h2>Do not pay for services the workload does not need.</h2>
+        <p>A static resume and portfolio does not require always-on compute, a database, a paid CDN, or a monitoring workspace. The architecture deliberately minimizes the Azure footprint while retaining HTTPS, custom-domain support, pull-request previews, repeatable Infrastructure as Code, CI/CD, and a documented path to a paid tier if requirements change.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Azure resources</span><strong>Resource Group + Static Web App</strong></div>
+        <div><span>State</span><strong>GitHub is source of truth</strong></div>
+        <div><span>Recovery</span><strong>Revert + redeploy</strong></div>
+        <div><span>DNS</span><strong>Existing external provider</strong></div>
       </div>
     </section>
 
-    <section class="section split">
-      <div><div class="eyebrow">TRADEOFFS</div><h2>Free is a design choice, not a claim of enterprise SLA.</h2><p>The Free plan is appropriate because this is a personal portfolio. The architecture documents explicit triggers for moving to Standard if bandwidth, domain count, private networking, preview capacity, or availability requirements change.</p></div>
-      <div class="quote-card"><span>“</span><p>The cheapest reliable architecture is often the one that omits services you do not need.</p></div>
+    <section class="section" id="architecture">
+      <div class="eyebrow">DELIVERY FLOW</div>
+      <h2>Small Azure footprint, full delivery workflow.</h2>
+      <div class="architecture-flow seven" aria-label="Static portfolio delivery flow">
+        <div class="flow-node">GitHub<br>repository</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">GitHub Actions<br>CI/CD</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Azure Static<br>Web Apps Free</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">HTTPS<br>portfolio</div>
+      </div>
+      <div class="service-list" aria-label="Services and controls used">
+        <span>Azure Static Web Apps</span><span>Bicep</span><span>GitHub Actions</span><span>OIDC-ready delivery</span><span>Managed TLS</span><span>Custom domain support</span><span>PR previews</span><span>Content Security Policy</span><span>Security headers</span>
+      </div>
     </section>
+
+    <section class="section">
+      <div class="eyebrow">COST DESIGN</div>
+      <h2>Use less Azure on purpose.</h2>
+      <div class="capability-grid">
+        <div class="capability"><strong>Static Web Apps Free</strong><span>Right-sized hosting for a static personal portfolio with global static delivery, managed HTTPS, custom domains, and preview environments.</span></div>
+        <div class="capability"><strong>No server compute</strong><span>No App Service plan, VM, Functions backend, or always-on application runtime because the site has no server-side compute requirement.</span></div>
+        <div class="capability"><strong>No paid edge layer</strong><span>No Front Door or separate paid CDN because Static Web Apps already satisfies the static content distribution requirement.</span></div>
+        <div class="capability"><strong>No unnecessary state</strong><span>No database, storage account, or dedicated observability workspace. Source control is the recovery mechanism for a stateless site.</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">KEY DECISIONS</div>
+      <h2>Cost optimization is requirement-driven architecture.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Static Web Apps instead of App Service</strong><p>The workload is HTML, CSS, JavaScript, and a resume PDF. Paying for an App Service plan would add compute and operational surface without adding value.</p></div>
+        <div class="decision-card"><strong>External DNS instead of Azure DNS</strong><p>The existing domain provider can map the custom domain, avoiding another recurring Azure resource solely for portfolio DNS hosting.</p></div>
+        <div class="decision-card"><strong>No dedicated observability stack</strong><p>A static personal site has no backend transaction or dependency graph that justifies Application Insights and Log Analytics in the baseline architecture.</p></div>
+        <div class="decision-card"><strong>Upgrade only on a real trigger</strong><p>Bandwidth, domain count, preview capacity, private networking, or SLA requirements are explicit signals for moving beyond the Free architecture.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="status-banner">
+        <span class="status-chip success">Validated</span>
+        <div><strong>The hosting infrastructure compiles cleanly in GitHub Actions.</strong><p>Bicep lint, template build, and the production parameter build are green. The deployment workflow also handles missing Azure OIDC configuration safely by skipping Azure actions rather than failing or requiring a long-lived deployment secret.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Tradeoff:</strong> the Free tier is appropriate for a personal portfolio, not a claim of enterprise availability. The architecture documents when the site should move to a paid tier instead of disguising Free-tier limitations.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>Cost-Optimized Azure Static Hosting Architecture</span></footer>
   </main>
 </body>
 </html>
