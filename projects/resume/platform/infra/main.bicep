@@ -26,23 +26,17 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: commonTags
 }
 
-resource staticSite 'Microsoft.Web/staticSites@2025-03-01' = {
+module staticWebApp './modules/static-web-app.bicep' = {
+  name: 'staticWebApp'
   scope: resourceGroup
-  name: '${prefix}-swa'
-  location: location
-  tags: commonTags
-  sku: {
-    name: 'Free'
-    tier: 'Free'
-  }
-  properties: {
-    allowConfigFileUpdates: true
-    publicNetworkAccess: 'Enabled'
-    stagingEnvironmentPolicy: 'Enabled'
+  params: {
+    name: '${prefix}-swa'
+    location: location
+    tags: commonTags
   }
 }
 
 output resourceGroupName string = resourceGroup.name
-output staticWebAppName string = staticSite.name
-output defaultHostname string = staticSite.properties.defaultHostname
-output sku string = staticSite.sku.name
+output staticWebAppName string = staticWebApp.outputs.name
+output defaultHostname string = staticWebApp.outputs.defaultHostname
+output sku string = staticWebApp.outputs.sku
