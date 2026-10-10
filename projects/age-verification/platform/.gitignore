@@ -1,0 +1,21 @@
+# Local deployment artifacts
+*.local.json
+*.whatif.json
+.azure/
+
+# Build outputs
+bin/
+obj/
+out/
+
+# Local environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

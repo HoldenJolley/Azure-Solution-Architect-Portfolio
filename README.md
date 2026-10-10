@@ -6,7 +6,7 @@ Personal portfolio for Holden Jolley showcasing Azure architecture, cloud infras
 
 - **Resume Portfolio** — the portfolio/resume experience itself, including the downloadable resume.
 - **E-Commerce Platform** — a production-oriented Azure reference architecture with modular Bicep, CI/CD, security, observability, reliability, and architecture documentation.
-- **Age Verification Platform** — a security and identity-focused project placeholder for the next reference implementation.
+- **AI Age Assurance Platform** — a production-oriented privacy and security landing zone for bring-your-own AI age models, with client-side encryption, private inference, no image retention, HSM-backed keys, anti-replay state, and signed binary attestations.
 
 ## Repository structure
 
@@ -26,12 +26,32 @@ Personal portfolio for Holden Jolley showcasing Azure architecture, cloud infras
 │   │       ├── docs/
 │   │       └── src/
 │   └── age-verification/
+│       ├── index.html
+│       └── platform/
+│           ├── infra/
+│           ├── contracts/
+│           ├── docs/
+│           ├── scripts/
+│           └── src/
 └── .github/workflows/
 ```
 
 ## E-Commerce infrastructure
 
-The e-commerce project contains a deployable Infrastructure-as-Code foundation under [`projects/ecommerce/platform`](projects/ecommerce/platform/README.md). It includes Azure Front Door and WAF, regional App Service API and worker tiers, Azure Cosmos DB, Azure Service Bus, Azure Key Vault, Data Lake Storage Gen2, Application Insights and Log Analytics, regional networking, managed identities and RBAC, environment parameter sets, ADRs, and operations/security/recovery documentation.
+The e-commerce project contains a deployable Infrastructure-as-Code foundation under [`projects/ecommerce/platform`](projects/ecommerce/platform/README.md). It includes:
+
+- Azure Front Door and WAF
+- Regional App Service API and worker tiers
+- Azure Cosmos DB
+- Azure Service Bus
+- Azure Key Vault
+- Azure Data Lake Storage Gen2
+- Application Insights and Log Analytics
+- Regional VNets, private endpoints, and private DNS
+- Managed identities and RBAC
+- Dev, test, and production parameter sets
+- Architecture Decision Records (ADRs)
+- Security, disaster recovery, testing, operations, and cost documentation
 
 ## Local portfolio preview
 
@@ -46,3 +66,13 @@ From the repository root:
 ```
 
 See [`projects/ecommerce/platform/README.md`](projects/ecommerce/platform/README.md) for prerequisites, deployment steps, and current limitations.
+
+## AI Age Assurance infrastructure
+
+The age-assurance project under [`projects/age-verification/platform`](projects/age-verification/platform/README.md) is a privacy-preserving Azure landing zone for customer-supplied AI models. It uses client-side envelope encryption, Front Door Premium + WAF, Private Link, private Azure Container Apps, Key Vault HSM-backed keys, Azure Managed Redis anti-replay state, ACR, managed identities, and strict no-image-retention contracts.
+
+Validation:
+
+```powershell
+./projects/age-verification/platform/scripts/validate.ps1 -Environment dev
+```
