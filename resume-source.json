@@ -1,0 +1,74 @@
+{
+  "name": "Holden Jolley",
+  "headline": "AZURE SOLUTION ARCHITECT | CLOUD INFRASTRUCTURE & SECURITY",
+  "contact": [
+    "Hickory, NC",
+    "828-449-7496",
+    "Jolleyholden@gmail.com",
+    "github.com/HoldenJolley"
+  ],
+  "summary": "Cloud & security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation. Led enterprise modernization supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs.",
+  "projects": [
+    {
+      "title": "Azure E-Commerce Reference Architecture",
+      "focus": "Distributed systems, security & resiliency",
+      "description": "Designed a modular Azure platform using Front Door + WAF, App Service API/workers, Cosmos DB, Service Bus, Key Vault, Data Lake, private networking, managed identity/RBAC, observability, and dev/test/prod Bicep. Infrastructure lint/build and parameter validation are green in GitHub Actions."
+    },
+    {
+      "title": "Privacy-Preserving AI Age Assurance Platform",
+      "focus": "Security, privacy & AI landing zone",
+      "description": "Designed client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, Private Link, and no intentional image retention. Foundation/workload Bicep and all environment parameters compile cleanly in CI."
+    },
+    {
+      "title": "Cost-Optimized Azure Static Portfolio",
+      "focus": "Cost optimization & secure delivery",
+      "description": "Architected Azure Static Web Apps Free with managed HTTPS, security headers, GitHub Actions/OIDC, curated deployment artifacts, and source-control recovery. Deliberately omits paid compute, Azure DNS, Front Door, databases, and dedicated observability to target $0/month Azure hosting within Free quotas."
+    }
+  ],
+  "certifications": [
+    "Microsoft Azure Administrator Associate (AZ-104) - In progress",
+    "Microsoft Azure Solutions Architect Expert (AZ-305) - In progress"
+  ],
+  "technologies": [
+    ["Azure & Cloud", "Azure VMs · VNets · NSGs · VPN · Azure Monitor · Hybrid Cloud · Bicep · Cost Optimization"],
+    ["Identity & Security", "Microsoft Entra ID · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker · Windows Hello · Passkeys"],
+    ["Endpoint", "Intune · Autopilot · MDT · Jamf"],
+    ["Automation & ITSM", "PowerShell · Freshservice · UiPath"]
+  ],
+  "experience": [
+    {
+      "company": "Alex Lee",
+      "role": "IT Security Analyst / Cloud Infrastructure & Security Lead",
+      "scope": "Azure Cloud Infrastructure, Identity & Security",
+      "dates": "2022-Present",
+      "bullets": [
+        "Led migration of a ~100-VM RDS environment to Azure, architecting infrastructure, networking, NSGs, VPN connectivity, monitoring, remediation, and cost strategy across four teams; selected site-to-site VPN over ExpressRoute based on workload requirements, resiliency needs, and total cost, and implemented reserved/pre-purchased compute capacity to reduce ongoing infrastructure costs.",
+        "Automated VM health monitoring, reboot remediation, and failure escalation to improve operational resilience and reduce manual intervention.",
+        "Led 1,500+ device migration to Entra ID, Intune & Autopilot from MDT/on-prem AD.",
+        "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment.",
+        "Implemented MFA, BitLocker, LAPS, Windows Hello, passkeys, EPM, JIT, and multi-admin approval.",
+        "Built Freshservice -> Entra -> Intune provisioning automation, reducing deployment from 2.5-3 hours to 15-20 minutes.",
+        "Implemented Microsoft Global Secure Access to modernize cloud-based network connectivity and provide secure access to enterprise resources without relying solely on traditional network infrastructure.",
+        "Administer Freshservice and Jamf across ~50 Macs and 300 iPads.",
+        "Lead cross-functional cloud, security, identity, endpoint, and automation projects."
+      ]
+    },
+    {
+      "company": "Alex Lee",
+      "role": "IT Service Desk Agent",
+      "scope": "",
+      "dates": "2021-2022",
+      "bullets": [
+        "Led UiPath automation and onboarding/offboarding process redesign.",
+        "Administered Freshservice workflows, automations, service requests, and integrations.",
+        "Built MDT -> Password Manager Pro automation for unique device administrator credentials.",
+        "Transitioned credential management to Intune during the Autopilot modernization."
+      ]
+    }
+  ],
+  "education": {
+    "school": "University of North Carolina at Pembroke",
+    "degree": "Bachelor of Science in Computer Science",
+    "dates": "2016-2020"
+  }
+}
