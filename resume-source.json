@@ -7,7 +7,7 @@
     "Jolleyholden@gmail.com",
     "github.com/HoldenJolley"
   ],
-  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes and developed Azure reference architectures validated through Bicep and CI.",
+  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes, built executive alignment for least-privilege security changes, and developed Azure reference architectures validated through Bicep and CI.",
   "projects": [
     {
       "title": "Azure E-Commerce Reference Architecture",
@@ -48,7 +48,7 @@
         "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment patterns to create a repeatable, policy-driven endpoint architecture.",
         "Built Freshservice -> Entra -> Intune provisioning automation that reduced device deployment time from 2.5-3 hours to 15-20 minutes - roughly a 90% reduction - accelerating onboarding while reducing technician effort.",
         "Designed and automated identity lifecycle management for employee onboarding and inactive-account cleanup, replacing recurring manual administration and saving several staff-hours per day. Retained manager-approval checkpoints before stale Active Directory accounts were removed, preserving business ownership while reducing orphaned-access risk.",
-        "Implemented MFA, BitLocker, LAPS, Windows Hello, passkeys, EPM, JIT, and multi-admin approval to reduce credential exposure, standing privilege, and endpoint security risk.",
+        "Built executive alignment with the CIO to remove standing local administrator rights by translating endpoint privilege risk and developer-productivity concerns into a business case that addressed anticipated resistance from Software Development leadership. Implemented an EPM/JIT least-privilege model to preserve developer workflows while reducing standing administrative access.",
         "Implemented Microsoft Global Secure Access to modernize secure connectivity to enterprise resources and reduce reliance on traditional network access paths."
       ]
     },
