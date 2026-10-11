@@ -7,17 +7,56 @@ if (portfolioScriptUrl && !document.querySelector('link[data-portfolio-enhanceme
   document.head.appendChild(enhancementStyles);
 }
 
-const navItems = document.querySelectorAll('.nav-item[href^="#"]');
-const sections = [...document.querySelectorAll('main section[id]')];
+const navItems = [...document.querySelectorAll('.nav-item[href^="#"]')];
+const navTargets = navItems
+  .map(item => {
+    const id = decodeURIComponent(item.getAttribute('href').slice(1));
+    return {item, id, target: document.getElementById(id)};
+  })
+  .filter(entry => entry.target);
 
-if ('IntersectionObserver' in window && navItems.length && sections.length) {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      navItems.forEach(item => item.classList.toggle('active', item.getAttribute('href') === '#' + entry.target.id));
+function setActiveNav(id) {
+  navItems.forEach(item => {
+    item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
+  });
+}
+
+function updateActiveNav() {
+  if (!navTargets.length) return;
+
+  const activationLine = 96;
+  const atPageBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+  let active = navTargets[0];
+
+  for (const entry of navTargets) {
+    if (entry.target.getBoundingClientRect().top <= activationLine) {
+      active = entry;
+    } else {
+      break;
+    }
+  }
+
+  if (atPageBottom) active = navTargets[navTargets.length - 1];
+  setActiveNav(active.id);
+}
+
+if (navTargets.length) {
+  let scrollFrame = null;
+  const scheduleNavUpdate = () => {
+    if (scrollFrame !== null) return;
+    scrollFrame = window.requestAnimationFrame(() => {
+      updateActiveNav();
+      scrollFrame = null;
     });
-  }, {rootMargin: '-25% 0px -65% 0px', threshold: 0});
-  sections.forEach(section => observer.observe(section));
+  };
+
+  navTargets.forEach(({item, id}) => {
+    item.addEventListener('click', () => setActiveNav(id));
+  });
+  window.addEventListener('scroll', scheduleNavUpdate, {passive: true});
+  window.addEventListener('resize', scheduleNavUpdate);
+  window.addEventListener('load', updateActiveNav);
+  updateActiveNav();
 }
 
 console.info('%cHoldenJolley.CloudArchitecture/portfolio', 'font-weight:700;color:#0078d4');
