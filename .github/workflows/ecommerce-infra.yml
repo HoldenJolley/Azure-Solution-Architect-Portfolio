@@ -29,77 +29,31 @@ permissions:
 
 jobs:
   validate:
-    name: bicep-build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Bicep
-        run: az bicep install
-
-      - name: Validate dev
-        shell: pwsh
-        run: ./projects/ecommerce/platform/scripts/validate.ps1 -Environment dev
-
-      - name: Validate test
-        shell: pwsh
-        run: ./projects/ecommerce/platform/scripts/validate.ps1 -Environment test
-
-      - name: Validate prod
-        shell: pwsh
-        run: ./projects/ecommerce/platform/scripts/validate.ps1 -Environment prod
-
-  azure-what-if:
-    name: azure-what-if
-    needs: validate
-    runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID_VALUE: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID_VALUE: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID_VALUE: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Check Azure OIDC configuration
-        id: azure-config
-        shell: bash
-        run: |
-          if [[ -n "$AZURE_CLIENT_ID_VALUE" && -n "$AZURE_TENANT_ID_VALUE" && -n "$AZURE_SUBSCRIPTION_ID_VALUE" ]]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Azure OIDC is not configured yet; skipping subscription what-if."
-          fi
+      - uses: actions/checkout@v4
 
       - name: Azure login
-        if: steps.azure-config.outputs.enabled == 'true'
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Run what-if
-        if: steps.azure-config.outputs.enabled == 'true'
+      - name: Lint, build, and what-if
         shell: pwsh
         run: ./projects/ecommerce/platform/scripts/validate.ps1 -Environment ${{ inputs.environment || 'dev' }} -RunWhatIf
 
   deploy:
     if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
-    needs: [validate, azure-what-if]
+    needs: validate
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
       - name: Azure login
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}

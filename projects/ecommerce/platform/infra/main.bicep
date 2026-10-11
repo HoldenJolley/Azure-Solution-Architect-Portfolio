@@ -145,7 +145,7 @@ module primaryNetwork './modules/network.bicep' = {
 
 module secondaryNetwork './modules/network.bicep' = if (enableSecondaryRegion) {
   name: 'network-secondary'
-  scope: secondaryRg!
+  scope: secondaryRg
   params: {
     workloadName: workloadName
     environment: environment
@@ -208,7 +208,7 @@ module primaryApps './modules/regional-apps.bicep' = {
 
 module secondaryApps './modules/regional-apps.bicep' = if (enableSecondaryRegion) {
   name: 'apps-secondary'
-  scope: secondaryRg!
+  scope: secondaryRg
   params: {
     workloadName: workloadName
     environment: environment
@@ -217,7 +217,7 @@ module secondaryApps './modules/regional-apps.bicep' = if (enableSecondaryRegion
     suffix: suffix
     appServicePlanSkuName: appServicePlanSkuName
     appServicePlanSkuTier: appServicePlanSkuTier
-    appSubnetId: secondaryNetwork!.outputs.appSubnetId
+    appSubnetId: secondaryNetwork.outputs.appSubnetId
     frontDoorId: frontDoorProfile.outputs.frontDoorId
     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
     cosmosEndpoint: data.outputs.cosmosEndpoint
@@ -239,7 +239,7 @@ var frontDoorOrigins = enableSecondaryRegion ? [
   }
   {
     name: 'secondary'
-    hostName: secondaryApps!.outputs.apiDefaultHostName
+    hostName: secondaryApps.outputs.apiDefaultHostName
     priority: 1
     weight: 1000
     enabled: true
@@ -267,7 +267,7 @@ module frontDoorRouting './modules/frontdoor-routing.bicep' = {
 
 var vnetIds = enableSecondaryRegion ? [
   primaryNetwork.outputs.vnetId
-  secondaryNetwork!.outputs.vnetId
+  secondaryNetwork.outputs.vnetId
 ] : [
   primaryNetwork.outputs.vnetId
 ]
@@ -292,57 +292,57 @@ module primaryPrivateEndpoints './modules/private-endpoints.bicep' = if (enableP
     serviceBusNamespaceId: data.outputs.serviceBusNamespaceId
     keyVaultId: data.outputs.keyVaultId
     dataLakeAccountId: data.outputs.dataLakeAccountId
-    cosmosPrivateDnsZoneId: privateDns!.outputs.cosmosPrivateDnsZoneId
-    serviceBusPrivateDnsZoneId: privateDns!.outputs.serviceBusPrivateDnsZoneId
-    keyVaultPrivateDnsZoneId: privateDns!.outputs.keyVaultPrivateDnsZoneId
-    blobPrivateDnsZoneId: privateDns!.outputs.blobPrivateDnsZoneId
-    dfsPrivateDnsZoneId: privateDns!.outputs.dfsPrivateDnsZoneId
+    cosmosPrivateDnsZoneId: privateDns.outputs.cosmosPrivateDnsZoneId
+    serviceBusPrivateDnsZoneId: privateDns.outputs.serviceBusPrivateDnsZoneId
+    keyVaultPrivateDnsZoneId: privateDns.outputs.keyVaultPrivateDnsZoneId
+    blobPrivateDnsZoneId: privateDns.outputs.blobPrivateDnsZoneId
+    dfsPrivateDnsZoneId: privateDns.outputs.dfsPrivateDnsZoneId
     tags: tags
   }
 }
 
 module secondaryPrivateEndpoints './modules/private-endpoints.bicep' = if (enablePrivateNetworking && enableSecondaryRegion) {
   name: 'private-endpoints-secondary'
-  scope: secondaryRg!
+  scope: secondaryRg
   params: {
     location: secondaryLocation
     regionCode: secondaryRegionCode
-    privateEndpointSubnetId: secondaryNetwork!.outputs.privateEndpointSubnetId
+    privateEndpointSubnetId: secondaryNetwork.outputs.privateEndpointSubnetId
     cosmosAccountId: data.outputs.cosmosAccountId
     serviceBusNamespaceId: data.outputs.serviceBusNamespaceId
     keyVaultId: data.outputs.keyVaultId
     dataLakeAccountId: data.outputs.dataLakeAccountId
-    cosmosPrivateDnsZoneId: privateDns!.outputs.cosmosPrivateDnsZoneId
-    serviceBusPrivateDnsZoneId: privateDns!.outputs.serviceBusPrivateDnsZoneId
-    keyVaultPrivateDnsZoneId: privateDns!.outputs.keyVaultPrivateDnsZoneId
-    blobPrivateDnsZoneId: privateDns!.outputs.blobPrivateDnsZoneId
-    dfsPrivateDnsZoneId: privateDns!.outputs.dfsPrivateDnsZoneId
+    cosmosPrivateDnsZoneId: privateDns.outputs.cosmosPrivateDnsZoneId
+    serviceBusPrivateDnsZoneId: privateDns.outputs.serviceBusPrivateDnsZoneId
+    keyVaultPrivateDnsZoneId: privateDns.outputs.keyVaultPrivateDnsZoneId
+    blobPrivateDnsZoneId: privateDns.outputs.blobPrivateDnsZoneId
+    dfsPrivateDnsZoneId: privateDns.outputs.dfsPrivateDnsZoneId
     tags: tags
   }
 }
 
 var apiPrincipalIds = enableSecondaryRegion ? [
   primaryApps.outputs.apiPrincipalId
-  secondaryApps!.outputs.apiPrincipalId
+  secondaryApps.outputs.apiPrincipalId
 ] : [
   primaryApps.outputs.apiPrincipalId
 ]
 
 var workerPrincipalIds = enableSecondaryRegion ? concat(
   primaryApps.outputs.workerPrincipalIds,
-  secondaryApps!.outputs.workerPrincipalIds
+  secondaryApps.outputs.workerPrincipalIds
 ) : primaryApps.outputs.workerPrincipalIds
 
 var analyticsPrincipalIds = enableSecondaryRegion ? [
   primaryApps.outputs.analyticsPrincipalId
-  secondaryApps!.outputs.analyticsPrincipalId
+  secondaryApps.outputs.analyticsPrincipalId
 ] : [
   primaryApps.outputs.analyticsPrincipalId
 ]
 
 var keyVaultPrincipalIds = enableSecondaryRegion ? [
   primaryApps.outputs.paymentPrincipalId
-  secondaryApps!.outputs.paymentPrincipalId
+  secondaryApps.outputs.paymentPrincipalId
 ] : [
   primaryApps.outputs.paymentPrincipalId
 ]

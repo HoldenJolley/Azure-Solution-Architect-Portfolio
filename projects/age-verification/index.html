@@ -1,1 +1,36 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Age Verification Platform | Holden Jolley</title><link rel="stylesheet" href="../../styles.css"></head><body><header class="topbar"><div class="brand"><div class="azure-mark"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header><main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px"><div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>Age Verification Platform</strong></div><section class="hero"><div><div class="eyebrow">PROJECT</div><h1>Age Verification Platform</h1><p class="hero-copy">Personal age verification project focused on secure, identity-aware application architecture.</p><a class="button primary" href="../../">Back to portfolio</a></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Privacy-preserving AI age assurance Azure reference architecture">
+  <title>AI Age Assurance Platform | Holden Jolley</title>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <header class="topbar"><div class="brand"><div class="azure-mark"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header>
+  <main class="content" style="margin-left:0;width:100%;max-width:1100px;margin-right:auto;margin-left:auto;padding-top:50px">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>AI Age Assurance Platform</strong></div>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">SECURITY &amp; PRIVACY REFERENCE ARCHITECTURE</div>
+        <h1>Privacy-Preserving AI Age Assurance</h1>
+        <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own AI age models. Images are encrypted on the client, remain ciphertext through the edge and gateway, are decrypted only in isolated inference memory, and are never intentionally stored.</p>
+        <div class="hero-actions"><a class="button primary" href="platform/README.md">Architecture package</a><a class="button" href="../../">Back to portfolio</a></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-heading"><div><div class="eyebrow">PRIVACY CONTRACT</div><h2>Plaintext exists only where it must.</h2></div></div>
+      <div class="project-grid">
+        <div class="project-card"><div class="service-icon">◇</div><h3>Encrypted before upload</h3><p>The browser re-encodes the frame, generates a one-time AES-256-GCM key, and encrypts the image before it leaves the device. TLS provides an additional transport layer.</p></div>
+        <div class="project-card"><div class="service-icon">▦</div><h3>Private inference</h3><p>Front Door Premium reaches a private Azure Container Apps environment over Private Link. The gateway never decrypts the photograph; only the private inference process can unwrap the session key.</p></div>
+        <div class="project-card"><div class="service-icon">▤</div><h3>No image retention</h3><p>No image datastore is provisioned. Plaintext, ciphertext, embeddings, tensors, raw age estimates, and session keys are prohibited from logs and persistent application storage.</p></div>
+      </div>
+    </section>
+    <section class="section split">
+      <div><div class="eyebrow">AZURE SERVICES</div><h2>Production landing zone</h2><p>Front Door Premium + WAF, private Container Apps, Key Vault Premium/HSM-backed RSA keys, Azure Managed Redis for two-minute anti-replay state, ACR Premium, managed identities, Private DNS/endpoints, Application Insights, and Log Analytics.</p></div>
+      <div class="info-card"><div><span>Result</span><strong>Approved / Denied attestation</strong></div><div><span>Model</span><strong>Bring your own container</strong></div><div><span>Storage</span><strong>No verification image store</strong></div><div><span>Data in use</span><strong>Confidential compute option</strong></div></div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,8 +1,6 @@
 param vnetIds array
 param tags object = {}
 
-var storageDnsSuffix = environment().suffixes.storage
-
 resource cosmosZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.documents.azure.com'
   location: 'global'
@@ -22,13 +20,13 @@ resource keyVaultZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
 }
 
 resource blobZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.blob.${storageDnsSuffix}'
+  name: 'privatelink.blob.core.windows.net'
   location: 'global'
   tags: tags
 }
 
 resource dfsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.dfs.${storageDnsSuffix}'
+  name: 'privatelink.dfs.core.windows.net'
   location: 'global'
   tags: tags
 }

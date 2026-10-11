@@ -1,0 +1,69 @@
+name: age verification infrastructure
+
+on:
+  pull_request:
+    paths:
+      - 'projects/age-verification/platform/infra/**'
+      - 'projects/age-verification/platform/scripts/**'
+      - '.github/workflows/age-verification-infra.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        default: dev
+        type: choice
+        options: [dev, test, prod]
+      run_what_if:
+        description: Run Azure what-if
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  bicep-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Bicep
+        run: az bicep install
+      - name: Lint foundation
+        run: az bicep lint --file projects/age-verification/platform/infra/foundation.bicep
+      - name: Build foundation
+        run: az bicep build --file projects/age-verification/platform/infra/foundation.bicep --stdout > /dev/null
+      - name: Lint workloads
+        run: az bicep lint --file projects/age-verification/platform/infra/workloads.bicep
+      - name: Build workloads
+        run: az bicep build --file projects/age-verification/platform/infra/workloads.bicep --stdout > /dev/null
+      - name: Build parameter files
+        shell: pwsh
+        run: |
+          foreach ($env in @('dev','test','prod')) {
+            az bicep build-params --file "projects/age-verification/platform/infra/environments/$env.foundation.bicepparam" --stdout | Out-Null
+            az bicep build-params --file "projects/age-verification/platform/infra/environments/$env.workloads.bicepparam" --stdout | Out-Null
+          }
+
+  what-if:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_what_if == true)
+    needs: bicep-build
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Foundation what-if
+        shell: pwsh
+        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }} -RunWhatIf
