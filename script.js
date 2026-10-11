@@ -261,3 +261,128 @@ document.addEventListener('keydown', event => {
     closeActivityBlade();
   }
 });
+
+const portfolioProfile = {
+  name: 'Holden Jolley',
+  type: 'Microsoft.Portfolio/solutionArchitects',
+  properties: {
+    focus: ['Azure', 'Cloud Infrastructure', 'Identity', 'Security'],
+    location: 'North Carolina',
+    relocation: 'Bay Area',
+    infrastructureAsCode: 'Bicep',
+    validation: 'ARM What-If',
+    authentication: 'OIDC',
+    sameAs: [
+      'https://holdenjolley.com/',
+      'https://github.com/HoldenJolley',
+      'https://www.linkedin.com/in/holden-jolley/'
+    ]
+  }
+};
+
+let profileReturnFocus = null;
+
+function createProfileBlade() {
+  const trigger = document.querySelector('.profile');
+  if (!trigger || document.querySelector('.profile-overlay')) return;
+
+  trigger.type = 'button';
+  trigger.setAttribute('aria-label', 'Open Holden Jolley portfolio profile');
+  trigger.setAttribute('aria-haspopup', 'dialog');
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.setAttribute('title', 'Portfolio profile');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'profile-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.innerHTML = `
+    <aside class="profile-blade" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+      <div class="profile-header">
+        <div class="profile-heading">
+          <div class="profile-avatar" aria-hidden="true">HJ</div>
+          <div><div class="profile-kicker">PORTFOLIO PROFILE</div><h2 id="profile-title">Holden Jolley</h2><div class="profile-subtitle">Azure Solution Architect · Cloud Infrastructure &amp; Security</div></div>
+        </div>
+        <button type="button" class="profile-close" aria-label="Close portfolio profile">×</button>
+      </div>
+      <div class="profile-body">
+        <div class="profile-section profile-location">
+          <span class="profile-label">Location</span>
+          <strong>North Carolina</strong>
+          <span>Open to Bay Area relocation for the right opportunity</span>
+        </div>
+        <div class="profile-section">
+          <span class="profile-label">Professional</span>
+          <div class="profile-links">
+            <a class="profile-link" href="https://www.linkedin.com/in/holden-jolley/" target="_blank" rel="me noreferrer"><span>LinkedIn</span><span aria-hidden="true">↗</span></a>
+            <a class="profile-link" href="https://github.com/HoldenJolley" target="_blank" rel="me noreferrer"><span>GitHub</span><span aria-hidden="true">↗</span></a>
+            <a class="profile-link" href="mailto:Jolleyholden@gmail.com"><span>Email</span><span aria-hidden="true">→</span></a>
+            <a class="profile-link" href="resume.pdf"><span>Resume</span><span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+        <div class="profile-section">
+          <span class="profile-label">Portfolio</span>
+          <div class="profile-facts">
+            <div class="profile-fact"><span>Architectures</span><strong>3 Azure projects</strong></div>
+            <div class="profile-fact"><span>Infrastructure as Code</span><strong>Bicep</strong></div>
+            <div class="profile-fact"><span>Validation</span><strong>ARM What-If</strong></div>
+            <div class="profile-fact"><span>Delivery</span><strong>GitHub Actions + OIDC</strong></div>
+          </div>
+        </div>
+        <div class="profile-section">
+          <button type="button" class="profile-json-toggle" aria-expanded="false" aria-controls="profile-json">View profile as JSON</button>
+          <pre id="profile-json" class="profile-json" hidden></pre>
+        </div>
+      </div>
+      <div class="profile-footnote">Portfolio identity view — this is not a Microsoft or Azure sign-in session.</div>
+    </aside>`;
+  document.body.appendChild(overlay);
+
+  const jsonView = overlay.querySelector('.profile-json');
+  jsonView.textContent = JSON.stringify(portfolioProfile, null, 2);
+
+  trigger.addEventListener('click', openProfileBlade);
+  overlay.querySelector('.profile-close').addEventListener('click', closeProfileBlade);
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) closeProfileBlade();
+  });
+  overlay.querySelector('.profile-json-toggle').addEventListener('click', event => {
+    const button = event.currentTarget;
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    button.textContent = expanded ? 'View profile as JSON' : 'Hide profile JSON';
+    jsonView.hidden = expanded;
+  });
+}
+
+function openProfileBlade() {
+  const overlay = document.querySelector('.profile-overlay');
+  const trigger = document.querySelector('.profile');
+  if (!overlay || !trigger) return;
+
+  toggleCloudShell(false);
+  closeActivityBlade();
+  profileReturnFocus = document.activeElement;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  trigger.setAttribute('aria-expanded', 'true');
+  window.setTimeout(() => overlay.querySelector('.profile-close')?.focus(), 30);
+}
+
+function closeProfileBlade() {
+  const overlay = document.querySelector('.profile-overlay');
+  const trigger = document.querySelector('.profile');
+  if (!overlay) return;
+
+  const wasOpen = overlay.classList.contains('open');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  trigger?.setAttribute('aria-expanded', 'false');
+  if (wasOpen && profileReturnFocus instanceof HTMLElement) profileReturnFocus.focus();
+  profileReturnFocus = null;
+}
+
+createProfileBlade();
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeProfileBlade();
+});
