@@ -63,6 +63,17 @@ The deployment is intentionally split:
 
 This avoids a bootstrap dependency where Container Apps references images that do not exist yet.
 
+## Validation approach
+
+The repository uses two validation layers:
+
+1. Bicep lint/build and parameter compilation for the foundation and workload stages across dev, test, and prod.
+2. A live Azure Resource Manager What-If of the dev foundation through GitHub Actions and secretless OIDC.
+
+The dev cloud-preflight profile intentionally sets `deploySessionStore = false` and `useSessionStore = false`. Azure Managed Redis capacity is subscription- and region-dependent and both B0 and B1 returned live capacity/preflight failures during validation. Redis remains part of the production architecture and its Bicep is still lint/build validated; test/prod profiles retain the managed session-store design. This prevents a volatile capacity condition from turning the portfolio's non-deploying ARM preflight into a false signal about template quality.
+
+Workload-level ARM validation is intentionally sequenced after foundation deployment because `workloads.bicep` references foundation-created resources and customer-supplied container images. No resources are created by the What-If workflow.
+
 ## Start here
 
 ```powershell
