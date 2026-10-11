@@ -11,6 +11,7 @@ on:
       - 'script.js'
       - 'robots.txt'
       - 'llms.txt'
+      - 'sitemap.xml'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
@@ -26,6 +27,7 @@ on:
       - 'script.js'
       - 'robots.txt'
       - 'llms.txt'
+      - 'sitemap.xml'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
@@ -73,17 +75,21 @@ jobs:
           test -f easter-eggs.css
           test -f robots.txt
           test -f llms.txt
+          test -f sitemap.xml
           grep -q 'script src="../../script.js"' projects/resume/index.html
           grep -q 'script src="../../script.js"' projects/ecommerce/index.html
           grep -q 'script src="../../script.js"' projects/age-verification/index.html
           grep -q '"rewrite": "/404.html"' staticwebapp.config.json
+          grep -q 'https://holdenjolley.com/' llms.txt
           grep -q 'https://github.com/HoldenJolley' llms.txt
           grep -q 'https://www.linkedin.com/in/holden-jolley/' llms.txt
           grep -q 'User-agent: \*' robots.txt
+          grep -q 'Sitemap: https://holdenjolley.com/sitemap.xml' robots.txt
           python3 - <<'PY'
           import json
           import pathlib
           import re
+          import xml.etree.ElementTree as ET
 
           html = pathlib.Path('index.html').read_text(encoding='utf-8')
           match = re.search(r'<script type="application/ld\+json">\s*(.*?)\s*</script>', html, re.S)
@@ -101,6 +107,18 @@ jobs:
           }
           if not expected.issubset(same_as):
               raise SystemExit('Person sameAs identity links are incomplete')
+
+          root = ET.parse('sitemap.xml').getroot()
+          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls = {node.text for node in root.findall('sm:url/sm:loc', ns)}
+          expected_urls = {
+              'https://holdenjolley.com/',
+              'https://holdenjolley.com/projects/resume/',
+              'https://holdenjolley.com/projects/ecommerce/',
+              'https://holdenjolley.com/projects/age-verification/'
+          }
+          if not expected_urls.issubset(urls):
+              raise SystemExit('Canonical sitemap URLs are incomplete')
           PY
 
   azure-what-if:
@@ -153,7 +171,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
@@ -198,7 +216,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
