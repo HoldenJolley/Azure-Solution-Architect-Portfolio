@@ -7,22 +7,22 @@
     "Jolleyholden@gmail.com",
     "github.com/HoldenJolley"
   ],
-  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes, built executive alignment for least-privilege security changes, and developed Azure reference architectures validated through Bicep and CI.",
+  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes, built executive alignment for least-privilege security changes, and developed Azure reference architectures validated through Bicep, secretless GitHub OIDC, and live Azure Resource Manager What-If.",
   "projects": [
     {
       "title": "Azure E-Commerce Reference Architecture",
       "focus": "Resiliency, secure scale & operational continuity",
-      "description": "Designed a distributed Azure commerce platform to protect internet-facing traffic, decouple transactional workloads, support regional recovery, and allow application and data components to scale independently. Implemented with Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity/RBAC, observability, and dev/test/prod Bicep; CI validation is green."
+      "description": "Designed a distributed Azure commerce platform to protect internet-facing traffic, decouple transactional workloads, support regional recovery, and allow application and data components to scale independently. Implemented with Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity/RBAC, and observability; dev/test/prod Bicep validation is green and the dev architecture passes live ARM What-If through GitHub OIDC."
     },
     {
       "title": "Privacy-Preserving AI Age Assurance Platform",
       "focus": "Privacy risk reduction & secure AI integration",
-      "description": "Designed a privacy-first age assurance landing zone that minimizes exposure and retention of verification images while returning only a binary approval decision. Uses client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, Private Link, and no intentional image retention; foundation/workload Bicep compiles cleanly in CI."
+      "description": "Designed a privacy-first age assurance landing zone that minimizes exposure and retention of verification images while returning only a binary approval decision. Uses client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, and Private Link; foundation/workload Bicep validates cleanly and the dev foundation passes live ARM What-If through GitHub OIDC."
     },
     {
       "title": "Cost-Optimized Azure Static Portfolio",
       "focus": "Right-sizing, cost control & secure delivery",
-      "description": "Designed portfolio hosting to meet availability, HTTPS, custom-domain, CI/CD, and recovery requirements at a target of $0/month Azure hosting within Free quotas. Uses Azure Static Web Apps Free, security headers, GitHub Actions/OIDC, curated deployment artifacts, and source-control recovery while deliberately avoiding paid compute, Azure DNS, Front Door, databases, and unnecessary observability services."
+      "description": "Designed portfolio hosting to meet availability, HTTPS, custom-domain, CI/CD, and recovery requirements at a target of $0/month Azure hosting within Free quotas. Uses Azure Static Web Apps Free, security headers, GitHub Actions/OIDC, and source-control recovery; live ARM What-If resolves the intended footprint to one resource group and one Free-tier Static Web App, with production deployment deliberately manually gated."
     }
   ],
   "certifications": [
