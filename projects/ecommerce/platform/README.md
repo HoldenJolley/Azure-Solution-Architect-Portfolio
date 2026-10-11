@@ -31,6 +31,18 @@ A production-oriented Azure reference architecture for an event-driven e-commerc
 
 The prod profile is intentionally more expensive. Deploy dev for routine development and use prod as the reference architecture or for controlled validation.
 
+## Validation status
+
+The repository now has both compiler-level and live Azure control-plane evidence:
+
+- dev, test, and production Bicep/parameter validation is green;
+- GitHub Actions authenticates to Azure with short-lived OIDC federation and no Azure client secret;
+- the dev architecture completes a live subscription-scope Azure Resource Manager What-If successfully;
+- the current What-If predicts 41 creates and reports 14 identity-dependent role assignments as unsupported because their resource IDs require managed-identity principal IDs created during deployment;
+- the deployment job remains explicitly gated and has not been run.
+
+No e-commerce resources have been deployed to Azure yet.
+
 ## Prerequisites
 
 - Azure subscription
@@ -44,6 +56,8 @@ The prod profile is intentionally more expensive. Deploy dev for routine develop
 ./scripts/validate.ps1 -Environment dev -RunWhatIf
 ./scripts/deploy.ps1 -Environment dev
 ```
+
+Treat the deployment command as an explicit resource-creation step; use What-If first and review the proposed scope/cost before running it.
 
 ## Important application contract
 
