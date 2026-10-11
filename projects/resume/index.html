@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio with a Free-tier-first design, GitHub Actions, OIDC readiness, and security headers.">
+  <meta name="description" content="Cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio with a Free-tier-first design, GitHub Actions, secretless Azure OIDC, live ARM What-If validation, and security headers.">
   <title>Cost-Optimized Portfolio Hosting | Holden Jolley</title>
   <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -21,16 +21,16 @@
         <div class="project-kicker"><div class="eyebrow">COST OPTIMIZATION · STATIC HOSTING</div></div>
         <h1>Cost-Optimized Portfolio Hosting</h1>
         <p class="hero-copy">The portfolio itself is an Azure architecture project: a globally delivered static site designed around Azure Static Web Apps Free so the hosting target stays at $0/month while the workload remains within included quotas.</p>
-        <div class="project-status"><span class="status-chip success">Bicep validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="project-status"><span class="status-chip success">Bicep validated</span><span class="status-chip success">ARM What-If validated</span></div>
         <div class="hero-actions"><a class="button primary" href="#architecture">Explore architecture</a><a class="button" href="../../resume.pdf">Download project-focused resume</a><a class="button" href="../../">Back to portfolio</a></div>
       </div>
       <div class="hero-panel validation-panel">
         <div class="panel-header"><span>Cost profile</span><span class="status-chip success">Free-tier first</span></div>
         <div class="validation-list">
           <div><span>Hosting</span><strong>Azure Static Web Apps Free</strong></div>
-          <div><span>Global delivery</span><strong>Included</strong></div>
+          <div><span>Azure footprint</span><strong>Resource Group + Static Web App</strong></div>
           <div><span>TLS</span><strong>Managed certificate</strong></div>
-          <div><span>Deployment</span><strong>GitHub Actions</strong></div>
+          <div><span>Delivery</span><strong>GitHub Actions + OIDC</strong></div>
           <div><span>Azure target</span><strong>$0/month in quota</strong></div>
         </div>
       </div>
@@ -60,7 +60,7 @@
         <div class="flow-node accent">HTTPS<br>portfolio</div>
       </div>
       <div class="service-list" aria-label="Services and controls used">
-        <span>Azure Static Web Apps</span><span>Bicep</span><span>GitHub Actions</span><span>OIDC-ready delivery</span><span>Managed TLS</span><span>Custom domain support</span><span>PR previews</span><span>Content Security Policy</span><span>Security headers</span>
+        <span>Azure Static Web Apps</span><span>Bicep</span><span>GitHub Actions</span><span>Secretless OIDC</span><span>ARM What-If</span><span>Managed TLS</span><span>Custom domain support</span><span>PR previews</span><span>Content Security Policy</span><span>Security headers</span>
       </div>
     </section>
 
@@ -88,8 +88,8 @@
 
     <section class="section">
       <div class="status-banner">
-        <span class="status-chip success">Validated</span>
-        <div><strong>The hosting infrastructure compiles cleanly in GitHub Actions.</strong><p>Bicep lint, template build, and the production parameter build are green. The deployment workflow also handles missing Azure OIDC configuration safely by skipping Azure actions rather than failing or requiring a long-lived deployment secret.</p></div>
+        <span class="status-chip success">Cloud validated</span>
+        <div><strong>The intended Free-tier footprint has been evaluated against Azure without creating resources.</strong><p>Bicep lint/build and production parameters are green. GitHub Actions authenticates through secretless OIDC and a live subscription-scope Resource Manager What-If resolves the design to one resource group and one Free-tier Static Web App. Actual deployment remains gated and has not been run.</p></div>
       </div>
     </section>
 
