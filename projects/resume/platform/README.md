@@ -33,29 +33,50 @@ The current Free plan is intended for personal projects and includes global stat
 
 See `docs/architecture/cost.md` for the decision thresholds that would justify upgrading to Standard.
 
+## Validation status
+
+The infrastructure has been validated without creating Azure resources:
+
+- Bicep lint/build and production parameter compilation are green.
+- GitHub Actions authenticates to Azure through short-lived OIDC federation.
+- A live subscription-scope Azure Resource Manager What-If resolves the intended footprint to exactly one resource group and one Free-tier Static Web App.
+- No production deployment has been executed yet.
+
 ## Deployment model
 
-Infrastructure and content deployment are separated:
+Infrastructure validation, preview publishing, and production deployment are deliberately separated:
 
-1. `infra/main.bicep` creates the Free-tier Static Web App.
-2. GitHub Actions authenticates to Azure with OIDC.
-3. The workflow retrieves the Static Web Apps deployment token at runtime rather than storing it permanently in GitHub.
-4. A small `dist/` package is assembled containing only the public portfolio assets.
-5. Pushes to `main` deploy production; pull requests use Static Web Apps preview environments.
+1. Pull requests and pushes to `main` run Bicep validation and Azure Resource Manager What-If.
+2. A pull request publishes a Static Web Apps preview only **after** the production Static Web App exists; before the initial deployment, the preview job detects that the resource is absent and skips safely.
+3. Production deployment is a manually approved `workflow_dispatch` from `main` with `deploy=true`.
+4. After What-If succeeds, the production job deploys/updates `infra/main.bicep`, retrieves the Static Web Apps deployment token at runtime, assembles a curated `dist/` package, and publishes the site.
+5. The deployment token is masked and is not stored as a long-lived GitHub deployment secret.
+
+This means merging code alone does not create Azure resources.
 
 ## Validate
+
+Local compiler validation:
 
 ```powershell
 ./projects/resume/platform/scripts/validate.ps1
 ```
 
-## Deploy infrastructure
+Live Azure What-If after Azure CLI authentication:
+
+```powershell
+./projects/resume/platform/scripts/validate.ps1 -RunWhatIf
+```
+
+## Deploy infrastructure manually
+
+The helper script can be used directly when an authenticated operator explicitly chooses to create/update the infrastructure:
 
 ```powershell
 ./projects/resume/platform/scripts/deploy-infra.ps1
 ```
 
-The Static Web Apps deployment itself is performed by `.github/workflows/static-portfolio.yml`.
+The normal production path is the manually gated deployment job in `.github/workflows/static-portfolio.yml`.
 
 ## Project documentation
 
