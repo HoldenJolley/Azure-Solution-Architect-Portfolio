@@ -1,21 +1,29 @@
 # Definition of Done
 
-## Infrastructure
+Items are checked only when the current repository and Azure validation evidence support them. Deployment/runtime controls stay open until the landing zone and customer workloads are actually exercised.
 
-- [ ] Foundation Bicep builds without errors.
-- [ ] Workload Bicep builds without errors.
-- [ ] Azure `what-if` reviewed before production deployment.
-- [ ] Front Door Premium is the only public ingress.
-- [ ] Front Door Private Link to Container Apps is approved.
-- [ ] Container Apps environment public network access is disabled.
-- [ ] Inference app has internal ingress only.
-- [ ] Key Vault public network access is disabled.
-- [ ] ACR public network access is disabled.
-- [ ] Managed Redis public network access is disabled.
-- [ ] Private DNS resolves Key Vault, ACR, and Redis to private addresses.
-- [ ] Managed identities are used for runtime Azure access.
-- [ ] ACR admin account is disabled.
-- [ ] Redis access-key authentication is disabled.
+## Infrastructure and cloud validation
+
+- [x] Foundation Bicep lints/builds without errors.
+- [x] Workload Bicep lints/builds without errors.
+- [x] Dev/test/prod foundation and workload parameter files compile.
+- [x] GitHub OIDC authenticates to Azure without a client secret.
+- [x] Dev foundation Azure Resource Manager `what-if` reviewed successfully.
+- [x] Dev What-If resolves the foundation with only deployment-time managed-identity RBAC IDs remaining unsupported.
+- [x] Azure Managed Redis B0/B1 capacity limitation discovered and documented through live preflight.
+- [ ] Production foundation `what-if` reviewed before production deployment.
+- [ ] Foundation deployed from a clean target state.
+- [ ] Workload-level ARM validation completed after foundation deployment and image publication.
+- [ ] Front Door Private Link to Container Apps approved and verified.
+- [ ] Container Apps environment public network access verified disabled after deployment.
+- [ ] Inference app internal-only ingress verified after deployment.
+- [ ] Key Vault public network access verified disabled after deployment.
+- [ ] ACR public network access verified disabled after deployment.
+- [ ] Managed Redis public network access verified disabled in a target region with capacity.
+- [ ] Private DNS resolution verified for Key Vault, ACR, and Redis.
+- [ ] Managed identities verified for runtime Azure access.
+- [ ] ACR admin account verified disabled.
+- [ ] Redis access-key authentication verified disabled.
 
 ## Privacy
 
@@ -25,7 +33,7 @@
 - [ ] Gateway never decrypts the image.
 - [ ] Inference decrypts only in memory.
 - [ ] No image bytes are written to disk, queue, blob, database, cache, trace, or logs.
-- [ ] Request/response-body logging is disabled.
+- [ ] Request/response-body logging is disabled in deployed workloads.
 - [ ] Verification responses include `Cache-Control: no-store`.
 - [ ] Raw estimated age is discarded after deriving policy decision.
 - [ ] Redis session keys expire automatically.
@@ -44,19 +52,19 @@
 ## Security and resilience
 
 - [ ] WAF managed rules enabled in Prevention mode for production.
-- [ ] Verification endpoint rate limit configured.
+- [ ] Verification endpoint rate limit tested.
 - [ ] Key rotation procedure tested.
 - [ ] Container image provenance/scanning enabled.
 - [ ] Dependency/SAST scanning enabled.
 - [ ] Load, abuse, malformed-ciphertext, and oversized-request tests pass.
-- [ ] Region outage and key-vault dependency scenarios documented/tested.
-- [ ] Privacy incident runbook reviewed.
+- [ ] Region outage and key-vault dependency scenarios tested.
+- [ ] Privacy incident runbook reviewed in an operational exercise.
 - [ ] Application telemetry reviewed for accidental sensitive fields.
 
 ## Governance
 
-- [ ] Model-card / model-governance documentation exists.
+- [ ] Model-card / model-governance documentation exists for the customer-supplied model.
 - [ ] Threshold and uncertainty policy approved by product/legal stakeholders.
 - [ ] Liveness strategy documented if the use case requires spoof resistance.
 - [ ] Data-protection impact assessment completed where required.
-- [ ] Retention statement matches deployed behavior.
+- [ ] Retention statement verified against deployed workload behavior.
