@@ -12,7 +12,7 @@ Key themes:
 
 - Azure Static Web Apps Free
 - Managed HTTPS and browser security headers
-- GitHub Actions CI/CD with Azure OIDC readiness
+- GitHub Actions CI/CD with secretless Azure OIDC
 - Bicep-based infrastructure
 - Source-control-driven recovery
 - Explicit Free-tier quota and upgrade triggers
@@ -64,14 +64,14 @@ The downloadable `resume.pdf` is generated from the editable `resume-source.json
 
 ## Validation status
 
-The current project templates have passed their GitHub Actions compiler-level gates:
+GitHub Actions authenticates to Azure through short-lived OpenID Connect federation rather than a stored Azure client secret. The current validation evidence is:
 
-- E-Commerce: dev, test, and production Bicep validation
-- AI Age Assurance: foundation/workload lint and build plus all environment parameter files
-- Static Portfolio: Bicep lint, build, and production parameter build
-- Resume: deterministic PDF build and two-page content verification
+- **E-Commerce:** dev, test, and production Bicep validation plus a successful live Azure Resource Manager subscription-scope What-If for the dev architecture.
+- **AI Age Assurance:** foundation/workload lint and build plus all environment parameter files. The dev foundation is exercised through live Azure Resource Manager What-If; workload-level ARM validation follows after the prerequisite foundation exists because that stage references foundation resources.
+- **Static Portfolio:** Bicep lint/build and production parameters plus a successful live Azure Resource Manager What-If that resolves the intended footprint to one resource group and one Free-tier Static Web App.
+- **Resume:** deterministic PDF build and two-page content verification.
 
-Azure Resource Manager `what-if` remains the next cloud-side validation gate once GitHub-to-Azure OIDC is configured. These projects do not claim to have been deployed to Azure yet.
+No portfolio workload has been deployed to Azure yet. What-If is the current cloud-side validation gate so resource-provider, regional-capacity, and subscription preflight issues can be found without creating resources.
 
 ## Repository structure
 
