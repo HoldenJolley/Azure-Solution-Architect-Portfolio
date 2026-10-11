@@ -1,21 +1,34 @@
 # Operations and Recovery
 
-## Normal deployment
+## Normal validation flow
 
-1. Commit portfolio changes.
-2. Open a pull request.
-3. Static Web Apps creates/updates a preview deployment after Azure OIDC is configured.
-4. Review the rendered site.
-5. Merge to `main`.
-6. GitHub Actions deploys production.
+1. Commit portfolio changes and open a pull request.
+2. GitHub Actions lints/builds the Bicep and production parameters.
+3. GitHub authenticates to Azure through OIDC and runs Resource Manager What-If.
+4. If the production Static Web App already exists, the workflow publishes a temporary pull-request preview; before the initial deployment, this step safely skips.
+5. Review the code, What-If result, and rendered preview when available.
+6. Merge approved changes to `main`; the push runs validation/What-If again but does not create resources by itself.
+
+## Production deployment
+
+Production is deliberately manual rather than merge-driven:
+
+1. confirm the `main` validation/What-If result;
+2. run the `static portfolio` workflow from `main` with `deploy=true`;
+3. the workflow authenticates through OIDC;
+4. Bicep creates or updates the resource group and Free-tier Static Web App;
+5. the workflow retrieves and masks the deployment token at runtime;
+6. the curated public artifact is published.
+
+This gate prevents a merge from unexpectedly creating Azure resources.
 
 ## Rollback
 
-Because the application is static and source-controlled, rollback is a Git operation:
+Because the application is static and source-controlled, content rollback is a Git operation:
 
 1. revert the problematic commit;
 2. push/merge the revert;
-3. allow the deployment workflow to republish the previous content.
+3. explicitly run the production deployment workflow when the rollback is ready to publish.
 
 No database rollback, schema migration, or state recovery is required.
 
@@ -23,11 +36,12 @@ No database rollback, schema migration, or state recovery is required.
 
 | Failure | Response |
 |---|---|
-| Bad content release | Revert Git commit and redeploy |
-| GitHub Actions failure | Inspect workflow, rerun after correction |
-| Deployment token exposure | Reset Static Web Apps deployment token |
+| Bad content release | Revert Git commit and manually republish from `main` |
+| GitHub Actions failure | Inspect workflow and rerun after correction |
+| Azure What-If failure | Stop; resolve the control-plane, policy, quota, or template issue before deployment |
+| Deployment token exposure | Reset the Static Web Apps deployment token and rerun deployment |
 | Custom-domain issue | Verify DNS records and SWA custom-domain binding |
-| Azure Static Web Apps outage | Accept Free-tier service limitation; reassess if SLA becomes required |
+| Azure Static Web Apps outage | Accept Free-tier service limitation; reassess if an SLA becomes required |
 
 ## Backup
 
