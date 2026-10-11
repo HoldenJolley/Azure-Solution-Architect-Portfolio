@@ -21,11 +21,11 @@
         <div class="project-kicker"><div class="eyebrow">SECURITY · PRIVACY · AI</div></div>
         <h1>Privacy-Preserving AI Age Assurance</h1>
         <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own age-estimation models where the verification image is encrypted before upload, remains ciphertext through the public edge, is decrypted only inside isolated inference memory, and is never intentionally retained.</p>
-        <div class="project-status"><span class="status-chip success">Foundation + workloads validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="project-status"><span class="status-chip success">Foundation ARM What-If validated</span><span class="status-chip success">Workloads compile validated</span></div>
         <div class="hero-actions"><a class="button primary" href="#privacy-flow">Explore privacy flow</a><a class="button" href="../../">Back to portfolio</a></div>
       </div>
       <div class="hero-panel validation-panel">
-        <div class="panel-header"><span>Security profile</span><span class="status-chip success">CI green</span></div>
+        <div class="panel-header"><span>Security profile</span><span class="status-chip success">Azure preflight green</span></div>
         <div class="validation-list">
           <div><span>Edge</span><strong>Front Door Premium + WAF</strong></div>
           <div><span>Inference</span><strong>Private Container Apps</strong></div>
@@ -87,8 +87,8 @@
 
     <section class="section">
       <div class="status-banner">
-        <span class="status-chip success">Validated</span>
-        <div><strong>Both infrastructure stages compile cleanly in GitHub Actions.</strong><p>The foundation and workload Bicep templates lint and build successfully, and all dev, test, and production parameter files compile. Azure Resource Manager What-If remains the next validation gate once GitHub OIDC is connected.</p></div>
+        <span class="status-chip success">Cloud validated</span>
+        <div><strong>The dev foundation passes live Azure control-plane preflight through secretless OIDC.</strong><p>Foundation and workload Bicep lint/build cleanly and all dev, test, and production parameter files compile. The live dev foundation What-If resolves 24 planned resources; two managed-identity-dependent RBAC assignments remain intentionally unsupported by What-If until deployment-time principal IDs exist. The dev preflight omits Managed Redis because live B0/B1 capacity was unavailable for this subscription, while Redis remains part of the production architecture and compiler-validated profiles. No resources were deployed.</p></div>
       </div>
     </section>
 
