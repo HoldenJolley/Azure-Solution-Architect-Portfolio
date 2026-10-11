@@ -5,23 +5,24 @@
 ## Identity
 
 - Name: Holden Jolley
+- Personal site: https://holdenjolley.com/
 - Current role: Endpoint And IS Security Specialist / Cloud Infrastructure & Security Lead
 - Portfolio focus: Azure solution architecture, cloud infrastructure, identity, security, Infrastructure as Code, and automation
 - Location: North Carolina
 - Relocation: Open to the Bay Area
 - GitHub: https://github.com/HoldenJolley
 - LinkedIn: https://www.linkedin.com/in/holden-jolley/
-- Resume: /resume.pdf
+- Resume: https://holdenjolley.com/resume.pdf
 
 ## Portfolio projects
 
-- Cost-Optimized Portfolio Hosting: /projects/resume/
+- Cost-Optimized Portfolio Hosting: https://holdenjolley.com/projects/resume/
   Azure Static Web Apps Free architecture designed around a target of $0/month Azure hosting within included quotas, secretless GitHub OIDC, Bicep, ARM What-If, managed TLS, and deliberately minimal Azure footprint.
 
-- Distributed E-Commerce Platform: /projects/ecommerce/
+- Distributed E-Commerce Platform: https://holdenjolley.com/projects/ecommerce/
   Azure reference architecture using Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity, observability, and regional resilience. Dev/test/prod Bicep validates, and the dev architecture has passed live ARM What-If through GitHub OIDC.
 
-- Privacy-Preserving AI Age Assurance: /projects/age-verification/
+- Privacy-Preserving AI Age Assurance: https://holdenjolley.com/projects/age-verification/
   Azure reference architecture using client-side envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, anti-replay state, Private Link, managed identity, and no intentional image retention. Foundation/workload Bicep validates, and the dev foundation has passed live ARM What-If through GitHub OIDC.
 
 ## Validation boundary
@@ -38,4 +39,4 @@ Holden has 5+ years of experience across Azure, Microsoft Entra ID, Intune, endp
 
 ## Machine-readable identity
 
-The homepage contains Schema.org Person/ProfilePage structured data. The Person entity uses the GitHub and LinkedIn URLs above as `sameAs` identifiers so crawlers can associate those public profiles with this portfolio.
+The canonical personal-domain identity is https://holdenjolley.com/. The homepage contains Schema.org Person/ProfilePage structured data. The Person entity uses the GitHub and LinkedIn URLs above as `sameAs` identifiers so crawlers can associate those public profiles with the portfolio. The sitemap is available at https://holdenjolley.com/sitemap.xml.
