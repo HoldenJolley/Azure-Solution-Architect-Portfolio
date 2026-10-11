@@ -58,6 +58,19 @@ jobs:
         run: az bicep build --file projects/resume/platform/infra/main.bicep --stdout > /dev/null
       - name: Build parameters
         run: az bicep build-params --file projects/resume/platform/infra/environments/prod.bicepparam --stdout > /dev/null
+      - name: Validate portfolio JavaScript
+        run: node --check script.js
+      - name: Verify public site assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool staticwebapp.config.json > /dev/null
+          test -f 404.html
+          test -f easter-eggs.css
+          grep -q 'script src="../../script.js"' projects/resume/index.html
+          grep -q 'script src="../../script.js"' projects/ecommerce/index.html
+          grep -q 'script src="../../script.js"' projects/age-verification/index.html
+          grep -q '"rewrite": "/404.html"' staticwebapp.config.json
 
   azure-what-if:
     needs: validate-infrastructure
