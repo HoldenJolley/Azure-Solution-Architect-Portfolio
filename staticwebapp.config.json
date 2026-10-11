@@ -7,6 +7,12 @@
       }
     },
     {
+      "route": "/easter-eggs.css",
+      "headers": {
+        "Cache-Control": "public, max-age=604800"
+      }
+    },
+    {
       "route": "/script.js",
       "headers": {
         "Cache-Control": "public, max-age=604800"
@@ -30,7 +36,7 @@
   },
   "responseOverrides": {
     "404": {
-      "rewrite": "/index.html",
+      "rewrite": "/404.html",
       "statusCode": 404
     }
   }
