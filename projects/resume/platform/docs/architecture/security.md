@@ -11,12 +11,15 @@ A public static portfolio has a small attack surface, but it still receives a se
 - MIME sniffing is disabled.
 - browser permissions such as camera, microphone, and geolocation are disabled.
 - CI/CD uses GitHub OIDC to Azure instead of a long-lived Azure service-principal password.
+- production resource creation requires an explicit manual workflow dispatch from `main` after What-If validation.
 - the Static Web Apps deployment token is retrieved at workflow runtime and masked rather than permanently stored as a GitHub deployment secret.
 - only a curated `dist/` directory is deployed; Bicep, ADRs, workflows, and internal project documentation are not published as site content.
 
 ## Deployment identity
 
-After the Static Web App is created, the GitHub OIDC service principal can be assigned Contributor only at the `portfolio-prod-rg` resource-group scope. The resource group contains only this portfolio resource, limiting the blast radius while allowing the workflow to retrieve the Static Web Apps deployment token.
+The current GitHub OIDC application is shared across the portfolio's Azure validation workflows and has subscription-level permissions because the larger reference architectures create resource groups and RBAC assignments. That is broader than the static site alone requires.
+
+For a long-lived production hosting configuration, the least-privilege target is to separate the static-hosting deployment identity after bootstrap and scope it to `portfolio-prod-rg` (or an equivalent custom role/scope that grants only the operations the workflow actually needs). The current shared identity is therefore treated as a portfolio validation/bootstrap identity, not evidence that the static workload requires subscription-wide privilege.
 
 ## What is intentionally not added
 
