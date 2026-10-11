@@ -1,3 +1,12 @@
+const portfolioScriptUrl = document.currentScript?.src;
+if (portfolioScriptUrl && !document.querySelector('link[data-portfolio-enhancements]')) {
+  const enhancementStyles = document.createElement('link');
+  enhancementStyles.rel = 'stylesheet';
+  enhancementStyles.href = new URL('easter-eggs.css', portfolioScriptUrl).href;
+  enhancementStyles.dataset.portfolioEnhancements = 'true';
+  document.head.appendChild(enhancementStyles);
+}
+
 const navItems = document.querySelectorAll('.nav-item[href^="#"]');
 const sections = [...document.querySelectorAll('main section[id]')];
 
