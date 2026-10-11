@@ -6,7 +6,7 @@ param wafMode string
 param verificationRateLimit int
 param tags object
 
-resource profile 'Microsoft.Cdn/profiles@2026-07-01' = {
+resource profile 'Microsoft.Cdn/profiles@2025-04-15' = {
   name: '${prefix}-afd'
   location: 'global'
   tags: tags

@@ -15,7 +15,7 @@ on:
         type: choice
         options: [dev, test, prod]
       run_what_if:
-        description: Run Azure what-if (requires OIDC configuration)
+        description: Run Azure what-if
         required: true
         default: false
         type: boolean
@@ -28,7 +28,9 @@ jobs:
   bicep-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install Bicep
         run: az bicep install
       - name: Lint foundation
@@ -48,18 +50,20 @@ jobs:
           }
 
   what-if:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_what_if == true
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_what_if == true)
     needs: bicep-build
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Azure login with OIDC
-        uses: azure/login@v2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Foundation what-if
         shell: pwsh
-        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ inputs.environment }} -RunWhatIf
+        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }} -RunWhatIf

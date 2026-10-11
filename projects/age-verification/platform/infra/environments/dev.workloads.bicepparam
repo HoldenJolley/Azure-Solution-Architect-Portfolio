@@ -9,6 +9,8 @@ param inferenceMinReplicas = 1
 param wafMode = 'Detection'
 param verificationRateLimit = 30
 param useConfidentialInference = false
+// Match the dev foundation preflight profile; test/prod retain the managed session store.
+param useSessionStore = false
 param tags = {
   owner: 'HoldenJolley'
   project: 'age-verification-platform'
