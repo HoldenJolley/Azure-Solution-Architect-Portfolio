@@ -9,7 +9,9 @@
 
 ## Infrastructure workflow
 
-The root `.github/workflows/ecommerce-infra.yml` performs checkout, Azure OIDC login, Bicep lint/build, parameter validation, Azure `what-if`, and optional manual deployment.
+The root `.github/workflows/ecommerce-infra.yml` performs checkout, Bicep lint/build, parameter validation, Azure OIDC login, live Azure Resource Manager `what-if`, and an optional explicitly gated deployment.
+
+The connected workflow has successfully completed OIDC login and a subscription-scope dev What-If. No infrastructure deployment has been run.
 
 Expected GitHub values:
 
@@ -19,17 +21,22 @@ AZURE_TENANT_ID
 AZURE_SUBSCRIPTION_ID
 ```
 
-No Azure client secret is required when the federated credential is configured correctly.
+No Azure client secret is required.
 
 ## Deployment identity
 
-Use a dedicated Entra application/service principal or managed identity with a federated credential restricted to the repository/environment. Because Bicep creates role assignments, the deployment identity also requires role-assignment permissions. A portfolio subscription may use Owner for simplicity; an enterprise implementation should narrow those privileges.
+The portfolio currently uses a dedicated Entra application/service principal with immutable GitHub federated credentials. At the subscription scope it has:
+
+- `Contributor` for resource creation/update; and
+- `Role Based Access Control Administrator` because this Bicep package creates Azure role assignments.
+
+That is intentionally more constrained than using `Owner`, while still broad enough for subscription-scoped resource-group creation and the RBAC resources modeled by this reference architecture. A production enterprise implementation should further split identities by workload/environment and narrow scope/custom roles wherever the deployment model permits it.
 
 ## Environments
 
-- `dev`: low-cost development.
+- `dev`: low-cost development and current live What-If profile.
 - `test`: separate integration/resilience state.
-- `prod`: protected GitHub Environment with reviewer approval.
+- `prod`: protected GitHub Environment / explicit production approval target.
 
 ## Application delivery layer
 
