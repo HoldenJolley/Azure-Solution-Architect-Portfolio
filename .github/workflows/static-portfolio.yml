@@ -25,6 +25,12 @@ on:
       - 'projects/resume/platform/infra/**'
       - '.github/workflows/static-portfolio.yml'
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the production Static Web App from main after What-If succeeds
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -70,16 +76,77 @@ jobs:
         shell: pwsh
         run: ./projects/resume/platform/scripts/validate.ps1 -RunWhatIf
 
-  deploy:
+  preview:
     needs: [validate-infrastructure, azure-what-if]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     environment: prod
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check Static Web App exists
+        id: swa
+        shell: bash
+        run: |
+          if az staticwebapp show --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Static Web App does not exist yet; skipping preview deployment."
+          fi
+      - name: Assemble public site artifact
+        if: steps.swa.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
+          cp index.html styles.css script.js resume.pdf staticwebapp.config.json dist/
+          cp projects/resume/index.html dist/projects/resume/index.html
+          cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
+          cp projects/age-verification/index.html dist/projects/age-verification/index.html
+      - name: Retrieve deployment token at runtime
+        if: steps.swa.outputs.exists == 'true'
+        shell: bash
+        run: |
+          token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
+          echo "::add-mask::$token"
+          echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Deploy preview
+        if: steps.swa.outputs.exists == 'true'
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: dist
+          output_location: ''
+          skip_app_build: true
 
+  deploy:
+    needs: [validate-infrastructure, azure-what-if]
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy infrastructure with Bicep
+        shell: pwsh
+        run: ./projects/resume/platform/scripts/deploy-infra.ps1
       - name: Assemble public site artifact
         shell: bash
         run: |
@@ -89,21 +156,12 @@ jobs:
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
-
-      - name: Azure login with OIDC
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Retrieve deployment token at runtime
         shell: bash
         run: |
           token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
           echo "::add-mask::$token"
           echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
-
       - name: Deploy portfolio
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
@@ -118,6 +176,7 @@ jobs:
     needs: validate-infrastructure
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - name: Azure login with OIDC
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
