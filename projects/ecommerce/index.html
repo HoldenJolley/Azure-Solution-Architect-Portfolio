@@ -21,11 +21,11 @@
         <div class="project-kicker"><div class="eyebrow">RELIABILITY · DISTRIBUTED SYSTEMS</div></div>
         <h1>Distributed E-Commerce Platform</h1>
         <p class="hero-copy">A production-oriented Azure reference architecture for a commerce backend that balances availability, inventory consistency, asynchronous processing, private connectivity, observability, and disaster recovery without defaulting to Kubernetes complexity.</p>
-        <div class="project-status"><span class="status-chip success">Dev / Test / Prod Bicep validated</span><span class="status-chip">Azure What-If next</span></div>
+        <div class="project-status"><span class="status-chip success">Dev / Test / Prod Bicep validated</span><span class="status-chip success">ARM What-If validated</span></div>
         <div class="hero-actions"><a class="button primary" href="#architecture">Explore architecture</a><a class="button" href="../../">Back to portfolio</a></div>
       </div>
       <div class="hero-panel validation-panel">
-        <div class="panel-header"><span>Architecture profile</span><span class="status-chip success">CI green</span></div>
+        <div class="panel-header"><span>Architecture profile</span><span class="status-chip success">Azure preflight green</span></div>
         <div class="validation-list">
           <div><span>Edge</span><strong>Front Door + WAF</strong></div>
           <div><span>Compute</span><strong>App Service API + workers</strong></div>
@@ -88,8 +88,8 @@
 
     <section class="section">
       <div class="status-banner">
-        <span class="status-chip success">Validated</span>
-        <div><strong>Compiler-level infrastructure validation is complete.</strong><p>GitHub Actions successfully lints and builds the Bicep template and all dev, test, and production parameter files. The next cloud validation gate is an Azure Resource Manager What-If after GitHub OIDC is connected to the subscription.</p></div>
+        <span class="status-chip success">Cloud validated</span>
+        <div><strong>Compiler and live Azure control-plane validation are complete for the dev architecture.</strong><p>GitHub Actions lints and builds the Bicep template and all dev, test, and production parameter files, then authenticates to Azure through secretless OIDC and runs a subscription-scope Resource Manager What-If. The deployment job remains gated and has not been run.</p></div>
       </div>
     </section>
 
