@@ -15,7 +15,7 @@ on:
         type: choice
         options: [dev, test, prod]
       run_what_if:
-        description: Run Azure what-if (requires OIDC configuration)
+        description: Run Azure what-if
         required: true
         default: false
         type: boolean
@@ -50,10 +50,10 @@ jobs:
           }
 
   what-if:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_what_if == true
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_what_if == true)
     needs: bicep-build
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -66,4 +66,4 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Foundation what-if
         shell: pwsh
-        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ inputs.environment }} -RunWhatIf
+        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }} -RunWhatIf
