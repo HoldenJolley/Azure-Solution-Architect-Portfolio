@@ -1,7 +1,7 @@
 using '../workloads.bicep'
 
 param environment = 'dev'
-param location = 'eastus2'
+param location = 'eastus'
 param gatewayImage = 'REPLACE_WITH_GATEWAY_IMAGE'
 param inferenceImage = 'REPLACE_WITH_INFERENCE_IMAGE'
 param gatewayMinReplicas = 1

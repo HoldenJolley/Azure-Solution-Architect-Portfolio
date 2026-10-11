@@ -1,7 +1,7 @@
 using '../foundation.bicep'
 
 param environment = 'dev'
-param location = 'eastus2'
+param location = 'eastus'
 param deploySessionStore = true
 param enableConfidentialCompute = false
 param workloadProfileType = 'D4'
