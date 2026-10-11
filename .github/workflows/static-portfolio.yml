@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - '404.html'
       - 'styles.css'
+      - 'easter-eggs.css'
       - 'script.js'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
@@ -16,7 +18,9 @@ on:
     types: [opened, synchronize, reopened, closed]
     paths:
       - 'index.html'
+      - '404.html'
       - 'styles.css'
+      - 'easter-eggs.css'
       - 'script.js'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
@@ -105,7 +109,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html styles.css script.js resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
@@ -150,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html styles.css script.js resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
