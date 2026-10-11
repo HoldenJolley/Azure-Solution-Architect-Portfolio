@@ -51,30 +51,36 @@ jobs:
       - name: Build parameters
         run: az bicep build-params --file projects/resume/platform/infra/environments/prod.bicepparam --stdout > /dev/null
 
-  deploy:
+  azure-what-if:
     needs: validate-infrastructure
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID_VALUE: ${{ secrets.AZURE_CLIENT_ID }}
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run infrastructure what-if
+        shell: pwsh
+        run: ./projects/resume/platform/scripts/validate.ps1 -RunWhatIf
+
+  deploy:
+    needs: [validate-infrastructure, azure-what-if]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Check Azure deployment configuration
-        id: azure-config
-        shell: bash
-        run: |
-          if [[ -z "$AZURE_CLIENT_ID_VALUE" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Azure OIDC is not configured yet; skipping deployment."
-          else
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Assemble public site artifact
-        if: steps.azure-config.outputs.enabled == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -85,7 +91,6 @@ jobs:
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
 
       - name: Azure login with OIDC
-        if: steps.azure-config.outputs.enabled == 'true'
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -93,7 +98,6 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Retrieve deployment token at runtime
-        if: steps.azure-config.outputs.enabled == 'true'
         shell: bash
         run: |
           token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
@@ -101,7 +105,6 @@ jobs:
           echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
 
       - name: Deploy portfolio
-        if: steps.azure-config.outputs.enabled == 'true'
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
           azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
@@ -115,34 +118,32 @@ jobs:
     needs: validate-infrastructure
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID_VALUE: ${{ secrets.AZURE_CLIENT_ID }}
     steps:
-      - name: Check Azure deployment configuration
-        id: azure-config
-        shell: bash
-        run: |
-          if [[ -z "$AZURE_CLIENT_ID_VALUE" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          fi
       - name: Azure login with OIDC
-        if: steps.azure-config.outputs.enabled == 'true'
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check Static Web App exists
+        id: swa
+        shell: bash
+        run: |
+          if az staticwebapp show --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Static Web App does not exist yet; nothing to close."
+          fi
       - name: Retrieve deployment token at runtime
-        if: steps.azure-config.outputs.enabled == 'true'
+        if: steps.swa.outputs.exists == 'true'
         shell: bash
         run: |
           token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
           echo "::add-mask::$token"
           echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
       - name: Close preview environment
-        if: steps.azure-config.outputs.enabled == 'true'
+        if: steps.swa.outputs.exists == 'true'
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
           azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
