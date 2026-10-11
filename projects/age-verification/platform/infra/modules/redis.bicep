@@ -1,8 +1,6 @@
 param prefix string
 param location string
 param skuName string
-param gatewayPrincipalId string
-param inferencePrincipalId string
 param tags object
 
 resource redis 'Microsoft.Cache/redisEnterprise@2025-07-01' = {
@@ -30,28 +28,6 @@ resource database 'Microsoft.Cache/redisEnterprise/databases@2025-07-01' = {
     evictionPolicy: 'VolatileLRU'
     modules: []
     port: 10000
-  }
-}
-
-resource gatewayAccess 'Microsoft.Cache/redisEnterprise/databases/accessPolicyAssignments@2025-07-01' = {
-  parent: database
-  name: 'gateway-runtime'
-  properties: {
-    accessPolicyName: 'default'
-    user: {
-      objectId: gatewayPrincipalId
-    }
-  }
-}
-
-resource inferenceAccess 'Microsoft.Cache/redisEnterprise/databases/accessPolicyAssignments@2025-07-01' = {
-  parent: database
-  name: 'inference-runtime'
-  properties: {
-    accessPolicyName: 'default'
-    user: {
-      objectId: inferencePrincipalId
-    }
   }
 }
 

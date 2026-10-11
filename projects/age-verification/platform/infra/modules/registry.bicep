@@ -2,7 +2,7 @@ param prefix string
 param location string
 param tags object
 
-var registryName = take(replace('${prefix}acr', '-', ''), 50)
+var registryName = 'ageverify${uniqueString(subscription().subscriptionId, prefix)}'
 
 resource registry 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: registryName

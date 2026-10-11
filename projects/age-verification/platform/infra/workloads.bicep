@@ -49,6 +49,7 @@ var prefix = toLower('${workloadName}-${environment}')
 var platformRg = '${prefix}-platform-rg'
 var securityRg = '${prefix}-security-rg'
 var monitorRg = '${prefix}-monitor-rg'
+var registryName = 'ageverify${uniqueString(subscription().subscriptionId, prefix)}'
 var commonTags = union(tags, {
   workload: workloadName
   environment: environment
@@ -73,7 +74,7 @@ resource environmentResource 'Microsoft.App/managedEnvironments@2025-07-01' exis
 }
 resource registry 'Microsoft.ContainerRegistry/registries@2025-04-01' existing = {
   scope: rgPlatform
-  name: take(replace('${prefix}acr', '-', ''), 50)
+  name: registryName
 }
 resource redis 'Microsoft.Cache/redisEnterprise@2025-07-01' existing = if (useSessionStore) {
   scope: rgPlatform

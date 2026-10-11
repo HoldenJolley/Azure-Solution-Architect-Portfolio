@@ -33,6 +33,8 @@ var commonTags = union(tags, {
   imagePersistence: 'prohibited'
   managedBy: 'bicep'
 })
+var containerAppsSubnetId = resourceId(subscription().subscriptionId, rgNetwork.name, 'Microsoft.Network/virtualNetworks/subnets', '${prefix}-vnet', 'snet-containerapps')
+var logAnalyticsWorkspaceId = resourceId(subscription().subscriptionId, rgMonitor.name, 'Microsoft.OperationalInsights/workspaces', '${prefix}-law')
 
 resource rgNetwork 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: '${prefix}-network-rg'
@@ -115,14 +117,17 @@ module containerEnvironment './modules/container-environment.bicep' = {
   params: {
     prefix: prefix
     location: location
-    infrastructureSubnetId: network.outputs.containerAppsSubnetId
-    logAnalyticsCustomerId: monitoring.outputs.logAnalyticsCustomerId
-    logAnalyticsSharedKey: monitoring.outputs.logAnalyticsSharedKey
+    infrastructureSubnetId: containerAppsSubnetId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
     workloadProfileType: workloadProfileType
     enableConfidentialCompute: enableConfidentialCompute
     confidentialWorkloadProfileType: confidentialWorkloadProfileType
     tags: commonTags
   }
+  dependsOn: [
+    monitoring
+    network
+  ]
 }
 
 module sessionStore './modules/redis.bicep' = if (deploySessionStore) {
@@ -132,10 +137,21 @@ module sessionStore './modules/redis.bicep' = if (deploySessionStore) {
     prefix: prefix
     location: location
     skuName: redisSku
-    gatewayPrincipalId: identities.outputs.gatewayPrincipalId
-    inferencePrincipalId: identities.outputs.inferencePrincipalId
     tags: commonTags
   }
+}
+
+module sessionStoreRbac './modules/redis-rbac.bicep' = if (deploySessionStore) {
+  name: 'sessionStoreRbac'
+  scope: rgPlatform
+  params: {
+    redisName: '${prefix}-redis'
+    gatewayPrincipalId: identities.outputs.gatewayPrincipalId
+    inferencePrincipalId: identities.outputs.inferencePrincipalId
+  }
+  dependsOn: [
+    sessionStore
+  ]
 }
 
 module privateDns './modules/private-dns.bicep' = {
@@ -158,7 +174,7 @@ module privateEndpoints './modules/private-endpoints.bicep' = {
     privateEndpointSubnetId: network.outputs.privateEndpointSubnetId
     keyVaultId: vault.outputs.keyVaultId
     registryId: registry.outputs.registryId
-    redisId: deploySessionStore ? sessionStore.outputs.redisId : ''
+    redisId: deploySessionStore ? sessionStore!.outputs.redisId : ''
     deployRedis: deploySessionStore
     keyVaultPrivateDnsZoneId: privateDns.outputs.keyVaultPrivateDnsZoneId
     registryPrivateDnsZoneId: privateDns.outputs.registryPrivateDnsZoneId
@@ -199,6 +215,6 @@ output attestationKeyName string = vault.outputs.attestationKeyName
 output gatewayIdentityId string = identities.outputs.gatewayIdentityId
 output inferenceIdentityId string = identities.outputs.inferenceIdentityId
 output acrPullIdentityId string = identities.outputs.acrPullIdentityId
-output redisHost string = deploySessionStore ? sessionStore.outputs.redisHost : ''
-output redisPort int = deploySessionStore ? sessionStore.outputs.redisPort : 0
+output redisHost string = deploySessionStore ? sessionStore!.outputs.redisHost : ''
+output redisPort int = deploySessionStore ? sessionStore!.outputs.redisPort : 0
 output applicationInsightsConnectionString string = monitoring.outputs.applicationInsightsConnectionString

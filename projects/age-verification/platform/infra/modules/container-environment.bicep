@@ -1,9 +1,7 @@
 param prefix string
 param location string
 param infrastructureSubnetId string
-param logAnalyticsCustomerId string
-@secure()
-param logAnalyticsSharedKey string
+param logAnalyticsWorkspaceId string
 param workloadProfileType string
 param enableConfidentialCompute bool
 param confidentialWorkloadProfileType string
@@ -37,11 +35,7 @@ resource env 'Microsoft.App/managedEnvironments@2025-07-01' = {
   tags: tags
   properties: {
     appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsCustomerId
-        sharedKey: logAnalyticsSharedKey
-      }
+      destination: 'azure-monitor'
     }
     peerAuthentication: {
       mtls: {
@@ -60,6 +54,26 @@ resource env 'Microsoft.App/managedEnvironments@2025-07-01' = {
     }
     workloadProfiles: workloadProfiles
     zoneRedundant: true
+  }
+}
+
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${prefix}-environment-diagnostics'
+  scope: env
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 

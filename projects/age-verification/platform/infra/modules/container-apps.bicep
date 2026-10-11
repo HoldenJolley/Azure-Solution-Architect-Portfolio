@@ -23,7 +23,7 @@ param inferenceMaxReplicas int
 param useConfidentialInference bool
 param tags object
 
-resource inference 'Microsoft.App/containerApps@2026-07-01' = {
+resource inference 'Microsoft.App/containerApps@2025-07-01' = {
   name: '${prefix}-inference'
   location: location
   tags: tags
@@ -114,7 +114,7 @@ resource inference 'Microsoft.App/containerApps@2026-07-01' = {
   }
 }
 
-resource gateway 'Microsoft.App/containerApps@2026-07-01' = {
+resource gateway 'Microsoft.App/containerApps@2025-07-01' = {
   name: '${prefix}-gateway'
   location: location
   tags: tags
