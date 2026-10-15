@@ -9,13 +9,15 @@ The platform assumes **the customer supplies its own gateway and inference conta
 If you are reviewing this project as an architect or hiring manager, start here:
 
 1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — privacy invariant, hard constraints, non-goals, and redesign triggers.
-2. [`docs/decisions/`](docs/decisions/) — ADRs explaining the major security/privacy/platform choices and their tradeoffs.
-3. [`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md) — the data-handling and security contracts.
-4. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — model, capacity, validation, and production-boundary limitations.
-5. [`docs/architecture/`](docs/architecture/) — deeper trust-boundary, key-management, networking, observability, cost, and DR design.
-6. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
+2. [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md) — privacy, security, availability, fail-closed behavior, model-boundary quality attributes, and validation gaps.
+3. [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md) — request, trust-boundary, cryptographic, topology, data-handling, failure-mode, and multi-region-extension diagrams.
+4. [`docs/decisions/`](docs/decisions/) — ADRs explaining the major security/privacy/platform choices and their tradeoffs.
+5. [`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md) — the data-handling and security contracts.
+6. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — model, capacity, validation, and production-boundary limitations.
+7. [`docs/architecture/`](docs/architecture/) — deeper trust-boundary, key-management, networking, observability, cost, and DR design.
+8. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
 
-The intended review sequence is **requirements → trust boundaries → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+The intended review sequence is **requirements → trust boundaries → quality attributes → alternatives → decisions → tradeoffs → validation → remaining limitations**.
 
 ## Core privacy invariant
 
@@ -114,6 +116,8 @@ After Front Door creates its private-link request:
 See:
 
 - [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md)
+- [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md)
+- [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md)
 - [`PRIVACY.md`](PRIVACY.md)
 - [`SECURITY.md`](SECURITY.md)
 - [`docs/architecture/threat-model.md`](docs/architecture/threat-model.md)
