@@ -7,12 +7,14 @@ A production-oriented Azure reference architecture for an event-driven e-commerc
 If you are reviewing this project as an architect or hiring manager, start here:
 
 1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — the problem, hard constraints, non-goals, and redesign triggers.
-2. [`docs/decisions/`](docs/decisions/) — ADRs explaining why each major service/pattern was selected over alternatives.
-3. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — production-hardening gaps and intentionally deferred work.
-4. [`docs/architecture/`](docs/architecture/) — deeper networking, data, reliability, security, observability, cost, and CI/CD design.
-5. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
+2. [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md) — quality attributes, design responses, current evidence, and remaining runtime validation.
+3. [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md) — solution, checkout, network, event, worker-redelivery, and failure-mode diagrams.
+4. [`docs/decisions/`](docs/decisions/) — ADRs explaining why each major service/pattern was selected over alternatives.
+5. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — production-hardening gaps and intentionally deferred work.
+6. [`docs/architecture/`](docs/architecture/) — deeper networking, data, reliability, security, observability, cost, and CI/CD design.
+7. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
 
-The intended review sequence is **requirements → constraints → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+The intended review sequence is **requirements → constraints → quality attributes → alternatives → decisions → tradeoffs → validation → remaining limitations**.
 
 ## What this deploys
 
@@ -89,4 +91,4 @@ SCM/Kudu remains publicly reachable in this first package so a GitHub-hosted run
 
 ## Documentation
 
-See `REQUIREMENTS-AND-CONSTRAINTS.md`, `docs/architecture`, `docs/decisions`, `docs/testing.md`, `docs/operations/runbook.md`, `KNOWN-LIMITATIONS.md`, and `PROJECT-CHECKLIST.md` for the architectural reasoning and definition of done.
+See `REQUIREMENTS-AND-CONSTRAINTS.md`, `docs/architecture/nfr-matrix.md`, `docs/architecture/diagrams.md`, `docs/architecture`, `docs/decisions`, `docs/testing.md`, `docs/operations/runbook.md`, `KNOWN-LIMITATIONS.md`, and `PROJECT-CHECKLIST.md` for the architectural reasoning and definition of done.
