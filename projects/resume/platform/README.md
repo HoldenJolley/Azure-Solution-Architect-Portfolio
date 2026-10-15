@@ -2,6 +2,18 @@
 
 This project is the hosting architecture for the Azure Solution Architect portfolio itself. Its primary requirement is **minimum recurring Azure cost** while retaining a professional deployment workflow, HTTPS, global delivery, custom-domain support, pull-request previews, and Infrastructure as Code.
 
+## Architecture review path
+
+If you are reviewing this project as an architect or hiring manager, start here:
+
+1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — workload characteristics, hard constraints, non-goals, and redesign triggers.
+2. [`docs/decisions/`](docs/decisions/) — ADRs explaining why the baseline uses Static Web Apps Free and deliberately omits other Azure services.
+3. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — Free-tier limits, bootstrap caveats, evidence gaps, and upgrade triggers.
+4. [`docs/architecture/`](docs/architecture/) — deeper cost, security, operations, performance, and solution-design details.
+5. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and deployment/runtime evidence boundary.
+
+The intended review sequence is **requirements → constraints → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+
 ## Design objective
 
 The architecture intentionally uses the smallest practical Azure footprint:
@@ -80,6 +92,8 @@ The normal production path is the manually gated deployment job in `.github/work
 
 ## Project documentation
 
+- `REQUIREMENTS-AND-CONSTRAINTS.md` — architecture requirements, constraints, non-goals, and redesign triggers
+- `KNOWN-LIMITATIONS.md` — accepted limitations and upgrade triggers
 - `docs/architecture/overview.md` — solution architecture
 - `docs/architecture/cost.md` — cost model and upgrade thresholds
 - `docs/architecture/security.md` — security baseline
