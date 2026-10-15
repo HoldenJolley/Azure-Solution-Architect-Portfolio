@@ -125,3 +125,45 @@ flowchart LR
 ```
 
 The prohibited paths are architectural requirements, not suggestions. Application code and observability configuration must be tested continuously to ensure request bodies and image-derived artifacts never enter durable storage.
+
+## Failure-mode view
+
+```mermaid
+flowchart TB
+    GFAIL[Gateway replica fails] --> ACA1[Container Apps]
+    ACA1 -->|route to healthy replica| GOK[Healthy gateway replica]
+
+    IFAIL[Inference replica fails] --> ACA2[Internal Container Apps routing]
+    ACA2 -->|new request / retry reaches healthy replica| IOK[Healthy inference replica]
+
+    KVFAIL[Key Vault unavailable] --> KVCLOSED[Fail closed\nno verification]
+    RFAIL[Managed Redis unavailable] --> RCLOSED[Fail closed for new one-time sessions]
+    MFAIL[Customer model unhealthy] --> READY[/ready fails]
+    READY --> UNAVAILABLE[Verification denied / unavailable]
+
+    REGION[Regional failure] --> BASELINE[Current baseline unavailable]
+    BASELINE --> EXTENSION[Recovery requires approved second regional stamp\nwith coordinated key/session/model semantics]
+```
+
+The fail-closed branches are security requirements. A dependency outage must not silently turn into an approval path.
+
+## Multi-region extension dependencies
+
+```mermaid
+flowchart LR
+    STAMP1[Regional stamp A] --> FD[Front Door origin group]
+    STAMP2[Regional stamp B] --> FD
+
+    STAMP1 --> K1[Regional key strategy]
+    STAMP2 --> K2[Regional key strategy]
+    STAMP1 --> S1[Session / nonce strategy]
+    STAMP2 --> S2[Session / nonce strategy]
+    STAMP1 --> M1[Approved model version]
+    STAMP2 --> M2[Approved model version]
+
+    K1 -. must remain deterministic/trusted .-> K2
+    S1 -. one-time semantics must remain consistent .-> S2
+    M1 -. approved version must match policy .-> M2
+```
+
+A second region is not just another Container Apps environment. Key versioning, one-time session semantics, model version, routing, and attestation trust all have to remain deterministic before regional failover can be considered credible.
