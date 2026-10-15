@@ -22,7 +22,7 @@
         <h1>Cost-Optimized Portfolio Hosting</h1>
         <p class="hero-copy">The portfolio itself is an Azure architecture project: a globally delivered static site designed around Azure Static Web Apps Free so the recurring Azure hosting target stays at $0/month while the workload remains within included quotas.</p>
         <div class="project-status"><span class="status-chip success">Bicep validated</span><span class="status-chip success">ARM What-If validated</span></div>
-        <div class="hero-actions"><a class="button primary" href="#architecture">Architecture deep dive</a><a class="button" href="#cost">Cost model</a><a class="button" href="../../">Back to portfolio</a></div>
+        <div class="hero-actions"><a class="button primary" href="#architecture">Architecture deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#cost">Cost model</a></div>
       </div>
       <div class="hero-panel validation-panel">
         <div class="panel-header"><span>Cost profile</span><span class="status-chip success">Free-tier first</span></div>
@@ -63,16 +63,46 @@
     </section>
 
     <section class="section" id="architecture">
-      <div class="eyebrow">DELIVERY FLOW</div>
-      <h2>Small Azure footprint, full delivery workflow.</h2>
-      <div class="architecture-flow seven" aria-label="Static portfolio delivery flow">
-        <div class="flow-node">GitHub<br>repository</div><div class="flow-arrow">→</div>
-        <div class="flow-node accent">GitHub Actions<br>CI/CD</div><div class="flow-arrow">→</div>
+      <div class="eyebrow">PUBLIC REQUEST PATH</div>
+      <h2>A small runtime footprint with a separate delivery control plane.</h2>
+      <div class="architecture-flow seven" aria-label="Static portfolio public request path">
+        <div class="flow-node">Visitor<br>browser</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">GoDaddy DNS<br>custom domain</div><div class="flow-arrow">→</div>
         <div class="flow-node">Azure Static<br>Web Apps Free</div><div class="flow-arrow">→</div>
-        <div class="flow-node accent">holdenjolley.com<br>HTTPS portfolio</div>
+        <div class="flow-node accent">HTML + CSS + JS<br>+ resume PDF</div>
       </div>
       <div class="service-list" aria-label="Services and controls used">
         <span>Azure Static Web Apps</span><span>Bicep</span><span>GitHub Actions</span><span>Secretless OIDC</span><span>ARM What-If</span><span>Managed TLS</span><span>Custom domain support</span><span>PR previews</span><span>Content Security Policy</span><span>Security headers</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">SECRETLESS DELIVERY PATH</div>
+      <h2>GitHub reaches Azure without a reusable client secret.</h2>
+      <div class="architecture-flow seven" aria-label="GitHub OIDC to Azure delivery path">
+        <div class="flow-node">GitHub<br>Actions</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">GitHub OIDC<br>federation</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Microsoft Entra ID<br>short-lived token</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Azure Resource Manager<br>What-If / deploy</div>
+      </div>
+      <div class="architecture-flow seven" aria-label="Static content publication path">
+        <div class="flow-node">Repository<br>content</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Validate + build<br>curated dist/</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Runtime SWA<br>deployment token</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Publish public<br>site only</div>
+      </div>
+    </section>
+
+    <section class="section" id="quality">
+      <div class="eyebrow">QUALITY ATTRIBUTES</div>
+      <h2>Right-sized architecture means accepting the right limitations.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Cost efficiency</strong><p>The baseline targets $0/month Azure hosting while usage remains inside Static Web Apps Free quotas. Domain registration remains an external cost.</p></div>
+        <div class="decision-card"><strong>Availability</strong><p>Global static delivery is built in, but the Free plan has no SLA. That is accepted for a personal portfolio and becomes an explicit redesign trigger if the site becomes business-critical.</p></div>
+        <div class="decision-card"><strong>Security</strong><p>Managed HTTPS, CSP/security headers, curated public artifacts, OIDC-based Azure authentication, and explicit production gating provide a practical baseline without adding a WAF or private endpoint the workload does not require.</p></div>
+        <div class="decision-card"><strong>Recoverability</strong><p>The site has no mutable application state. Git is the authoritative copy, so recovery is revert/redeploy rather than database or VM restoration.</p></div>
+        <div class="decision-card"><strong>Maintainability</strong><p>Plain HTML/CSS/JavaScript and a two-resource Azure footprint minimize patching, runtime dependencies, and operational ownership.</p></div>
+        <div class="decision-card"><strong>Scalability</strong><p>The current design relies on the Static Web Apps service limits. Sustained traffic, storage, domain, preview, SLA, or backend requirements are the signals to upgrade rather than preemptively adding services.</p></div>
       </div>
     </section>
 
@@ -132,6 +162,17 @@
         <div class="decision-card"><strong>External DNS instead of Azure DNS</strong><p>The existing provider can map the domain to Static Web Apps, so Azure DNS would create a recurring resource without solving a new requirement.</p></div>
         <div class="decision-card"><strong>No dedicated observability stack</strong><p>The site has no backend transaction or dependency graph that justifies distributed tracing. Deployment history and basic resource health are sufficient for the current workload.</p></div>
         <div class="decision-card"><strong>Upgrade only on a real trigger</strong><p>Bandwidth, domain count, preview capacity, SLA, private networking, IP restrictions, backend API requirements, or business criticality are the conditions that justify a larger architecture.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">EVIDENCE LEVELS</div>
+      <h2>The site separates architecture intent from deployment proof.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Design evidence</strong><p>Requirements, NFRs, cost/security/operations docs, ADRs, recovery guidance, diagrams, and known limitations are source-controlled.</p></div>
+        <div class="decision-card"><strong>Compiler evidence</strong><p>Bicep lint/build, production parameters, JavaScript syntax, and public-site metadata checks are green.</p></div>
+        <div class="decision-card"><strong>Azure control-plane evidence</strong><p>GitHub Actions authenticates through OIDC and live ARM What-If resolves the intended production footprint to one resource group and one Free-tier Static Web App.</p></div>
+        <div class="decision-card"><strong>Runtime evidence</strong><p><strong>Not claimed yet.</strong> HTTPS, custom domain, headers, performance, preview behavior, and rollback still require the first real deployment and runtime validation.</p></div>
       </div>
     </section>
 
