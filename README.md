@@ -6,15 +6,17 @@ This repository contains my Azure Solution Architect portfolio and three archite
 
 Each project uses the same review pattern so the reasoning is visible instead of buried in diagrams or Bicep:
 
-**requirements → constraints → alternatives → decision → tradeoff → validation → known limitation / redesign trigger**
+**requirements → constraints → quality attributes → alternatives → decision → tradeoff → validation → known limitation / redesign trigger**
 
-| Project | Requirements & constraints | Decision records | Known limitations |
-|---|---|---|---|
-| Cost-Optimized Portfolio Hosting | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/resume/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/resume/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/resume/platform/KNOWN-LIMITATIONS.md) |
-| Distributed E-Commerce Platform | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/ecommerce/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/ecommerce/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/ecommerce/platform/KNOWN-LIMITATIONS.md) |
-| Privacy-Preserving AI Age Assurance | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/age-verification/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/age-verification/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/age-verification/platform/KNOWN-LIMITATIONS.md) |
+| Project | Requirements & constraints | NFR matrix | Decision records | Known limitations |
+|---|---|---|---|---|
+| Cost-Optimized Portfolio Hosting | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/resume/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`nfr-matrix.md`](projects/resume/platform/docs/architecture/nfr-matrix.md) | [`docs/decisions/`](projects/resume/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/resume/platform/KNOWN-LIMITATIONS.md) |
+| Distributed E-Commerce Platform | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/ecommerce/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`nfr-matrix.md`](projects/ecommerce/platform/docs/architecture/nfr-matrix.md) | [`docs/decisions/`](projects/ecommerce/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/ecommerce/platform/KNOWN-LIMITATIONS.md) |
+| Privacy-Preserving AI Age Assurance | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/age-verification/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`nfr-matrix.md`](projects/age-verification/platform/docs/architecture/nfr-matrix.md) | [`docs/decisions/`](projects/age-verification/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/age-verification/platform/KNOWN-LIMITATIONS.md) |
 
-The public HTML case studies are intentionally shorter. The Markdown architecture packages are the deeper evidence for reviewers who want to challenge the assumptions, alternatives, failure modes, and operating boundaries.
+For the portfolio-wide distinction between **design**, **compiler validation**, **live Azure control-plane validation**, and **runtime evidence**, see [`ARCHITECTURE-EVIDENCE.md`](ARCHITECTURE-EVIDENCE.md).
+
+The public HTML case studies are intentionally shorter. The Markdown architecture packages are the deeper evidence for reviewers who want to challenge the assumptions, alternatives, failure modes, quality attributes, and operating boundaries.
 
 ## Portfolio projects
 
@@ -85,12 +87,13 @@ GitHub Actions authenticates to Azure through short-lived OpenID Connect federat
 - **Static Portfolio:** Bicep lint/build and production parameters plus a successful live Azure Resource Manager What-If that resolves the intended footprint to one resource group and one Free-tier Static Web App.
 - **Resume:** deterministic PDF build and two-page content verification.
 
-No portfolio workload has been deployed to Azure yet. What-If is the current cloud-side validation gate so resource-provider, regional-capacity, and subscription preflight issues can be found without creating resources.
+No portfolio workload has been deployed to Azure yet. What-If is the current cloud-side validation gate so resource-provider, regional-capacity, and subscription preflight issues can be found without creating resources. See [`ARCHITECTURE-EVIDENCE.md`](ARCHITECTURE-EVIDENCE.md) for the precise evidence boundary and future runtime-evidence checklist.
 
 ## Repository structure
 
 ```text
 .github/workflows/        CI/CD and validation workflows
+ARCHITECTURE-EVIDENCE.md  Cross-project evidence register
 projects/resume/          Cost-optimized portfolio hosting case study
 projects/ecommerce/       Distributed e-commerce reference architecture
 projects/age-verification/ Privacy-preserving AI age assurance architecture
@@ -104,4 +107,4 @@ staticwebapp.config.json  Static Web Apps routing/security configuration
 
 ## Design principle
 
-The goal is not to maximize the number of Azure services used. Each project starts with workload requirements and documents why services are selected, what is deliberately omitted, and what future conditions would justify changing the architecture.
+The goal is not to maximize the number of Azure services used. Each project starts with workload requirements and documents why services are selected, what is deliberately omitted, what quality attributes the design is intended to satisfy, what evidence exists, and what future conditions would justify changing the architecture.
