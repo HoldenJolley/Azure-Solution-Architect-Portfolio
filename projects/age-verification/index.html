@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Detailed privacy-preserving AI age assurance Azure reference architecture by Holden Jolley covering encryption, trust boundaries, anti-replay state, private inference, failure behavior, and validation evidence.">
+  <meta name="theme-color" content="#0078d4">
   <title>AI Age Assurance Platform | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
@@ -25,16 +27,25 @@
         <div class="hero-actions"><a class="button primary" href="#privacy-flow">Trust-boundary deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#reliability">Failure behavior</a></div>
       </div>
       <div class="hero-panel validation-panel">
-        <div class="panel-header"><span>Security profile</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="panel-header"><span>Architecture at a glance</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="hero-topology" aria-label="Age assurance architecture summary"><span>Browser<br>encrypts</span><i>→</i><span class="accent">Private<br>inference</span><i>→</i><span>Key Vault<br>+ attestation</span></div>
         <div class="validation-list">
-          <div><span>Edge</span><strong>Front Door Premium + WAF</strong></div>
-          <div><span>Inference</span><strong>Private Container Apps</strong></div>
-          <div><span>Key protection</span><strong>Key Vault Premium / HSM</strong></div>
-          <div><span>Replay defense</span><strong>Azure Managed Redis</strong></div>
+          <div><span>Plaintext boundary</span><strong>Client + inference memory</strong></div>
+          <div><span>Replay defense</span><strong>Short-lived shared state</strong></div>
           <div><span>Retention</span><strong>No verification image store</strong></div>
         </div>
       </div>
     </section>
+
+    <nav class="project-toc" aria-label="Age assurance case study sections">
+      <a href="#requirements">Overview</a><a href="#privacy-flow">Trust boundaries</a><a href="#quality">NFRs</a><a href="#reliability">Failure modes</a><a href="#decisions">Decisions</a><a href="#validation">Evidence</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="Age assurance architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Produce an age-assurance decision while minimizing exposure and retention of the source image.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Encrypt on the client, keep edge/gateway ciphertext-only, and decrypt only inside private inference memory.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>Trusted key/session dependencies can reduce availability because the platform fails closed instead of weakening controls.</strong></div>
+    </div>
 
     <section class="section split" id="requirements">
       <div>
