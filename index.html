@@ -164,7 +164,7 @@
 
       <section class="section" id="projects">
         <div class="section-heading">
-          <div><div class="eyebrow">PORTFOLIO</div><h2>Featured Azure projects</h2><p class="section-copy">Each project is built around a different architecture priority and includes documented decisions, operational tradeoffs, and deployable Infrastructure as Code.</p></div>
+          <div><div class="eyebrow">PORTFOLIO</div><h2>Featured Azure projects</h2><p class="section-copy">Each project starts with requirements and constraints, connects them to quality attributes and tradeoffs, and then carries those decisions through Infrastructure as Code, Azure control-plane validation, failure analysis, and explicit known limitations.</p></div>
           <span class="count">3 projects</span>
         </div>
         <div class="project-grid">
@@ -200,9 +200,9 @@
       <section class="section evidence-section">
         <div class="section-heading"><div><div class="eyebrow">ARCHITECTURE EVIDENCE</div><h2>Designed to be reviewed, challenged, and operated.</h2></div></div>
         <div class="evidence-grid">
-          <div class="evidence-card"><span class="evidence-number">01</span><strong>Infrastructure as Code</strong><p>Modular Bicep, environment parameterization, repeatable deployment scripts, CI compiler gates, and live Azure What-If instead of portal-only diagrams.</p></div>
-          <div class="evidence-card"><span class="evidence-number">02</span><strong>Decision records</strong><p>ADRs document why services were selected, what was intentionally omitted, and which assumptions would trigger a future redesign.</p></div>
-          <div class="evidence-card"><span class="evidence-number">03</span><strong>Operational thinking</strong><p>Security, reliability, cost, observability, failure modes, recovery, and deployment runbooks are treated as architecture—not afterthoughts.</p></div>
+          <div class="evidence-card"><span class="evidence-number">01</span><strong>Requirements &amp; quality attributes</strong><p>Each case study starts with hard constraints and ties availability, security, privacy, consistency, cost, recovery, and maintainability back to an explicit design response.</p></div>
+          <div class="evidence-card"><span class="evidence-number">02</span><strong>Decisions &amp; failure modes</strong><p>ADRs explain why services were selected or omitted, while failure-path diagrams show what degrades, what fails over, and where the architecture deliberately fails closed.</p></div>
+          <div class="evidence-card"><span class="evidence-number">03</span><strong>Validation without overclaiming</strong><p>Bicep compiler checks and live Azure ARM What-If are separated from runtime proof. Every project states what is validated today and what still requires deployment and testing.</p></div>
         </div>
       </section>
 
