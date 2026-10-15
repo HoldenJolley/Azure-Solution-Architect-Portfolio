@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Detailed cost-optimized Azure Static Web Apps architecture used to host Holden Jolley's portfolio with Free-tier-first design, GitHub Actions, OIDC, ARM What-If validation, security headers, recovery, and explicit upgrade triggers.">
+  <meta name="theme-color" content="#0078d4">
   <title>Cost-Optimized Portfolio Hosting | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
@@ -25,16 +27,25 @@
         <div class="hero-actions"><a class="button primary" href="#architecture">Architecture deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#cost">Cost model</a></div>
       </div>
       <div class="hero-panel validation-panel">
-        <div class="panel-header"><span>Cost profile</span><span class="status-chip success">Free-tier first</span></div>
+        <div class="panel-header"><span>Architecture at a glance</span><span class="status-chip success">Free-tier first</span></div>
+        <div class="hero-topology" aria-label="Static portfolio hosting architecture summary"><span>GitHub<br>Actions</span><i>→</i><span class="accent">OIDC + ARM<br>validation</span><i>→</i><span>Static Web Apps<br>Free</span></div>
         <div class="validation-list">
-          <div><span>Hosting</span><strong>Azure Static Web Apps Free</strong></div>
           <div><span>Azure footprint</span><strong>Resource Group + Static Web App</strong></div>
-          <div><span>TLS</span><strong>Managed certificate</strong></div>
-          <div><span>Delivery</span><strong>GitHub Actions + OIDC</strong></div>
+          <div><span>Public path</span><strong>GoDaddy DNS + managed TLS</strong></div>
           <div><span>Azure target</span><strong>$0/month in quota</strong></div>
         </div>
       </div>
     </section>
+
+    <nav class="project-toc" aria-label="Portfolio hosting case study sections">
+      <a href="#requirements">Overview</a><a href="#architecture">Architecture</a><a href="#quality">NFRs</a><a href="#cost">Cost</a><a href="#operations">Recovery</a><a href="#decisions">Decisions</a><a href="#validation">Evidence</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="Portfolio hosting architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Host a professional portfolio globally without paying for unnecessary runtime services.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Use Static Web Apps Free with GitHub Actions, Bicep, OIDC, and external DNS.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>Accept Free-plan SLA/control limits until real traffic or business requirements justify a larger architecture.</strong></div>
+    </div>
 
     <section class="section split" id="requirements">
       <div>
