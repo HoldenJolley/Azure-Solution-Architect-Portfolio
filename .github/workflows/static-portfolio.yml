@@ -9,6 +9,7 @@ on:
       - 'styles.css'
       - 'easter-eggs.css'
       - 'script.js'
+      - 'favicon.svg'
       - 'robots.txt'
       - 'llms.txt'
       - 'sitemap.xml'
@@ -25,6 +26,7 @@ on:
       - 'styles.css'
       - 'easter-eggs.css'
       - 'script.js'
+      - 'favicon.svg'
       - 'robots.txt'
       - 'llms.txt'
       - 'sitemap.xml'
@@ -73,6 +75,7 @@ jobs:
           python3 -m json.tool staticwebapp.config.json > /dev/null
           test -f 404.html
           test -f easter-eggs.css
+          test -f favicon.svg
           test -f robots.txt
           test -f llms.txt
           test -f sitemap.xml
@@ -171,7 +174,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
@@ -216,7 +219,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css script.js robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          cp index.html 404.html styles.css easter-eggs.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
