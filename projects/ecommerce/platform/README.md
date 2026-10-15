@@ -2,6 +2,18 @@
 
 A production-oriented Azure reference architecture for an event-driven e-commerce backend. This repository package focuses on Infrastructure as Code and the architecture/operations documentation needed to support the application implementation.
 
+## Architecture review path
+
+If you are reviewing this project as an architect or hiring manager, start here:
+
+1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — the problem, hard constraints, non-goals, and redesign triggers.
+2. [`docs/decisions/`](docs/decisions/) — ADRs explaining why each major service/pattern was selected over alternatives.
+3. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — production-hardening gaps and intentionally deferred work.
+4. [`docs/architecture/`](docs/architecture/) — deeper networking, data, reliability, security, observability, cost, and CI/CD design.
+5. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
+
+The intended review sequence is **requirements → constraints → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+
 ## What this deploys
 
 - Azure Front Door Standard/Premium with WAF policy
@@ -77,4 +89,4 @@ SCM/Kudu remains publicly reachable in this first package so a GitHub-hosted run
 
 ## Documentation
 
-See `docs/architecture`, `docs/decisions`, `docs/testing.md`, `docs/operations/runbook.md`, `KNOWN-LIMITATIONS.md`, and `PROJECT-CHECKLIST.md` for the architectural reasoning and definition of done.
+See `REQUIREMENTS-AND-CONSTRAINTS.md`, `docs/architecture`, `docs/decisions`, `docs/testing.md`, `docs/operations/runbook.md`, `KNOWN-LIMITATIONS.md`, and `PROJECT-CHECKLIST.md` for the architectural reasoning and definition of done.
