@@ -7,12 +7,14 @@ This project is the hosting architecture for the Azure Solution Architect portfo
 If you are reviewing this project as an architect or hiring manager, start here:
 
 1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — workload characteristics, hard constraints, non-goals, and redesign triggers.
-2. [`docs/decisions/`](docs/decisions/) — ADRs explaining why the baseline uses Static Web Apps Free and deliberately omits other Azure services.
-3. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — Free-tier limits, bootstrap caveats, evidence gaps, and upgrade triggers.
-4. [`docs/architecture/`](docs/architecture/) — deeper cost, security, operations, performance, and solution-design details.
-5. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and deployment/runtime evidence boundary.
+2. [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md) — cost, availability, security, performance, recovery, domain/TLS, and validation quality attributes.
+3. [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md) — public request path, secretless Azure delivery, publication, change control, recovery, and intentionally omitted services.
+4. [`docs/decisions/`](docs/decisions/) — ADRs explaining why the baseline uses Static Web Apps Free and deliberately omits other Azure services.
+5. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — Free-tier limits, bootstrap caveats, evidence gaps, and upgrade triggers.
+6. [`docs/architecture/`](docs/architecture/) — deeper cost, security, operations, performance, and solution-design details.
+7. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and deployment/runtime evidence boundary.
 
-The intended review sequence is **requirements → constraints → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+The intended review sequence is **requirements → constraints → quality attributes → alternatives → decisions → tradeoffs → validation → remaining limitations**.
 
 ## Design objective
 
@@ -95,6 +97,8 @@ The normal production path is the manually gated deployment job in `.github/work
 - `REQUIREMENTS-AND-CONSTRAINTS.md` — architecture requirements, constraints, non-goals, and redesign triggers
 - `KNOWN-LIMITATIONS.md` — accepted limitations and upgrade triggers
 - `docs/architecture/overview.md` — solution architecture
+- `docs/architecture/nfr-matrix.md` — non-functional requirements and validation status
+- `docs/architecture/diagrams.md` — source-controlled architecture diagrams
 - `docs/architecture/cost.md` — cost model and upgrade thresholds
 - `docs/architecture/security.md` — security baseline
 - `docs/architecture/operations.md` — operations and recovery
