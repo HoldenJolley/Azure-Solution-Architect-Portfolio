@@ -2,6 +2,20 @@
 
 This repository contains my Azure Solution Architect portfolio and three architecture projects designed to demonstrate practical decision-making across reliability, security, privacy, Infrastructure as Code, and cost optimization.
 
+## How to review the architecture
+
+Each project uses the same review pattern so the reasoning is visible instead of buried in diagrams or Bicep:
+
+**requirements → constraints → alternatives → decision → tradeoff → validation → known limitation / redesign trigger**
+
+| Project | Requirements & constraints | Decision records | Known limitations |
+|---|---|---|---|
+| Cost-Optimized Portfolio Hosting | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/resume/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/resume/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/resume/platform/KNOWN-LIMITATIONS.md) |
+| Distributed E-Commerce Platform | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/ecommerce/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/ecommerce/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/ecommerce/platform/KNOWN-LIMITATIONS.md) |
+| Privacy-Preserving AI Age Assurance | [`REQUIREMENTS-AND-CONSTRAINTS.md`](projects/age-verification/platform/REQUIREMENTS-AND-CONSTRAINTS.md) | [`docs/decisions/`](projects/age-verification/platform/docs/decisions/) | [`KNOWN-LIMITATIONS.md`](projects/age-verification/platform/KNOWN-LIMITATIONS.md) |
+
+The public HTML case studies are intentionally shorter. The Markdown architecture packages are the deeper evidence for reviewers who want to challenge the assumptions, alternatives, failure modes, and operating boundaries.
+
 ## Portfolio projects
 
 ### 1. Resume Portfolio / Static Hosting
