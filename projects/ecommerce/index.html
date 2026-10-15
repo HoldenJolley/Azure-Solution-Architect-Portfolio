@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Detailed Azure e-commerce reference architecture by Holden Jolley covering distributed systems, consistency, security, resiliency, observability, failure modes, and Infrastructure as Code.">
+  <meta name="theme-color" content="#0078d4">
   <title>E-Commerce Platform | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
@@ -25,16 +27,25 @@
         <div class="hero-actions"><a class="button primary" href="#architecture">Architecture deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#reliability">Failure modes</a></div>
       </div>
       <div class="hero-panel validation-panel">
-        <div class="panel-header"><span>Architecture profile</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="panel-header"><span>Architecture at a glance</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="hero-topology" aria-label="E-commerce architecture summary"><span>Front Door<br>+ WAF</span><i>→</i><span class="accent">App Service<br>API + workers</span><i>→</i><span>Cosmos DB<br>+ Service Bus</span></div>
         <div class="validation-list">
-          <div><span>Edge</span><strong>Front Door + WAF</strong></div>
-          <div><span>Compute</span><strong>App Service API + workers</strong></div>
-          <div><span>Operational data</span><strong>Cosmos DB</strong></div>
-          <div><span>Integration</span><strong>Service Bus</strong></div>
+          <div><span>Availability</span><strong>2-region compute reference</strong></div>
+          <div><span>Consistency</span><strong>Single inventory authority</strong></div>
           <div><span>Operations</span><strong>App Insights + Log Analytics</strong></div>
         </div>
       </div>
     </section>
+
+    <nav class="project-toc" aria-label="E-commerce case study sections">
+      <a href="#requirements">Overview</a><a href="#architecture">Architecture</a><a href="#quality">NFRs</a><a href="#reliability">Failure modes</a><a href="#decisions">Decisions</a><a href="#validation">Evidence</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="E-commerce architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Keep checkout responsive without making inventory consistency ambiguous.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Managed regional App Service plus Cosmos DB and Service Bus behind Front Door.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>API compute is multi-region; Service Bus continuity remains an explicit follow-on design problem.</strong></div>
+    </div>
 
     <section class="section split" id="requirements">
       <div>
