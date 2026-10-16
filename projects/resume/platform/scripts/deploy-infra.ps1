@@ -7,15 +7,18 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $infra = Join-Path $root 'infra'
 $params = Join-Path $infra 'environments/prod.bicepparam'
+$identitySwitch = Join-Path $PSScriptRoot 'use-portfolio-deployment-identity.ps1'
 $compiledParams = Join-Path ([System.IO.Path]::GetTempPath()) "portfolio-prod-$([guid]::NewGuid().ToString('N')).parameters.json"
 
 az bicep build-params --file $params --outfile $compiledParams
 if ($LASTEXITCODE -ne 0) { throw 'Failed to compile the production Bicep parameters.' }
 
 try {
-    # Provider/RBAC validation is performed by the preceding ARM What-If job.
-    # Template validation here avoids repeating Deployment Stack provider-level
-    # preflight, which rejects the federated application token before deployment.
+    # In GitHub Actions, switch from the initial ARM-compatible OIDC identity
+    # to the dedicated UAMI before invoking Deployment Stacks. Local operators
+    # retain whichever Azure CLI identity they authenticated with themselves.
+    & $identitySwitch
+
     az stack sub create `
         --name $StackName `
         --location $Location `
@@ -23,7 +26,7 @@ try {
         --parameters "@$compiledParams" `
         --action-on-unmanage deleteAll `
         --deny-settings-mode none `
-        --validation-level Template `
+        --validation-level Provider `
         --description 'Azure Solution Architect portfolio hosting stack' `
         --yes
 
