@@ -44,12 +44,32 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Parse deployment scripts
+        shell: pwsh
+        run: |
+          foreach ($path in @(
+            './projects/ecommerce/platform/scripts/validate.ps1',
+            './projects/ecommerce/platform/scripts/deploy.ps1',
+            './projects/ecommerce/platform/scripts/destroy.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
       - name: Azure login
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Confirm Deployment Stack CLI access
+        run: az stack sub list --output none
 
       - name: Lint, build, and what-if
         shell: pwsh
