@@ -14,6 +14,7 @@ on:
       - 'robots.txt'
       - 'llms.txt'
       - 'sitemap.xml'
+      - 'resume.pdf'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
@@ -33,6 +34,7 @@ on:
       - 'robots.txt'
       - 'llms.txt'
       - 'sitemap.xml'
+      - 'resume.pdf'
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
@@ -41,7 +43,7 @@ on:
   workflow_dispatch:
     inputs:
       deploy:
-        description: Deploy the production Static Web App from main after What-If succeeds
+        description: Manually redeploy production from main after validation and What-If
         required: true
         default: false
         type: boolean
@@ -50,6 +52,10 @@ permissions:
   id-token: write
   contents: read
   pull-requests: write
+
+concurrency:
+  group: static-portfolio-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   SWA_NAME: portfolio-prod-swa
@@ -203,7 +209,7 @@ jobs:
 
   deploy:
     needs: [validate-infrastructure, azure-what-if]
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy == true))
     runs-on: ubuntu-latest
     environment: prod
     steps:
@@ -216,7 +222,7 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Deploy infrastructure with Bicep
+      - name: Deploy infrastructure with Deployment Stack
         shell: pwsh
         run: ./projects/resume/platform/scripts/deploy-infra.ps1
       - name: Assemble public site artifact
