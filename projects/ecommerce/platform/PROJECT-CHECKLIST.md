@@ -12,9 +12,14 @@ Use this as the portfolio project's completion checklist. Items are checked only
 - [ ] `prod` Azure `what-if` reviewed.
 - [x] Resource naming/tags are consistent in compiler and dev What-If output.
 - [ ] All required providers/quotas are confirmed for an actual deployment target.
+- [x] Temporary live deployment is modeled as a subscription-scope Azure Deployment Stack with `deleteAll` cleanup.
+- [x] Live deployment is manual and requires an explicit typed confirmation.
+- [x] Teardown is a separate manual workflow and refuses direct resource-group deletion when the expected stack is missing.
+- [x] Deployment and cleanup workflows capture evidence artifacts.
 
 ## Application
 
+- [ ] Minimal live-validation workload for health/readiness and Azure integration checks.
 - [ ] Health/readiness endpoints.
 - [ ] Catalog.
 - [ ] Customer profile/auth integration.
@@ -69,8 +74,10 @@ Use this as the portfolio project's completion checklist. Items are checked only
 
 - [x] GitHub OIDC configured with short-lived federation.
 - [x] Infrastructure compiler and live dev What-If workflow passes.
-- [ ] Infrastructure deployment job exercised.
+- [ ] Infrastructure Deployment Stack job exercised.
 - [ ] Application CI/CD workflow added.
+- [ ] Live-validation evidence package captured.
+- [ ] Deployment Stack teardown exercised and cleanup evidence captured.
 - [ ] Architecture diagrams exported as presentation artifacts.
 - [x] ADR set complete for the current reference architecture.
 - [x] Cost trade-offs documented.

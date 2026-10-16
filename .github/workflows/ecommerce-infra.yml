@@ -5,11 +5,15 @@ on:
     paths:
       - 'projects/ecommerce/platform/infra/**'
       - 'projects/ecommerce/platform/scripts/**'
+      - 'projects/ecommerce/platform/docs/**'
+      - 'projects/ecommerce/platform/PROJECT-CHECKLIST.md'
+      - 'projects/ecommerce/platform/README.md'
       - '.github/workflows/ecommerce-infra.yml'
+      - '.github/workflows/ecommerce-destroy.yml'
   workflow_dispatch:
     inputs:
       environment:
-        description: Environment to deploy
+        description: Environment to validate/deploy
         required: true
         default: dev
         type: choice
@@ -18,10 +22,15 @@ on:
           - test
           - prod
       deploy:
-        description: Deploy after validation
+        description: Create/update the Deployment Stack after validation
         required: true
         default: false
         type: boolean
+      confirm_deploy:
+        description: 'Required only when deploy=true. Enter DEPLOY-ECOMMERCE-<environment>, for example DEPLOY-ECOMMERCE-dev'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   id-token: write
@@ -31,14 +40,36 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Parse deployment scripts
+        shell: pwsh
+        run: |
+          foreach ($path in @(
+            './projects/ecommerce/platform/scripts/validate.ps1',
+            './projects/ecommerce/platform/scripts/deploy.ps1',
+            './projects/ecommerce/platform/scripts/destroy.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+              throw "PowerShell parse failed: $path"
+            }
+          }
 
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Confirm Deployment Stack CLI access
+        run: az stack sub list --output none
 
       - name: Lint, build, and what-if
         shell: pwsh
@@ -49,16 +80,38 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    concurrency:
+      group: ecommerce-live-validation-${{ inputs.environment }}
+      cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Confirm intentional deployment
+        shell: pwsh
+        run: |
+          $expected = 'DEPLOY-ECOMMERCE-${{ inputs.environment }}'
+          if ('${{ inputs.confirm_deploy }}' -ne $expected) {
+            throw "Deployment confirmation did not match '$expected'."
+          }
 
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy
+      - name: Deploy temporary validation stack
         shell: pwsh
-        run: ./projects/ecommerce/platform/scripts/deploy.ps1 -Environment ${{ inputs.environment }}
+        run: ./projects/ecommerce/platform/scripts/deploy.ps1 -Environment ${{ inputs.environment }} -EvidenceDirectory "_evidence/ecommerce-${{ inputs.environment }}"
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ecommerce-${{ inputs.environment }}-deployment-evidence
+          path: _evidence/ecommerce-${{ inputs.environment }}
+          if-no-files-found: warn
+          retention-days: 30

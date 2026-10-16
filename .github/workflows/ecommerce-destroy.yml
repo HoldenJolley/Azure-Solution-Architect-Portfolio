@@ -1,0 +1,60 @@
+name: e-commerce validation destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Validation environment to destroy
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+      confirm_destroy:
+        description: 'Enter DESTROY-ECOMMERCE-dev to confirm permanent teardown of the validation stack'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: ecommerce-live-validation-${{ inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Confirm intentional teardown
+        shell: pwsh
+        run: |
+          $expected = 'DESTROY-ECOMMERCE-${{ inputs.environment }}'
+          if ('${{ inputs.confirm_destroy }}' -ne $expected) {
+            throw "Destroy confirmation did not match '$expected'."
+          }
+
+      - name: Azure login
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete Deployment Stack and managed resources
+        shell: pwsh
+        run: ./projects/ecommerce/platform/scripts/destroy.ps1 -Environment ${{ inputs.environment }} -Force -EvidenceDirectory "_evidence/ecommerce-${{ inputs.environment }}-cleanup"
+
+      - name: Upload cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ecommerce-${{ inputs.environment }}-cleanup-evidence
+          path: _evidence/ecommerce-${{ inputs.environment }}-cleanup
+          if-no-files-found: warn
+          retention-days: 30

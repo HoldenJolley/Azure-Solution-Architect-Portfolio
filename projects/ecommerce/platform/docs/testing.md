@@ -10,6 +10,62 @@ A deployable reference architecture needs tests for code and architectural behav
 
 Validate prod independently before a production-reference deployment.
 
+## Temporary live validation run
+
+The first live Azure exercise uses the `dev` profile and is intentionally temporary. The objective is to prove that the reference infrastructure can be created through an Azure Deployment Stack, exercised against a small validation workload, documented, and then removed cleanly without leaving an expensive environment running.
+
+### Safety gates
+
+Before creating resources:
+
+1. lint/build the Bicep and parameter file;
+2. authenticate to Azure using GitHub OIDC;
+3. run the subscription-scope ARM What-If and review it;
+4. use the fixed stack name `ecommerce-dev-validation-stack`;
+5. require the manual GitHub Actions confirmation `DEPLOY-ECOMMERCE-dev`;
+6. deploy only the `dev` environment for the portfolio validation run.
+
+The Deployment Stack uses `action-on-unmanage=deleteAll` and deny mode `none`. Teardown is a separate manual workflow and requires the typed confirmation `DESTROY-ECOMMERCE-dev`.
+
+### Infrastructure acceptance
+
+Capture evidence that:
+
+- the Deployment Stack reaches a successful provisioning state;
+- the expected global and East US 2 resource groups exist;
+- the single-region Front Door, App Service, Cosmos DB, Service Bus, Data Lake, Key Vault, monitoring, network, identities, and RBAC resources are present;
+- no unintended secondary-region resources are deployed by the `dev` profile;
+- deployment outputs include the Front Door hostname and primary API hostname;
+- the GitHub Actions deployment artifact contains the stack metadata captured at deployment time.
+
+### Runtime acceptance
+
+A minimal validation application will be deployed separately from the infrastructure stack. It is not intended to implement the complete e-commerce product. It exists only to verify the architectural integration points needed for the portfolio evidence boundary.
+
+The validation workload should prove:
+
+- `GET /health` and `GET /ready` respond successfully through Front Door;
+- direct access to the API App Service is rejected while the Front Door path succeeds;
+- the API can authenticate with managed identity to Cosmos DB and perform a synthetic write/read/delete cycle;
+- the API can publish a synthetic Service Bus event without using a namespace key/SAS credential;
+- a validation worker can consume that event with managed identity;
+- Application Insights/Log Analytics receives validation telemetry;
+- no Azure resource keys are introduced into application settings.
+
+Synthetic test data must be obviously non-production and should be deleted after verification where practical.
+
+### Teardown acceptance
+
+After evidence is captured:
+
+1. run the separate destroy workflow;
+2. delete the Deployment Stack with `action-on-unmanage=deleteAll`;
+3. verify the expected resource groups no longer exist or document any asynchronous Azure cleanup still completing;
+4. retain the cleanup artifact showing the stack identity and post-delete resource-group check;
+5. confirm Cost Management has no remaining e-commerce validation resources accruing charges.
+
+A successful run supports the claim: **the dev infrastructure was deployed to Azure through a Deployment Stack, functionally smoke-tested, evidence was captured, and the validation environment was intentionally decommissioned for cost control.** It does not by itself prove the complete production e-commerce application or the two-region production profile.
+
 ## Unit tests
 
 Cover cart validation/math, inventory state transitions, reservation expiration, order transitions, event serialization/versioning, and idempotency decisions.

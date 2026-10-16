@@ -53,7 +53,9 @@ The repository now has both compiler-level and live Azure control-plane evidence
 - GitHub Actions authenticates to Azure with short-lived OIDC federation and no Azure client secret;
 - the dev architecture completes a live subscription-scope Azure Resource Manager What-If successfully;
 - the current What-If predicts 41 creates and reports 14 identity-dependent role assignments as unsupported because their resource IDs require managed-identity principal IDs created during deployment;
-- the deployment job remains explicitly gated and has not been run.
+- the live deployment path is explicitly gated and prepared to use a subscription-scope Azure Deployment Stack with `action-on-unmanage=deleteAll`;
+- teardown is a separate manual workflow with its own typed confirmation and cleanup evidence capture;
+- the Deployment Stack has not yet been exercised.
 
 No e-commerce resources have been deployed to Azure yet.
 
@@ -68,14 +70,22 @@ No e-commerce resources have been deployed to Azure yet.
 
 ```powershell
 ./scripts/validate.ps1 -Environment dev -RunWhatIf
-./scripts/deploy.ps1 -Environment dev
+./scripts/deploy.ps1 -Environment dev -EvidenceDirectory ./evidence
 ```
 
-Treat the deployment command as an explicit resource-creation step; use What-If first and review the proposed scope/cost before running it.
+The deployment script runs another ARM What-If and then creates/updates the fixed stack `ecommerce-dev-validation-stack`. It does not use a normal unmanaged ARM deployment for the live validation environment.
+
+For GitHub Actions, deployment remains manual. Set `deploy=true` and enter `DEPLOY-ECOMMERCE-dev` when the `dev` live-validation run is intentionally being started.
+
+After validation, use the separate **e-commerce validation destroy** workflow and enter `DESTROY-ECOMMERCE-dev`. The destroy script refuses to fall back to direct resource-group deletion if the expected Deployment Stack cannot be found.
+
+See [`docs/testing.md`](docs/testing.md) for the live evidence checklist and the exact boundary of what a successful validation run proves.
 
 ## Important application contract
 
 The Bicep package provisions infrastructure and injects configuration through App Service settings. It does **not** yet include the .NET commerce API/worker binaries. See `src/README.md` for the expected application contract. The API must expose `/health` because Azure Front Door uses that path for health probes.
+
+A deliberately small validation workload will be added before the temporary live exercise so we can verify Front Door, direct-origin restrictions, managed-identity access to Cosmos DB and Service Bus, worker consumption, and telemetry without pretending to have implemented the entire production commerce application.
 
 ## Security model
 
