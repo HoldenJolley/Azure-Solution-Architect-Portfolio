@@ -23,9 +23,7 @@ if ($LASTEXITCODE -ne 0 -or -not $currentAccount.id -or -not $currentAccount.ten
 
 $subscriptionId = $currentAccount.id
 $tenantId = $currentAccount.tenantId
-$separator = if ($env:ACTIONS_ID_TOKEN_REQUEST_URL.Contains('?')) { '&' } else { '?' }
-$audience = [uri]::EscapeDataString('api://AzureADTokenExchange')
-$requestUri = "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)$separator`audience=$audience"
+$requestUri = "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange"
 
 $response = Invoke-RestMethod `
     -Method Get `
