@@ -17,6 +17,7 @@ on:
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
+      - 'projects/resume/platform/scripts/**'
       - '.github/workflows/static-portfolio.yml'
   pull_request:
     branches: [main, feature/age-verification-platform]
@@ -35,6 +36,7 @@ on:
       - 'staticwebapp.config.json'
       - 'projects/**/index.html'
       - 'projects/resume/platform/infra/**'
+      - 'projects/resume/platform/scripts/**'
       - '.github/workflows/static-portfolio.yml'
   workflow_dispatch:
     inputs:
