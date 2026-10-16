@@ -32,7 +32,7 @@ module deploymentIdentity './deployment-identity.bicep' = {
 }
 
 resource contributorAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().id, deploymentIdentity.outputs.principalId, contributorRoleDefinitionId)
+  name: guid(subscription().id, identityName, contributorRoleDefinitionId)
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', contributorRoleDefinitionId)
     principalId: deploymentIdentity.outputs.principalId
