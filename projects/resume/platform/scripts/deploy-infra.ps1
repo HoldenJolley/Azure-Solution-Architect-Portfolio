@@ -13,6 +13,9 @@ az bicep build-params --file $params --outfile $compiledParams
 if ($LASTEXITCODE -ne 0) { throw 'Failed to compile the production Bicep parameters.' }
 
 try {
+    # Provider/RBAC validation is performed by the preceding ARM What-If job.
+    # Template validation here avoids repeating Deployment Stack provider-level
+    # preflight, which rejects the federated application token before deployment.
     az stack sub create `
         --name $StackName `
         --location $Location `
@@ -20,6 +23,7 @@ try {
         --parameters "@$compiledParams" `
         --action-on-unmanage deleteAll `
         --deny-settings-mode none `
+        --validation-level Template `
         --description 'Azure Solution Architect portfolio hosting stack' `
         --yes
 
