@@ -19,19 +19,18 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Azure login with deployment managed identity
+      - name: Azure login with existing workflow identity
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
-          client-id: 928d071b-e664-4cc3-b6aa-a740b65eca3a
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Verify ARM access and Deployment Stack provider preflight
+      - name: Switch to portfolio managed identity and validate stack
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          az account show --query '{subscription:id,tenant:tenantId}' --output jsonc
-          if ($LASTEXITCODE -ne 0) { throw 'Managed identity ARM authentication failed.' }
+          ./projects/resume/platform/scripts/use-portfolio-deployment-identity.ps1
 
           az bicep install | Out-Null
           if ($LASTEXITCODE -ne 0) { throw 'Bicep install failed.' }
@@ -51,10 +50,10 @@ jobs:
               --action-on-unmanage deleteAll `
               --deny-settings-mode none `
               --validation-level Provider `
-              --description 'Portfolio managed identity verification' `
+              --description 'Portfolio managed identity scripted-switch verification' `
               --output jsonc
 
-            if ($LASTEXITCODE -ne 0) { throw 'Deployment Stack provider validation failed for the managed identity.' }
+            if ($LASTEXITCODE -ne 0) { throw 'Deployment Stack provider validation failed after scripted identity switch.' }
           }
           finally {
             Remove-Item $compiledParams -ErrorAction SilentlyContinue
