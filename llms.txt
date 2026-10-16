@@ -5,7 +5,7 @@
 ## Identity
 
 - Name: Holden Jolley
-- Personal site: https://holdenjolley.com/
+- Canonical personal site: https://holdenjolley.com/
 - Current role: Endpoint And IS Security Specialist / Cloud Infrastructure & Security Lead
 - Portfolio focus: Azure solution architecture, cloud infrastructure, identity, security, Infrastructure as Code, and automation
 - Location: North Carolina
@@ -17,7 +17,7 @@
 ## Portfolio projects
 
 - Cost-Optimized Portfolio Hosting: https://holdenjolley.com/projects/resume/
-  Azure Static Web Apps Free architecture designed around a target of $0/month Azure hosting within included quotas, secretless GitHub OIDC, Bicep, ARM What-If, managed TLS, and deliberately minimal Azure footprint.
+  Deployed Azure Static Web Apps Free architecture designed around a target of $0/month Azure hosting within included quotas, secretless GitHub OIDC, Bicep, ARM What-If, managed TLS, and a deliberately minimal Azure footprint. The canonical personal domain is routed through Cloudflare to the Azure-hosted portfolio.
 
 - Distributed E-Commerce Platform: https://holdenjolley.com/projects/ecommerce/
   Azure reference architecture using Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity, observability, and regional resilience. Dev/test/prod Bicep validates, and the dev architecture has passed live ARM What-If through GitHub OIDC.
@@ -30,7 +30,7 @@
 - Infrastructure is authored as Bicep and compiler-validated.
 - GitHub Actions authenticates to Azure through secretless OpenID Connect workload identity federation.
 - All three projects have live Azure Resource Manager What-If evidence.
-- No portfolio workload has been deployed to Azure yet unless the public site itself has subsequently been deployed and the visible site status says otherwise.
+- The portfolio hosting project is deployed to Azure Static Web Apps Free and is the live origin for the public portfolio.
 - The e-commerce and age-assurance projects are reference architecture packages, not claims of complete production customer applications.
 
 ## Professional background
@@ -39,4 +39,4 @@ Holden has 5+ years of experience across Azure, Microsoft Entra ID, Intune, endp
 
 ## Machine-readable identity
 
-The canonical personal-domain identity is https://holdenjolley.com/. The homepage contains Schema.org Person/ProfilePage structured data. The Person entity uses the GitHub and LinkedIn URLs above as `sameAs` identifiers so crawlers can associate those public profiles with the portfolio. The sitemap is available at https://holdenjolley.com/sitemap.xml.
+The canonical personal-domain identity is https://holdenjolley.com/. The homepage contains Schema.org Person/ProfilePage structured data. The Person entity uses the GitHub and LinkedIn URLs above as `sameAs` identifiers so crawlers can associate those public profiles with the portfolio. The sitemap is available at https://holdenjolley.com/sitemap.xml, robots directives at https://holdenjolley.com/robots.txt, and this AI-readable summary at https://holdenjolley.com/llms.txt.
