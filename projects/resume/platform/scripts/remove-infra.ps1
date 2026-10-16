@@ -9,6 +9,7 @@ if (-not $ConfirmDelete) {
     throw "Refusing to delete '$StackName'. Re-run with -ConfirmDelete after reviewing the stack contents."
 }
 
+Write-Host "Verifying deployment stack '$StackName' exists before destructive removal..."
 az stack sub show --name $StackName --output none 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Deployment stack '$StackName' was not found. Nothing to remove."
