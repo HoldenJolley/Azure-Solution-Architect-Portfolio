@@ -1,0 +1,132 @@
+name: e-commerce validation application
+
+on:
+  pull_request:
+    paths:
+      - 'projects/ecommerce/platform/src/ValidationApp/**'
+      - 'projects/ecommerce/platform/src/README.md'
+      - 'projects/ecommerce/platform/scripts/deploy-validation-app.ps1'
+      - 'projects/ecommerce/platform/scripts/smoke-test-validation.ps1'
+      - '.github/workflows/ecommerce-validation-app.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the validation application and run the live smoke test
+        required: true
+        default: false
+        type: boolean
+      confirm_deploy:
+        description: 'Required only when deploy=true. Enter DEPLOY-ECOMMERCE-APP-dev'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore validation application
+        run: dotnet restore projects/ecommerce/platform/src/ValidationApp/ValidationApp.csproj
+
+      - name: Build validation application
+        run: dotnet build projects/ecommerce/platform/src/ValidationApp/ValidationApp.csproj --configuration Release --no-restore --nologo
+
+      - name: Parse live-validation PowerShell
+        shell: pwsh
+        run: |
+          foreach ($path in @(
+            './projects/ecommerce/platform/scripts/deploy-validation-app.ps1',
+            './projects/ecommerce/platform/scripts/smoke-test-validation.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+  deploy-and-smoke-test:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: ecommerce-live-validation-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Confirm intentional live application deployment
+        shell: pwsh
+        run: |
+          $expected = 'DEPLOY-ECOMMERCE-APP-dev'
+          if ('${{ inputs.confirm_deploy }}' -ne $expected) {
+            throw "Deployment confirmation did not match '$expected'."
+          }
+
+      - name: Azure login
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Require successful infrastructure Deployment Stack
+        shell: pwsh
+        run: |
+          $state = az stack sub show --name ecommerce-dev-validation-stack --query properties.provisioningState -o tsv 2>$null
+          if ($LASTEXITCODE -ne 0 -or $state -ne 'Succeeded') {
+            throw "ecommerce-dev-validation-stack must exist in Succeeded state before application deployment."
+          }
+
+      - name: Deploy validation application
+        shell: pwsh
+        run: |
+          ./projects/ecommerce/platform/scripts/deploy-validation-app.ps1 `
+            -Environment dev `
+            -RuntimeDirectory '_runtime/ecommerce-validation' `
+            -EvidenceDirectory '_evidence/ecommerce-dev/application'
+
+      - name: Run live smoke test
+        shell: pwsh
+        run: |
+          ./projects/ecommerce/platform/scripts/smoke-test-validation.ps1 `
+            -Environment dev `
+            -TokenFile '_runtime/ecommerce-validation/validation-token.txt' `
+            -EvidenceDirectory '_evidence/ecommerce-dev/runtime'
+
+      - name: Remove ephemeral validation token from runner
+        if: always()
+        shell: pwsh
+        run: Remove-Item '_runtime/ecommerce-validation/validation-token.txt' -Force -ErrorAction SilentlyContinue
+
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ecommerce-dev-runtime-validation-evidence
+          path: _evidence/ecommerce-dev
+          if-no-files-found: warn
+          retention-days: 30

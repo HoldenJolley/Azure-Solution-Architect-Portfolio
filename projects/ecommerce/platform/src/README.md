@@ -2,7 +2,24 @@
 
 The infrastructure is designed for a .NET 8 Linux App Service implementation, but the architectural contract is language-agnostic.
 
-## API endpoints expected by the project
+## Temporary live-validation application
+
+`ValidationApp/` is a deliberately small .NET 8 workload used only for the portfolio's controlled Azure validation run. It is **not** the completed commerce product and must not be presented as one.
+
+The same published package runs in two modes based on the Bicep-provisioned `APP_COMPONENT` and `WORKER_ROLE` settings:
+
+- the API exposes `/health` and `/ready`;
+- token-protected validation endpoints can perform a synthetic Cosmos DB write/read/delete and publish a synthetic `ValidationProbe` event to Service Bus;
+- the inventory, payment, shipping, and analytics worker instances consume their corresponding Service Bus subscriptions with managed identity and write idempotent validation receipts to Cosmos DB;
+- Azure Monitor OpenTelemetry emits request/runtime telemetry through the provisioned Application Insights connection string.
+
+The validation endpoints are disabled by default. `deploy-validation-app.ps1` enables them only for the temporary dev exercise and generates a random ephemeral token. The token is masked in GitHub Actions, stored only in the runner's temporary runtime directory, excluded from evidence artifacts, and deleted after smoke testing.
+
+`smoke-test-validation.ps1` validates the intended public path through Front Door, verifies the direct App Service origin does not return a successful response, runs the synthetic Cosmos/Service Bus workflow, waits for all four worker subscriptions, verifies Application Insights has received request telemetry, deletes the synthetic Cosmos receipts, and writes a non-secret evidence record.
+
+This workload is intentionally scoped to proving the deployed architecture's integration points before the Deployment Stack is destroyed for cost control.
+
+## API endpoints expected by the full project
 
 ```text
 GET    /health
@@ -17,6 +34,8 @@ POST   /api/checkout
 GET    /api/orders
 GET    /api/orders/{id}
 ```
+
+The temporary `ValidationApp` implements only `/health`, `/ready`, and the gated `/validation/*` proof endpoints; the business endpoints above remain the contract for a complete commerce implementation.
 
 ## App settings provisioned by Bicep
 
@@ -33,9 +52,11 @@ APP_COMPONENT
 WORKER_ROLE   # worker apps only
 ```
 
-Authentication should use `DefaultAzureCredential`/managed identity in Azure. Do not introduce connection strings with resource keys unless there is a documented exception.
+The validation deployment temporarily adds `ENABLE_VALIDATION_ENDPOINTS` and `VALIDATION_TOKEN` to the API App Service only. Neither value is an Azure resource credential.
 
-## Worker behavior
+Authentication to Azure services uses `DefaultAzureCredential`/managed identity. Do not introduce connection strings with Cosmos keys, Service Bus SAS keys, Storage keys, or other reusable Azure resource secrets unless there is a documented exception.
+
+## Worker behavior for the complete application
 
 ### Inventory worker
 Consumes relevant order/inventory events and owns reservation/commit/release state transitions.
@@ -63,9 +84,9 @@ Consumes business events and writes immutable raw events into Data Lake `bronze`
 }
 ```
 
-Set the Service Bus `MessageId` to `eventId` and carry the correlation ID on the message as well.
+Set the Service Bus `MessageId` to `eventId` and carry the correlation ID on the message as well. The validation app follows the same envelope structure with `eventType=ValidationProbe`.
 
-## Required implementation tests
+## Required implementation tests for the complete application
 
 - one-item/100-concurrent-checkout race
 - payment failure releases inventory

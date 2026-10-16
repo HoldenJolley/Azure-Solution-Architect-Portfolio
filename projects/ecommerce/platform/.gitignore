@@ -8,6 +8,10 @@ obj/
 *.jsonc
 infra/out/
 
+# Temporary live-validation runtime/evidence
+_runtime/
+_evidence/
+
 # Local configuration and secrets
 .env
 .env.*
