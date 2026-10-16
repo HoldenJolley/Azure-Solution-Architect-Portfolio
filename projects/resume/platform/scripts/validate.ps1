@@ -1,7 +1,6 @@
 param(
     [switch]$RunWhatIf,
-    [string]$Location = 'eastus2',
-    [string]$StackName = 'portfolio-prod-stack'
+    [string]$Location = 'eastus2'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,25 +26,19 @@ if ($RunWhatIf) {
     if ($LASTEXITCODE -ne 0) { throw 'Failed to compile the production Bicep parameters for What-If.' }
 
     try {
-        $subscriptionId = (az account show --query id --output tsv).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $subscriptionId) { throw 'Unable to determine the current Azure subscription.' }
-
-        $stackId = "/subscriptions/$subscriptionId/providers/Microsoft.Resources/deploymentStacks/$StackName"
         $whatIfName = "portfolio-prod-$((Get-Date).ToString('yyyyMMddHHmmss'))"
 
-        az stack-whatif sub create `
+        # CI uses the subscription deployment What-If because it supports the
+        # GitHub OIDC service-principal token used by this workflow. Production
+        # deployment itself is still managed by portfolio-prod-stack.
+        az deployment sub what-if `
             --name $whatIfName `
-            --stack-id $stackId `
-            --retention-interval PT3H `
             --location $Location `
             --template-file (Join-Path $infra 'main.bicep') `
             --parameters "@$compiledParams" `
-            --action-on-unmanage deleteAll `
-            --deny-settings-mode none `
-            --description 'Portfolio deployment stack preflight' `
-            --no-color
+            --result-format ResourceIdOnly
 
-        if ($LASTEXITCODE -ne 0) { throw 'Deployment Stack What-If failed.' }
+        if ($LASTEXITCODE -ne 0) { throw 'Subscription deployment What-If failed.' }
     }
     finally {
         Remove-Item $compiledParams -ErrorAction SilentlyContinue
