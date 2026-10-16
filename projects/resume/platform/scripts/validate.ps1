@@ -36,7 +36,7 @@ if ($RunWhatIf) {
         az stack-whatif sub create `
             --name $whatIfName `
             --stack-id $stackId `
-            --retention-interval P1D `
+            --retention-interval PT3H `
             --location $Location `
             --template-file (Join-Path $infra 'main.bicep') `
             --parameters "@$compiledParams" `
