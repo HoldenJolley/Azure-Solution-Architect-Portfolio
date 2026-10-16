@@ -386,3 +386,81 @@ createProfileBlade();
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') closeProfileBlade();
 });
+
+const portfolioThemeKey = 'portfolio-theme';
+const portfolioThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+
+function readPortfolioThemePreference() {
+  try {
+    const saved = localStorage.getItem(portfolioThemeKey);
+    return saved === 'light' || saved === 'dark' ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePortfolioThemePreference(theme) {
+  try {
+    localStorage.setItem(portfolioThemeKey, theme);
+  } catch {
+    // The theme still works for this page when storage is unavailable.
+  }
+}
+
+function resolvePortfolioTheme() {
+  return readPortfolioThemePreference() || (portfolioThemeMedia.matches ? 'dark' : 'light');
+}
+
+function syncThemeToggle(theme) {
+  const toggle = document.querySelector('.theme-toggle');
+  if (!toggle) return;
+  const isDark = theme === 'dark';
+  toggle.textContent = isDark ? '☀' : '☾';
+  toggle.setAttribute('aria-pressed', String(isDark));
+  toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  toggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+
+function applyPortfolioTheme(theme, persist = false) {
+  const resolved = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = resolved;
+  if (persist) writePortfolioThemePreference(resolved);
+  syncThemeToggle(resolved);
+
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) themeColor.setAttribute('content', resolved === 'dark' ? '#0d141b' : '#0078d4');
+}
+
+function createThemeToggle() {
+  if (portfolioScriptUrl && !document.querySelector('link[data-portfolio-theme]')) {
+    const themeStyles = document.createElement('link');
+    themeStyles.rel = 'stylesheet';
+    themeStyles.href = new URL('theme.css', portfolioScriptUrl).href;
+    themeStyles.dataset.portfolioTheme = 'true';
+    document.head.appendChild(themeStyles);
+  }
+
+  applyPortfolioTheme(resolvePortfolioTheme());
+
+  const triggerHost = document.querySelector('.top-actions');
+  if (triggerHost && !triggerHost.querySelector('.theme-toggle')) {
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'theme-toggle';
+    const profileTrigger = triggerHost.querySelector('.profile');
+    triggerHost.insertBefore(toggle, profileTrigger || null);
+    toggle.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      applyPortfolioTheme(next, true);
+    });
+  }
+
+  syncThemeToggle(document.documentElement.dataset.theme || resolvePortfolioTheme());
+}
+
+portfolioThemeMedia.addEventListener?.('change', event => {
+  if (readPortfolioThemePreference()) return;
+  applyPortfolioTheme(event.matches ? 'dark' : 'light');
+});
+
+createThemeToggle();
