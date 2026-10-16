@@ -464,3 +464,218 @@ portfolioThemeMedia.addEventListener?.('change', event => {
 });
 
 createThemeToggle();
+
+const projectAudiencePreferenceKey = 'portfolio-project-audience';
+const projectAudienceConfigs = {
+  resume: {
+    match: '/projects/resume/',
+    executiveHero: 'A production portfolio platform designed to keep recurring Azure hosting at $0 within Free-tier limits, minimize operating overhead, and preserve a clean upgrade path when a real requirement justifies more spend.',
+    panelLabel: 'Executive at a glance',
+    panelBadge: 'Cost discipline',
+    panel: [
+      ['Business value', 'Professional presence with near-zero Azure run cost'],
+      ['Risk posture', 'Minimal runtime and patching surface'],
+      ['Operating model', 'Automated delivery + simple recovery']
+    ],
+    recommendation: 'Keep the platform intentionally small until availability, traffic, backend functionality, or business criticality creates a measurable reason to add cost and complexity.',
+    cards: [
+      ['Business objective', 'Deliver a credible, secure professional web presence without funding infrastructure that does not create additional business value.'],
+      ['Financial impact', 'Azure hosting is designed to remain at $0/month while usage stays inside Static Web Apps Free quotas. Paid Azure edge, compute, database, and monitoring services are deliberately omitted.'],
+      ['Operational impact', 'A static architecture removes server patching, runtime scaling, database recovery, and most day-two application operations. Git remains the source of truth for fast recovery.'],
+      ['Risk & governance', 'GitHub OIDC avoids reusable Azure client secrets, production changes are gated by validation and ARM What-If, and Cloudflare edge routing is separated from the Azure hosting origin.'],
+      ['Accepted tradeoff', 'The Free tier has no enterprise SLA. That is appropriate for a personal portfolio, but it becomes an explicit upgrade trigger if the site becomes business-critical.'],
+      ['Confidence level', 'This project is deployed in production. Azure deployment, custom-domain delivery, Cloudflare routing, recovery access, and the portfolio bypass path have been exercised.']
+    ]
+  },
+  ecommerce: {
+    match: '/projects/ecommerce/',
+    executiveHero: 'A commerce platform design focused on protecting checkout revenue, preserving inventory integrity, and limiting the customer impact of regional failures without taking on Kubernetes overhead before the business needs it.',
+    panelLabel: 'Executive at a glance',
+    panelBadge: 'Revenue protection',
+    panel: [
+      ['Customer experience', 'Short, responsive checkout path'],
+      ['Business resilience', 'Regional API continuity by design'],
+      ['Cost posture', 'Managed PaaS before platform complexity']
+    ],
+    recommendation: 'Invest first in checkout availability, inventory correctness, and observable recovery. Add platform complexity only where it directly reduces a measured revenue, continuity, or scale risk.',
+    cards: [
+      ['Business objective', 'Keep checkout responsive during normal demand and infrastructure disruption while preventing ambiguous inventory ownership that can lead to overselling or failed fulfillment.'],
+      ['Customer & revenue impact', 'The synchronous customer path stays small while payment, shipping, inventory processing, and analytics are decoupled. That reduces the number of downstream systems that can directly slow or block checkout.'],
+      ['Risk reduction', 'A single inventory authority makes stock ownership explicit. Idempotent asynchronous processing is intended to reduce duplicate side effects during retries and worker failures.'],
+      ['Continuity posture', 'Front Door and regional App Service origins provide an API failover strategy, while Cosmos has a defined regional recovery model. Service Bus regional continuity remains an explicit gap rather than an overstated resilience claim.'],
+      ['Investment & operating model', 'App Service is favored over AKS because the workload does not currently justify a Kubernetes control plane. The design spends operational complexity only where it improves a stated requirement.'],
+      ['Confidence level', 'Dev, test, and production infrastructure compile cleanly and the dev architecture passes live ARM What-If. A guarded temporary deployment and runtime validation harness are prepared, but runtime proof is not claimed until that exercise is completed.']
+    ]
+  },
+  age: {
+    match: '/projects/age-verification/',
+    executiveHero: 'A privacy-first age-assurance platform designed to produce an eligibility decision while minimizing custody of highly sensitive imagery, reducing exposure if systems are compromised, and avoiding a retained photo repository.',
+    panelLabel: 'Executive at a glance',
+    panelBadge: 'Privacy by design',
+    panel: [
+      ['Privacy objective', 'Minimize possession of source imagery'],
+      ['Governance posture', 'Fail closed; model governance stays explicit'],
+      ['Data retention', 'No intentional verification image store']
+    ],
+    recommendation: 'Treat data minimization as a product architecture decision, not a retention policy added later. Preserve the security boundary even when that means a verification request must fail closed.',
+    cards: [
+      ['Business objective', 'Support an age-gating decision without turning sensitive verification imagery into a durable company data asset or expanding the number of systems trusted with plaintext.'],
+      ['Privacy & breach impact', 'The image is encrypted before the public edge, remains ciphertext through the gateway, and is decrypted only inside the private inference boundary. No verification image store is intentionally provisioned.'],
+      ['Regulatory & governance posture', 'The platform reduces data exposure, but it does not claim that an age-estimation model is legally sufficient, unbiased, accurate for every threshold, or appropriate in every jurisdiction. Those remain product and model governance decisions.'],
+      ['Security vs. availability', 'Key, anti-replay state, and model-health failures are designed to deny or make verification unavailable instead of weakening controls. The business tradeoff is lower availability in exchange for preserving the trust boundary.'],
+      ['Operating model', 'Customers can bring an approved model container while the Azure platform standardizes network isolation, identity, key management, telemetry boundaries, and no-image-retention controls.'],
+      ['Confidence level', 'Foundation and workload IaC compile cleanly and the dev foundation passes live ARM What-If through GitHub OIDC. End-to-end runtime privacy and model behavior are not claimed until a temporary deployment is completed and tested.']
+    ]
+  }
+};
+
+const projectAudienceStyles = `
+.audience-switcher{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:-8px 0 24px;padding:16px 18px;background:rgba(255,255,255,.96);border:1px solid var(--line,#d8e2e9);border-radius:9px;box-shadow:0 8px 24px rgba(24,55,76,.06);position:sticky;top:66px;z-index:9;backdrop-filter:blur(10px)}
+.audience-switch-copy{display:grid;gap:3px}.audience-switch-copy strong{font-size:14px}.audience-switch-copy>span:last-child{font-size:11px;color:var(--muted,#63727d)}.audience-toggle{display:grid;grid-template-columns:1fr 1fr;border:1px solid #bfd0dc;background:#f4f8fb;padding:3px;min-width:360px}.audience-toggle button{border:0;background:transparent;color:#53636e;padding:9px 13px;cursor:pointer;text-align:left;font:600 12px/1.25 "Segoe UI",Arial,sans-serif}.audience-toggle button small{display:block;font-size:9px;font-weight:500;color:#7a8994;margin-top:2px}.audience-toggle button[aria-pressed="true"]{background:#0078d4;color:#fff;box-shadow:0 2px 7px rgba(0,120,212,.2)}.audience-toggle button[aria-pressed="true"] small{color:#e8f5fd}.audience-executive-hero-copy,.audience-executive-panel,.audience-executive-actions,.audience-executive-section{display:none}.audience-executive-panel{border:1px solid #d7e2ea;background:#f8fbfd;min-height:235px}.audience-executive-actions{gap:10px;margin-top:24px;flex-wrap:wrap}.audience-executive-actions .button{cursor:pointer;font-family:inherit}.audience-executive-section{margin:0 0 30px}.audience-executive-intro{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:14px}.audience-executive-intro h2{font-size:27px;margin:5px 0 0}.audience-executive-intro p{max-width:560px;margin:0;color:var(--muted,#63727d);font-size:12px;line-height:1.6}.audience-executive-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.audience-executive-card{background:var(--surface,#fff);border:1px solid var(--line,#d8e2e9);padding:21px;min-height:165px}.audience-executive-card span{display:block;color:#0078d4;font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:16px}.audience-executive-card strong{display:block;font-size:14px;margin-bottom:8px}.audience-executive-card p{margin:0;color:var(--muted,#63727d);font-size:12px;line-height:1.65}.audience-executive-recommendation{margin-top:12px;padding:20px 22px;background:#edf6fc;border-left:4px solid #0078d4;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}.audience-executive-recommendation span{font-size:9px;font-weight:700;letter-spacing:.09em;color:#0078d4;text-transform:uppercase}.audience-executive-recommendation strong{font-size:13px;line-height:1.55}.audience-engineer-note{display:none;margin:0 0 20px;padding:12px 16px;border-left:3px solid #0078d4;background:#f7fbfd;color:var(--muted,#63727d);font-size:11px;line-height:1.5}.audience-engineer-note strong{color:var(--ink,#17212b)}
+body[data-project-audience="executive"] .project-page>.project-toc,body[data-project-audience="executive"] .project-page>.project-summary-strip,body[data-project-audience="executive"] .project-page>.section{display:none}body[data-project-audience="executive"] .project-page>.audience-executive-section{display:block}body[data-project-audience="executive"] .hero>.hero-panel{display:none}body[data-project-audience="executive"] .hero .hero-copy:not(.audience-executive-hero-copy){display:none}body[data-project-audience="executive"] .hero .hero-actions:not(.audience-executive-actions){display:none}body[data-project-audience="executive"] .audience-executive-hero-copy{display:block}body[data-project-audience="executive"] .audience-executive-panel{display:block}body[data-project-audience="executive"] .audience-executive-actions{display:flex}body[data-project-audience="engineer"] .audience-engineer-note{display:block}
+:root[data-theme="dark"] .audience-switcher{background:rgba(18,28,36,.96);border-color:var(--theme-line);box-shadow:0 8px 24px rgba(0,0,0,.18)}:root[data-theme="dark"] .audience-switch-copy>span:last-child,:root[data-theme="dark"] .audience-executive-intro p,:root[data-theme="dark"] .audience-executive-card p,:root[data-theme="dark"] .audience-engineer-note{color:var(--theme-muted)}:root[data-theme="dark"] .audience-toggle{background:#101a22;border-color:var(--theme-line)}:root[data-theme="dark"] .audience-toggle button{color:#b5c5cf}:root[data-theme="dark"] .audience-toggle button small{color:var(--theme-subtle)}:root[data-theme="dark"] .audience-toggle button[aria-pressed="true"]{background:#0878c9;color:#fff}:root[data-theme="dark"] .audience-toggle button[aria-pressed="true"] small{color:#dff3ff}:root[data-theme="dark"] .audience-executive-panel,:root[data-theme="dark"] .audience-executive-card{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-text)}:root[data-theme="dark"] .audience-executive-card span,:root[data-theme="dark"] .audience-executive-recommendation span{color:var(--theme-accent)}:root[data-theme="dark"] .audience-executive-recommendation{background:#112736;border-color:#279ee5}:root[data-theme="dark"] .audience-executive-recommendation strong,:root[data-theme="dark"] .audience-engineer-note strong{color:var(--theme-text)}:root[data-theme="dark"] .audience-engineer-note{background:#111f28;border-color:#279ee5}
+@media(max-width:850px){.audience-switcher{align-items:stretch;flex-direction:column;gap:12px;position:static}.audience-toggle{min-width:0;width:100%}.audience-executive-grid{grid-template-columns:1fr 1fr}.audience-executive-intro{align-items:start;flex-direction:column;gap:8px}}
+@media(max-width:650px){.audience-switcher{margin:-4px 0 18px;padding:14px}.audience-toggle{grid-template-columns:1fr}.audience-toggle button{text-align:center}.audience-executive-grid{grid-template-columns:1fr}.audience-executive-intro h2{font-size:23px}.audience-executive-recommendation{grid-template-columns:1fr;gap:6px}}
+@media(prefers-reduced-motion:reduce){.audience-toggle button{transition:none}}
+`;
+
+function readProjectAudiencePreference() {
+  try {
+    const saved = localStorage.getItem(projectAudiencePreferenceKey);
+    return saved === 'executive' || saved === 'engineer' ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeProjectAudiencePreference(view) {
+  try {
+    localStorage.setItem(projectAudiencePreferenceKey, view);
+  } catch {
+    // The selected view still works for this page when storage is unavailable.
+  }
+}
+
+function resolveProjectAudiencePreference() {
+  const requested = new URLSearchParams(window.location.search).get('view');
+  if (requested === 'executive' || requested === 'engineer') return requested;
+  return readProjectAudiencePreference() || 'executive';
+}
+
+function findProjectAudienceConfig() {
+  const path = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
+  return Object.values(projectAudienceConfigs).find(config => path.includes(config.match)) || null;
+}
+
+function createExecutivePanel(config) {
+  const panel = document.createElement('div');
+  panel.className = 'hero-panel validation-panel audience-executive-panel';
+  const rows = config.panel.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('');
+  panel.innerHTML = `<div class="panel-header"><span>${config.panelLabel}</span><span class="status-chip success">${config.panelBadge}</span></div><div class="validation-list">${rows}</div>`;
+  return panel;
+}
+
+function createExecutiveSection(config) {
+  const section = document.createElement('section');
+  section.className = 'audience-executive-section';
+  section.id = 'executive-overview';
+  const cards = config.cards.map(([title, copy], index) => `<article class="audience-executive-card"><span>${String(index + 1).padStart(2, '0')}</span><strong>${title}</strong><p>${copy}</p></article>`).join('');
+  section.innerHTML = `
+    <div class="audience-executive-intro">
+      <div><div class="eyebrow">EXECUTIVE VIEW</div><h2>Business impact, risk, and decision logic.</h2></div>
+      <p>This view intentionally removes implementation detail and focuses on the outcomes, exposure, investment choices, and tradeoffs a decision-maker needs to evaluate the architecture.</p>
+    </div>
+    <div class="audience-executive-grid">${cards}</div>
+    <div class="audience-executive-recommendation" id="executive-recommendation"><span>Architect recommendation</span><strong>${config.recommendation}</strong></div>`;
+  return section;
+}
+
+function initializeProjectAudienceView() {
+  const page = document.querySelector('.project-page');
+  const hero = page?.querySelector('.hero');
+  const config = findProjectAudienceConfig();
+  if (!page || !hero || !config || document.querySelector('.audience-switcher')) return;
+
+  if (!document.querySelector('style[data-project-audience-styles]')) {
+    const style = document.createElement('style');
+    style.dataset.projectAudienceStyles = 'true';
+    style.textContent = projectAudienceStyles;
+    document.head.appendChild(style);
+  }
+
+  const originalHeroCopy = hero.querySelector('.hero-copy');
+  if (originalHeroCopy) {
+    const executiveHeroCopy = document.createElement('p');
+    executiveHeroCopy.className = 'hero-copy audience-executive-hero-copy';
+    executiveHeroCopy.textContent = config.executiveHero;
+    originalHeroCopy.after(executiveHeroCopy);
+  }
+
+  const originalPanel = hero.querySelector(':scope > .hero-panel');
+  if (originalPanel) originalPanel.after(createExecutivePanel(config));
+
+  const originalActions = hero.querySelector('.hero-actions');
+  if (originalActions) {
+    const executiveActions = document.createElement('div');
+    executiveActions.className = 'hero-actions audience-executive-actions';
+    executiveActions.innerHTML = '<a class="button primary" href="#executive-overview">Business case</a><a class="button" href="#executive-recommendation">Recommendation</a><button class="button" type="button" data-set-project-audience="engineer">Open engineer view</button>';
+    originalActions.after(executiveActions);
+  }
+
+  const switcher = document.createElement('section');
+  switcher.className = 'audience-switcher';
+  switcher.setAttribute('aria-label', 'Project audience view');
+  switcher.innerHTML = `
+    <div class="audience-switch-copy">
+      <span class="eyebrow">AUDIENCE VIEW</span>
+      <strong>Same architecture. Different decision lens.</strong>
+      <span class="audience-view-description" aria-live="polite"></span>
+    </div>
+    <div class="audience-toggle" role="group" aria-label="Choose project presentation">
+      <button type="button" data-project-audience-option="executive" aria-pressed="false">Executive<small>Business impact · risk · investment</small></button>
+      <button type="button" data-project-audience-option="engineer" aria-pressed="false">Engineer<small>Architecture · implementation · evidence</small></button>
+    </div>`;
+  hero.after(switcher);
+
+  const engineerNote = document.createElement('div');
+  engineerNote.className = 'audience-engineer-note';
+  engineerNote.innerHTML = '<strong>Engineer view:</strong> implementation detail, service topology, trust boundaries, failure behavior, Infrastructure as Code, and validation evidence are shown below.';
+  switcher.after(engineerNote);
+  engineerNote.after(createExecutiveSection(config));
+
+  const setView = (view, persist = true) => {
+    const resolved = view === 'engineer' ? 'engineer' : 'executive';
+    document.body.dataset.projectAudience = resolved;
+    if (persist) writeProjectAudiencePreference(resolved);
+    document.querySelectorAll('[data-project-audience-option]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.projectAudienceOption === resolved));
+    });
+    const description = document.querySelector('.audience-view-description');
+    if (description) {
+      description.textContent = resolved === 'executive'
+        ? 'Showing outcomes, risk, cost, governance, and decision tradeoffs.'
+        : 'Showing technical design, implementation choices, failure modes, and evidence.';
+    }
+  };
+
+  switcher.addEventListener('click', event => {
+    const option = event.target.closest('[data-project-audience-option]');
+    if (!option) return;
+    setView(option.dataset.projectAudienceOption);
+  });
+  page.querySelectorAll('[data-set-project-audience]').forEach(button => {
+    button.addEventListener('click', () => {
+      setView(button.dataset.setProjectAudience);
+      switcher.scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+  });
+
+  let initialView = resolveProjectAudiencePreference();
+  const explicitView = new URLSearchParams(window.location.search).get('view');
+  if (!explicitView && window.location.hash && document.querySelector(window.location.hash)?.classList.contains('section')) {
+    initialView = 'engineer';
+  }
+  setView(initialView, true);
+}
+
+initializeProjectAudienceView();
