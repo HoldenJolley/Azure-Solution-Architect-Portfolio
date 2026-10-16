@@ -5,6 +5,7 @@ on:
     branches: [bootstrap-portfolio-managed-identity]
     paths:
       - '.github/workflows/verify-portfolio-managed-identity.yml'
+      - 'projects/resume/platform/scripts/use-portfolio-deployment-identity.ps1'
 
 permissions:
   id-token: write
