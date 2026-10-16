@@ -1,0 +1,61 @@
+name: verify portfolio deployment identity
+
+on:
+  push:
+    branches: [bootstrap-portfolio-managed-identity]
+    paths:
+      - '.github/workflows/verify-portfolio-managed-identity.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Azure login with deployment managed identity
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: 928d071b-e664-4cc3-b6aa-a740b65eca3a
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify ARM access and Deployment Stack provider preflight
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          az account show --query '{subscription:id,tenant:tenantId}' --output jsonc
+          if ($LASTEXITCODE -ne 0) { throw 'Managed identity ARM authentication failed.' }
+
+          az bicep install | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Bicep install failed.' }
+
+          $infra = 'projects/resume/platform/infra'
+          $params = Join-Path $infra 'environments/prod.bicepparam'
+          $compiledParams = Join-Path ([System.IO.Path]::GetTempPath()) 'portfolio-managed-identity-test.parameters.json'
+          az bicep build-params --file $params --outfile $compiledParams
+          if ($LASTEXITCODE -ne 0) { throw 'Parameter compilation failed.' }
+
+          try {
+            az stack sub validate `
+              --name portfolio-prod-stack `
+              --location eastus2 `
+              --template-file (Join-Path $infra 'main.bicep') `
+              --parameters "@$compiledParams" `
+              --action-on-unmanage deleteAll `
+              --deny-settings-mode none `
+              --validation-level Provider `
+              --description 'Portfolio managed identity verification' `
+              --output jsonc
+
+            if ($LASTEXITCODE -ne 0) { throw 'Deployment Stack provider validation failed for the managed identity.' }
+          }
+          finally {
+            Remove-Item $compiledParams -ErrorAction SilentlyContinue
+          }
