@@ -7,6 +7,7 @@ on:
       - 'projects/ecommerce/platform/src/README.md'
       - 'projects/ecommerce/platform/scripts/deploy-validation-app.ps1'
       - 'projects/ecommerce/platform/scripts/smoke-test-validation.ps1'
+      - 'projects/ecommerce/platform/scripts/disable-validation-endpoints.ps1'
       - '.github/workflows/ecommerce-validation-app.yml'
   workflow_dispatch:
     inputs:
@@ -49,7 +50,8 @@ jobs:
         run: |
           foreach ($path in @(
             './projects/ecommerce/platform/scripts/deploy-validation-app.ps1',
-            './projects/ecommerce/platform/scripts/smoke-test-validation.ps1'
+            './projects/ecommerce/platform/scripts/smoke-test-validation.ps1',
+            './projects/ecommerce/platform/scripts/disable-validation-endpoints.ps1'
           )) {
             $tokens = $null
             $errors = $null
@@ -116,6 +118,11 @@ jobs:
             -Environment dev `
             -TokenFile '_runtime/ecommerce-validation/validation-token.txt' `
             -EvidenceDirectory '_evidence/ecommerce-dev/runtime'
+
+      - name: Disable temporary validation endpoints
+        if: always()
+        shell: pwsh
+        run: ./projects/ecommerce/platform/scripts/disable-validation-endpoints.ps1 -Environment dev
 
       - name: Remove ephemeral validation token from runner
         if: always()
