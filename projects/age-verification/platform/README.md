@@ -4,6 +4,21 @@ Production-oriented Azure landing zone for applications that need an AI age-assu
 
 The platform assumes **the customer supplies its own gateway and inference container images**. The Azure layer provides secure ingress, client-side envelope-encryption support, isolated private inference, managed cryptographic keys, short-lived replay/session state, monitoring, network isolation, and deployment guardrails.
 
+## Architecture review path
+
+If you are reviewing this project as an architect or hiring manager, start here:
+
+1. [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md) — privacy invariant, hard constraints, non-goals, and redesign triggers.
+2. [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md) — privacy, security, availability, fail-closed behavior, model-boundary quality attributes, and validation gaps.
+3. [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md) — request, trust-boundary, cryptographic, topology, data-handling, failure-mode, and multi-region-extension diagrams.
+4. [`docs/decisions/`](docs/decisions/) — ADRs explaining the major security/privacy/platform choices and their tradeoffs.
+5. [`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md) — the data-handling and security contracts.
+6. [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md) — model, capacity, validation, and production-boundary limitations.
+7. [`docs/architecture/`](docs/architecture/) — deeper trust-boundary, key-management, networking, observability, cost, and DR design.
+8. [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md) — definition of done and evidence boundary.
+
+The intended review sequence is **requirements → trust boundaries → quality attributes → alternatives → decisions → tradeoffs → validation → remaining limitations**.
+
 ## Core privacy invariant
 
 The source image is never intentionally persisted by the platform.
@@ -100,11 +115,15 @@ After Front Door creates its private-link request:
 
 See:
 
+- [`REQUIREMENTS-AND-CONSTRAINTS.md`](REQUIREMENTS-AND-CONSTRAINTS.md)
+- [`docs/architecture/nfr-matrix.md`](docs/architecture/nfr-matrix.md)
+- [`docs/architecture/diagrams.md`](docs/architecture/diagrams.md)
 - [`PRIVACY.md`](PRIVACY.md)
 - [`SECURITY.md`](SECURITY.md)
 - [`docs/architecture/threat-model.md`](docs/architecture/threat-model.md)
 - [`contracts/crypto-protocol.md`](contracts/crypto-protocol.md)
 - [`contracts/model-contract.md`](contracts/model-contract.md)
+- [`KNOWN-LIMITATIONS.md`](KNOWN-LIMITATIONS.md)
 - [`PROJECT-CHECKLIST.md`](PROJECT-CHECKLIST.md)
 
 ## Important limitation

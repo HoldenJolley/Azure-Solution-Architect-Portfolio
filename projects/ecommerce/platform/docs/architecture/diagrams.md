@@ -88,3 +88,42 @@ flowchart LR
     AS --> AW[Analytics Worker]
     AW --> Bronze[(Data Lake bronze)]
 ```
+
+## Failure-mode view
+
+```mermaid
+flowchart TB
+    F1[Primary API origin unhealthy] --> AFD[Azure Front Door]
+    AFD -->|route to healthy origin| API2[Secondary App Service API]
+
+    F2[Cosmos write region unavailable] --> COSMOS[Cosmos DB]
+    COSMOS -->|automatic failover| CSECONDARY[Configured secondary write region]
+
+    F3[Service Bus regional outage] --> SB[Single Service Bus namespace]
+    SB -->|current baseline| PAUSE[Async order processing can pause]
+    PAUSE --> BACKLOG[Requires explicit messaging-continuity enhancement]
+
+    F4[Payment provider unavailable] --> RETRY[Retry / backoff]
+    RETRY --> ORDER[Order remains non-complete]
+    ORDER --> RELEASE[Reserved inventory eventually released]
+
+    F5[Analytics unavailable] --> COMMERCE[Commerce path continues]
+    COMMERCE --> CATCHUP[Analytics catches up later]
+```
+
+This diagram intentionally shows that “two application regions” does **not** make every dependency multi-region. The current messaging namespace remains a separate continuity risk.
+
+## Worker redelivery and dead-letter behavior
+
+```mermaid
+flowchart LR
+    MSG[Service Bus message] --> WORKER[Worker receives message]
+    WORKER --> EFFECT[Attempt idempotent business effect]
+    EFFECT -->|success| COMPLETE[Complete message]
+    EFFECT -->|process crashes / transient failure| REDELIVER[Lock expires / retry]
+    REDELIVER --> WORKER
+    EFFECT -->|repeated poison failure| DLQ[Dead-letter queue]
+    DLQ --> RUNBOOK[Operator runbook / diagnosis]
+```
+
+The application implementation must make business side effects idempotent; the infrastructure alone cannot guarantee that redelivery is harmless.

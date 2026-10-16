@@ -3,34 +3,209 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Privacy-preserving AI age assurance Azure reference architecture">
+  <meta name="description" content="Detailed privacy-preserving AI age assurance Azure reference architecture by Holden Jolley covering encryption, trust boundaries, anti-replay state, private inference, failure behavior, and validation evidence.">
+  <meta name="theme-color" content="#0078d4">
   <title>AI Age Assurance Platform | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><div class="azure-mark"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header>
-  <main class="content" style="margin-left:0;width:100%;max-width:1100px;margin-right:auto;margin-left:auto;padding-top:50px">
-    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>AI Age Assurance Platform</strong></div>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="https://github.com/HoldenJolley" target="_blank" rel="noreferrer">GitHub</a><a href="https://www.linkedin.com/in/holden-jolley/" target="_blank" rel="noreferrer">LinkedIn</a><a href="mailto:Jolleyholden@gmail.com">Contact</a></div>
+  </header>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>AI Age Assurance</strong></div>
+
     <section class="hero">
       <div>
-        <div class="eyebrow">SECURITY &amp; PRIVACY REFERENCE ARCHITECTURE</div>
+        <div class="project-kicker"><div class="eyebrow">SECURITY · PRIVACY · AI</div></div>
         <h1>Privacy-Preserving AI Age Assurance</h1>
-        <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own AI age models. Images are encrypted on the client, remain ciphertext through the edge and gateway, are decrypted only in isolated inference memory, and are never intentionally stored.</p>
-        <div class="hero-actions"><a class="button primary" href="platform/README.md">Architecture package</a><a class="button" href="../../">Back to portfolio</a></div>
+        <p class="hero-copy">A production-oriented Azure landing zone for bring-your-own age-estimation models where the image is encrypted before upload, remains ciphertext through the public edge and gateway, is decrypted only inside isolated inference memory, and is never intentionally retained.</p>
+        <div class="project-status"><span class="status-chip success">Foundation ARM What-If validated</span><span class="status-chip success">Workloads compile validated</span></div>
+        <div class="hero-actions"><a class="button primary" href="#privacy-flow">Trust-boundary deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#reliability">Failure behavior</a></div>
+      </div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Architecture at a glance</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="hero-topology" aria-label="Age assurance architecture summary"><span>Browser<br>encrypts</span><i>→</i><span class="accent">Private<br>inference</span><i>→</i><span>Key Vault<br>+ attestation</span></div>
+        <div class="validation-list">
+          <div><span>Plaintext boundary</span><strong>Client + inference memory</strong></div>
+          <div><span>Replay defense</span><strong>Short-lived shared state</strong></div>
+          <div><span>Retention</span><strong>No verification image store</strong></div>
+        </div>
       </div>
     </section>
+
+    <nav class="project-toc" aria-label="Age assurance case study sections">
+      <a href="#requirements">Overview</a><a href="#privacy-flow">Trust boundaries</a><a href="#quality">NFRs</a><a href="#reliability">Failure modes</a><a href="#decisions">Decisions</a><a href="#validation">Evidence</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="Age assurance architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Produce an age-assurance decision while minimizing exposure and retention of the source image.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Encrypt on the client, keep edge/gateway ciphertext-only, and decrypt only inside private inference memory.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>Trusted key/session dependencies can reduce availability because the platform fails closed instead of weakening controls.</strong></div>
+    </div>
+
+    <section class="section split" id="requirements">
+      <div>
+        <div class="eyebrow">REQUIREMENTS &amp; CONSTRAINTS</div>
+        <h2>Verify an age signal without turning the image into a platform asset.</h2>
+        <p>The architecture treats the image as highly sensitive transient input rather than application data. The reusable artifact is the secure Azure execution boundary, not a particular model: customers can supply an approved model container while the platform keeps the network, identity, key-management, privacy, and operational controls consistent.</p>
+        <p>The core constraints are strict: no public origin exposure, no photograph persistence, encryption beyond TLS, passwordless Azure service access, fail-closed security behavior, minimal external disclosure, and an explicit separation between platform controls and model governance.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Plaintext boundary</span><strong>Client + inference memory only</strong></div>
+        <div><span>External result</span><strong>Binary approval / denial</strong></div>
+        <div><span>Session state</span><strong>Short-lived nonce records only</strong></div>
+        <div><span>Model boundary</span><strong>Bring-your-own approved container</strong></div>
+      </div>
+    </section>
+
     <section class="section">
-      <div class="section-heading"><div><div class="eyebrow">PRIVACY CONTRACT</div><h2>Plaintext exists only where it must.</h2></div></div>
-      <div class="project-grid">
-        <div class="project-card"><div class="service-icon">◇</div><h3>Encrypted before upload</h3><p>The browser re-encodes the frame, generates a one-time AES-256-GCM key, and encrypts the image before it leaves the device. TLS provides an additional transport layer.</p></div>
-        <div class="project-card"><div class="service-icon">▦</div><h3>Private inference</h3><p>Front Door Premium reaches a private Azure Container Apps environment over Private Link. The gateway never decrypts the photograph; only the private inference process can unwrap the session key.</p></div>
-        <div class="project-card"><div class="service-icon">▤</div><h3>No image retention</h3><p>No image datastore is provisioned. Plaintext, ciphertext, embeddings, tensors, raw age estimates, and session keys are prohibited from logs and persistent application storage.</p></div>
+      <div class="eyebrow">SECURITY PRINCIPLES</div>
+      <h2>Reduce trust instead of extending it.</h2>
+      <div class="capability-grid">
+        <div class="capability"><strong>Payload encryption beyond TLS</strong><span>A fresh AES-256-GCM key encrypts each re-encoded image; that key is wrapped with the platform RSA public key using RSA-OAEP-256 so edge and gateway components do not need plaintext access.</span></div>
+        <div class="capability"><strong>Private execution boundary</strong><span>Front Door reaches the gateway over Private Link, gateway-to-inference traffic remains private inside Container Apps, and data-plane dependencies use private connectivity where modeled.</span></div>
+        <div class="capability"><strong>Passwordless service access</strong><span>Managed identity is the default Azure service authentication mechanism. Redis uses Entra authentication with access keys disabled in the production-oriented design.</span></div>
+        <div class="capability"><strong>Fail closed</strong><span>Key, session-state, model-health, and security failures deny or make verification unavailable rather than silently weakening the controls.</span></div>
       </div>
     </section>
-    <section class="section split">
-      <div><div class="eyebrow">AZURE SERVICES</div><h2>Production landing zone</h2><p>Front Door Premium + WAF, private Container Apps, Key Vault Premium/HSM-backed RSA keys, Azure Managed Redis for two-minute anti-replay state, ACR Premium, managed identities, Private DNS/endpoints, Application Insights, and Log Analytics.</p></div>
-      <div class="info-card"><div><span>Result</span><strong>Approved / Denied attestation</strong></div><div><span>Model</span><strong>Bring your own container</strong></div><div><span>Storage</span><strong>No verification image store</strong></div><div><span>Data in use</span><strong>Confidential compute option</strong></div></div>
+
+    <section class="section" id="privacy-flow">
+      <div class="eyebrow">TRUST BOUNDARIES</div>
+      <h2>Plaintext exists only where inference requires it.</h2>
+      <div class="architecture-flow seven" aria-label="Age assurance privacy flow">
+        <div class="flow-node">Browser<br>encrypts image</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Front Door<br>+ WAF</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Private gateway<br>ciphertext only</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Inference<br>decrypt + attest</div>
+      </div>
+      <div class="service-list" aria-label="Azure services used">
+        <span>Azure Front Door Premium</span><span>WAF</span><span>Azure Container Apps</span><span>Private Link</span><span>Key Vault Premium</span><span>HSM-backed RSA keys</span><span>Azure Managed Redis</span><span>Azure Container Registry</span><span>Managed Identity</span><span>Private DNS</span><span>Application Insights</span><span>Log Analytics</span>
+      </div>
     </section>
+
+    <section class="section" id="quality">
+      <div class="eyebrow">QUALITY ATTRIBUTES</div>
+      <h2>The privacy invariant drives the rest of the design.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Privacy</strong><p>No image store is provisioned. Plaintext is constrained to client memory before encryption and inference-process memory during the request lifetime.</p></div>
+        <div class="decision-card"><strong>Confidentiality</strong><p>Application-layer envelope encryption keeps Front Door and the gateway outside the plaintext trust boundary, while Key Vault/HSM protects the long-lived RSA keys.</p></div>
+        <div class="decision-card"><strong>Replay resistance</strong><p>Short-lived shared nonce/session records in Managed Redis provide atomic one-time semantics across horizontally scaled gateway replicas.</p></div>
+        <div class="decision-card"><strong>Availability</strong><p>Replica failures can be absorbed inside Container Apps, but loss of Key Vault, trusted session state, or the regional stateful stamp deliberately reduces availability rather than weakening controls.</p></div>
+        <div class="decision-card"><strong>Operability</strong><p>Application Insights and Log Analytics retain operational metadata such as model version, latency, and status while request bodies and image-derived artifacts are excluded from logging.</p></div>
+        <div class="decision-card"><strong>Governance boundary</strong><p>The platform defines the secure execution contract but does not claim that a customer model is legally sufficient, unbiased, accurate at a statutory threshold, or appropriate for every jurisdiction.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">DATA LIFECYCLE</div>
+      <h2>Retention is minimized by architecture, not only by policy.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Plaintext image</strong><p>Stored nowhere. It exists for the request lifetime only and is used for inference inside memory.</p></div>
+        <div class="decision-card"><strong>Ciphertext image</strong><p>Transport-only and nonpersistent. The design does not provision a blob store, queue, or database for verification imagery.</p></div>
+        <div class="decision-card"><strong>AES session key</strong><p>Fresh per request and nonpersistent. It exists only long enough to encrypt/decrypt the payload.</p></div>
+        <div class="decision-card"><strong>RSA private key</strong><p>Lives in Key Vault / HSM across its managed key lifecycle and is used for unwrap/sign operations without being exported into application configuration.</p></div>
+        <div class="decision-card"><strong>Session / nonce hash</strong><p>Stored in Managed Redis with a short TTL—approximately two minutes—to provide atomic one-time anti-replay semantics across horizontally scaled replicas.</p></div>
+        <div class="decision-card"><strong>Operational telemetry</strong><p>Model version, latency, and status can be retained for operations; image bodies, embeddings, tensors, exact-age outputs, and session keys are intentionally excluded from application logging.</p></div>
+      </div>
+    </section>
+
+    <section class="section split">
+      <div>
+        <div class="eyebrow">ANTI-REPLAY STATE</div>
+        <h2>Ephemeral state solves one problem without creating a user database.</h2>
+        <p>Horizontal gateway replicas need shared atomic state to ensure that one-time sessions and nonces cannot be replayed across instances. Azure Managed Redis is used with TLS, Private Link, Entra authentication, access keys disabled, and TTL-only session/nonce records.</p>
+        <p>The tradeoff is explicit: Redis availability becomes part of verification availability. The baseline fails closed if that shared anti-replay state cannot be trusted.</p>
+      </div>
+      <div class="info-card">
+        <div><span>State contents</span><strong>Opaque session / nonce only</strong></div>
+        <div><span>Retention</span><strong>Short TTL</strong></div>
+        <div><span>Authentication</span><strong>Entra ID</strong></div>
+        <div><span>Failure behavior</span><strong>Fail closed</strong></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="age-failure-topology-title">
+      <div class="eyebrow">FAILURE TOPOLOGY</div>
+      <h2 id="age-failure-topology-title">Availability never outranks the security boundary.</h2>
+      <div class="architecture-flow seven" aria-label="Key Vault failure path">
+        <div class="flow-node">Key Vault<br>unavailable</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Cannot unwrap key<br>or sign result</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Verification<br>fails closed</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">No weakened<br>fallback</div>
+      </div>
+      <div class="architecture-flow seven" aria-label="Redis failure path">
+        <div class="flow-node">Redis<br>unavailable</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">One-time session<br>cannot be trusted</div><div class="flow-arrow">→</div>
+        <div class="flow-node">New verification<br>fails closed</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Stateless mode<br>not assumed</div>
+      </div>
+      <div class="architecture-flow seven" aria-label="Regional outage path">
+        <div class="flow-node">Regional stateful<br>stamp unavailable</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Baseline service<br>unavailable</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Second region needs<br>coordinated state</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Keys + sessions +<br>models + trust</div>
+      </div>
+    </section>
+
+    <section class="section" id="reliability">
+      <div class="eyebrow">FAILURE BEHAVIOR</div>
+      <h2>Security and availability failures have deliberate outcomes.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Gateway replica failure</strong><p>Container Apps routes new requests to a healthy replica in the production parameter set.</p></div>
+        <div class="decision-card"><strong>Inference replica failure</strong><p>Internal Container Apps routing allows a new request to reach a healthy inference replica; model readiness remains part of the decision path.</p></div>
+        <div class="decision-card"><strong>Key Vault unavailable</strong><p>The service cannot unwrap the payload key or produce the required cryptographic result, so verification fails closed.</p></div>
+        <div class="decision-card"><strong>Redis unavailable</strong><p>New one-time verification sessions fail closed unless an explicitly approved stateless mode is designed later.</p></div>
+        <div class="decision-card"><strong>Model unhealthy</strong><p>The readiness probe fails and verification is denied or unavailable rather than routing blindly to an unhealthy model.</p></div>
+        <div class="decision-card"><strong>Regional outage</strong><p>The current baseline is single-region for the stateful inference stamp. A second region requires a deliberate key, session-state, model-version, and attestation strategy rather than a copy/paste deployment.</p></div>
+      </div>
+    </section>
+
+    <section class="section evidence-section">
+      <div class="section-heading"><div><div class="eyebrow">MULTI-REGION EXTENSION</div><h2>Why failover is more than another Container Apps environment.</h2></div></div>
+      <div class="evidence-grid">
+        <div class="evidence-card"><span class="evidence-number">01</span><strong>Cryptographic determinism</strong><p>A second stamp needs an intentional regional Key Vault/public-key strategy so clients know which key version and trust path apply during failover.</p></div>
+        <div class="evidence-card"><span class="evidence-number">02</span><strong>Session semantics</strong><p>One-time anti-replay state must remain deterministic across regions. A geo strategy cannot allow the same challenge to become valid twice.</p></div>
+        <div class="evidence-card"><span class="evidence-number">03</span><strong>Model + attestation trust</strong><p>Both regions must use synchronized approved model versions and an explicit trust model for signed decisions before Front Door origin failover can be treated as complete.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="decisions">
+      <div class="eyebrow">KEY DECISIONS</div>
+      <h2>The privacy posture comes from what the platform refuses to own.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Application-layer encryption beyond TLS</strong><p>TLS protects transport links, but payload encryption keeps Front Door and the gateway outside the plaintext trust boundary. The consequence is that client code becomes part of the cryptographic protocol and needs interoperability/version testing.</p></div>
+        <div class="decision-card"><strong>No image storage service</strong><p>The safest baseline retention policy is architectural omission: there is no image database, blob container, or queue intended to persist verification imagery.</p></div>
+        <div class="decision-card"><strong>Short-lived anti-replay state only</strong><p>Managed Redis holds opaque session/nonce state with short TTLs rather than creating a durable identity or image database.</p></div>
+        <div class="decision-card"><strong>Bring-your-own model boundary</strong><p>The platform defines the execution contract and isolation boundary without claiming that an arbitrary model is fair, legally compliant, non-exfiltrating, or suitable for a jurisdiction.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">EVIDENCE LEVELS</div>
+      <h2>Strong controls are documented separately from runtime proof.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Design evidence</strong><p>Trust boundaries, crypto contracts, privacy rules, NFRs, ADRs, failure behavior, deployment design, and known limitations are source-controlled.</p></div>
+        <div class="decision-card"><strong>Compiler evidence</strong><p>Foundation/workload Bicep and dev, test, and production parameter files compile cleanly.</p></div>
+        <div class="decision-card"><strong>Azure control-plane evidence</strong><p>The dev foundation completes live ARM What-If through GitHub OIDC. Managed Redis remains modeled but is omitted from dev cloud preflight because live B0/B1 capacity was unavailable.</p></div>
+        <div class="decision-card"><strong>Runtime evidence</strong><p><strong>Not claimed yet.</strong> No production model, privacy runtime tests, failover exercises, or end-to-end deployment evidence exist until the workloads are actually deployed.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="validation">
+      <div class="status-banner">
+        <span class="status-chip success">Cloud validated</span>
+        <div><strong>The dev foundation passes live Azure control-plane preflight through secretless OIDC.</strong><p>Foundation and workload Bicep lint/build cleanly and all dev, test, and production parameter files compile. The live dev foundation What-If resolves 24 planned resources; two managed-identity-dependent RBAC assignments remain intentionally unsupported by What-If until deployment-time principal IDs exist. The dev preflight omits Managed Redis because live B0/B1 capacity was unavailable for this subscription, while Redis remains part of the production architecture and compiler-validated profiles. No resources were deployed.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Current boundary:</strong> this is an architecture, contract, and Infrastructure-as-Code package. No production age-estimation model is bundled, the architecture performs age assurance rather than identity matching, and legal compliance, fairness, liveness strategy, and customer-model behavior require separate product/model governance. Runtime privacy, failover, and recovery claims still need deployed testing.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>Privacy-Preserving AI Age Assurance Architecture</span></footer>
   </main>
+  <script src="../../script.js"></script>
 </body>
 </html>

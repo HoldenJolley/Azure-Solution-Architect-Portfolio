@@ -1,0 +1,281 @@
+name: static portfolio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '404.html'
+      - 'styles.css'
+      - 'easter-eggs.css'
+      - 'theme.css'
+      - 'script.js'
+      - 'favicon.svg'
+      - 'robots.txt'
+      - 'llms.txt'
+      - 'sitemap.xml'
+      - 'staticwebapp.config.json'
+      - 'projects/**/index.html'
+      - 'projects/resume/platform/infra/**'
+      - 'projects/resume/platform/scripts/**'
+      - '.github/workflows/static-portfolio.yml'
+  pull_request:
+    branches: [main, feature/age-verification-platform]
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'index.html'
+      - '404.html'
+      - 'styles.css'
+      - 'easter-eggs.css'
+      - 'theme.css'
+      - 'script.js'
+      - 'favicon.svg'
+      - 'robots.txt'
+      - 'llms.txt'
+      - 'sitemap.xml'
+      - 'staticwebapp.config.json'
+      - 'projects/**/index.html'
+      - 'projects/resume/platform/infra/**'
+      - 'projects/resume/platform/scripts/**'
+      - '.github/workflows/static-portfolio.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the production Static Web App from main after What-If succeeds
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  SWA_NAME: portfolio-prod-swa
+  SWA_RESOURCE_GROUP: portfolio-prod-rg
+
+jobs:
+  validate-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Bicep
+        run: az bicep install
+      - name: Lint Bicep
+        run: az bicep lint --file projects/resume/platform/infra/main.bicep
+      - name: Build Bicep
+        run: az bicep build --file projects/resume/platform/infra/main.bicep --stdout > /dev/null
+      - name: Build parameters
+        run: az bicep build-params --file projects/resume/platform/infra/environments/prod.bicepparam --stdout > /dev/null
+      - name: Validate portfolio JavaScript
+        run: node --check script.js
+      - name: Verify public site assets and identity metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool staticwebapp.config.json > /dev/null
+          test -f 404.html
+          test -f easter-eggs.css
+          test -f theme.css
+          test -f favicon.svg
+          test -f robots.txt
+          test -f llms.txt
+          test -f sitemap.xml
+          grep -q 'script src="../../script.js"' projects/resume/index.html
+          grep -q 'script src="../../script.js"' projects/ecommerce/index.html
+          grep -q 'script src="../../script.js"' projects/age-verification/index.html
+          grep -q '"rewrite": "/404.html"' staticwebapp.config.json
+          grep -q 'https://holdenjolley.com/' llms.txt
+          grep -q 'https://github.com/HoldenJolley' llms.txt
+          grep -q 'https://www.linkedin.com/in/holden-jolley/' llms.txt
+          grep -q 'User-agent: \*' robots.txt
+          grep -q 'Sitemap: https://holdenjolley.com/sitemap.xml' robots.txt
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import re
+          import xml.etree.ElementTree as ET
+
+          html = pathlib.Path('index.html').read_text(encoding='utf-8')
+          match = re.search(r'<script type="application/ld\+json">\s*(.*?)\s*</script>', html, re.S)
+          if not match:
+              raise SystemExit('Schema.org JSON-LD block not found in index.html')
+          data = json.loads(match.group(1))
+          graph = data.get('@graph', [])
+          people = [item for item in graph if item.get('@type') == 'Person']
+          if len(people) != 1:
+              raise SystemExit('Expected exactly one Person entity in JSON-LD')
+          same_as = set(people[0].get('sameAs', []))
+          expected = {
+              'https://github.com/HoldenJolley',
+              'https://www.linkedin.com/in/holden-jolley/'
+          }
+          if not expected.issubset(same_as):
+              raise SystemExit('Person sameAs identity links are incomplete')
+
+          root = ET.parse('sitemap.xml').getroot()
+          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls = {node.text for node in root.findall('sm:url/sm:loc', ns)}
+          expected_urls = {
+              'https://holdenjolley.com/',
+              'https://holdenjolley.com/projects/resume/',
+              'https://holdenjolley.com/projects/ecommerce/',
+              'https://holdenjolley.com/projects/age-verification/'
+          }
+          if not expected_urls.issubset(urls):
+              raise SystemExit('Canonical sitemap URLs are incomplete')
+          PY
+
+  azure-what-if:
+    needs: validate-infrastructure
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run infrastructure what-if
+        shell: pwsh
+        run: ./projects/resume/platform/scripts/validate.ps1 -RunWhatIf
+
+  preview:
+    needs: [validate-infrastructure, azure-what-if]
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check Static Web App exists
+        id: swa
+        shell: bash
+        run: |
+          if az staticwebapp show --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Static Web App does not exist yet; skipping preview deployment."
+          fi
+      - name: Assemble public site artifact
+        if: steps.swa.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
+          cp index.html 404.html styles.css easter-eggs.css theme.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          cp projects/resume/index.html dist/projects/resume/index.html
+          cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
+          cp projects/age-verification/index.html dist/projects/age-verification/index.html
+      - name: Retrieve deployment token at runtime
+        if: steps.swa.outputs.exists == 'true'
+        shell: bash
+        run: |
+          token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
+          echo "::add-mask::$token"
+          echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Deploy preview
+        if: steps.swa.outputs.exists == 'true'
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: dist
+          output_location: ''
+          skip_app_build: true
+
+  deploy:
+    needs: [validate-infrastructure, azure-what-if]
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy infrastructure with Bicep
+        shell: pwsh
+        run: ./projects/resume/platform/scripts/deploy-infra.ps1
+      - name: Assemble public site artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
+          cp index.html 404.html styles.css easter-eggs.css theme.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          cp projects/resume/index.html dist/projects/resume/index.html
+          cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
+          cp projects/age-verification/index.html dist/projects/age-verification/index.html
+      - name: Retrieve deployment token at runtime
+        shell: bash
+        run: |
+          token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
+          echo "::add-mask::$token"
+          echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Deploy portfolio
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: dist
+          output_location: ''
+          skip_app_build: true
+
+  close-preview:
+    needs: validate-infrastructure
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check Static Web App exists
+        id: swa
+        shell: bash
+        run: |
+          if az staticwebapp show --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Static Web App does not exist yet; nothing to close."
+          fi
+      - name: Retrieve deployment token at runtime
+        if: steps.swa.outputs.exists == 'true'
+        shell: bash
+        run: |
+          token="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$SWA_RESOURCE_GROUP" --query properties.apiKey -o tsv)"
+          echo "::add-mask::$token"
+          echo "SWA_DEPLOYMENT_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Close preview environment
+        if: steps.swa.outputs.exists == 'true'
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          action: close

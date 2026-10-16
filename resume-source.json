@@ -1,0 +1,73 @@
+{
+  "name": "Holden Jolley",
+  "headline": "AZURE SOLUTION ARCHITECT | CLOUD INFRASTRUCTURE & SECURITY",
+  "contact": [
+    "Hickory, NC · Open to Bay Area relocation",
+    "828-449-7496",
+    "Jolleyholden@gmail.com",
+    "github.com/HoldenJolley"
+  ],
+  "summary": "Azure-focused cloud and security professional with 5+ years translating business, security, and operational requirements into resilient, cost-conscious solutions. Led modernization initiatives supporting ~16,000 users, 3,000 endpoints, and ~100 Azure VMs, balancing resiliency, security, operational simplicity, and total cost. Delivered automation that reduced device provisioning from 2.5-3 hours to 15-20 minutes, built executive alignment for least-privilege security changes, and developed Azure reference architectures validated through Bicep, secretless GitHub OIDC, and live Azure Resource Manager What-If.",
+  "projects": [
+    {
+      "title": "Azure E-Commerce Reference Architecture",
+      "focus": "Resiliency, secure scale & operational continuity",
+      "description": "Designed a distributed Azure commerce platform to protect internet-facing traffic, decouple transactional workloads, support regional recovery, and allow application and data components to scale independently. Implemented with Front Door + WAF, App Service, Cosmos DB, Service Bus, private networking, managed identity/RBAC, and observability; dev/test/prod Bicep validation is green and the dev architecture passes live ARM What-If through GitHub OIDC."
+    },
+    {
+      "title": "Privacy-Preserving AI Age Assurance Platform",
+      "focus": "Privacy risk reduction & secure AI integration",
+      "description": "Designed a privacy-first age assurance landing zone that minimizes exposure and retention of verification images while returning only a binary approval decision. Uses client-side AES-256-GCM + RSA-OAEP envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, Managed Redis anti-replay state, and Private Link; foundation/workload Bicep validates cleanly and the dev foundation passes live ARM What-If through GitHub OIDC."
+    },
+    {
+      "title": "Cost-Optimized Azure Static Portfolio",
+      "focus": "Right-sizing, cost control & secure delivery",
+      "description": "Designed portfolio hosting to meet availability, HTTPS, custom-domain, CI/CD, and recovery requirements at a target of $0/month Azure hosting within Free quotas. Uses Azure Static Web Apps Free, security headers, GitHub Actions/OIDC, and source-control recovery; live ARM What-If resolves the intended footprint to one resource group and one Free-tier Static Web App, with production deployment deliberately manually gated."
+    }
+  ],
+  "certifications": [
+    "Microsoft Azure Administrator Associate (AZ-104) - In progress",
+    "Microsoft Azure Solutions Architect Expert (AZ-305) - In progress"
+  ],
+  "technologies": [
+    ["Azure Architecture", "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"],
+    ["Data & Integration", "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"],
+    ["Identity & Security", "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"],
+    ["IaC & Automation", "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"]
+  ],
+  "experience": [
+    {
+      "company": "Alex Lee",
+      "role": "Endpoint And IS Security Specialist / Cloud Infrastructure & Security Lead",
+      "scope": "Azure Cloud Infrastructure, Identity & Security",
+      "dates": "2022-Present",
+      "bullets": [
+        "Architected and led migration of a ~100-VM RDS environment to Azure across four teams, covering infrastructure, networking, NSGs, VPN connectivity, monitoring, remediation, and cost strategy; selected site-to-site VPN over ExpressRoute based on workload resiliency requirements and total cost, and implemented reserved/pre-purchased compute capacity to reduce ongoing infrastructure spend.",
+        "Automated VM health monitoring, reboot remediation, and failure escalation to improve service resilience, accelerate recovery from common failures, and reduce manual operational effort.",
+        "Led modernization of 1,500+ endpoints from MDT/on-prem AD to Entra ID, Intune, and Autopilot, standardizing provisioning and moving the device lifecycle toward cloud-based management.",
+        "Designed Autopilot profiles, naming standards, Conditional Access, certificate authentication, and application deployment patterns to create a repeatable, policy-driven endpoint architecture.",
+        "Built Freshservice -> Entra -> Intune provisioning automation that reduced device deployment time from 2.5-3 hours to 15-20 minutes - roughly a 90% reduction - accelerating onboarding while reducing technician effort.",
+        "Designed and automated identity lifecycle management for employee onboarding and inactive-account cleanup, replacing recurring manual administration and saving several staff-hours per day. Retained manager-approval checkpoints before stale Active Directory accounts were removed, preserving business ownership while reducing orphaned-access risk.",
+        "Built executive alignment with the CIO to remove standing local administrator rights by translating endpoint privilege risk and developer-productivity concerns into a business case that addressed anticipated resistance from Software Development leadership. Implemented an EPM/JIT least-privilege model to preserve developer workflows while reducing standing administrative access.",
+        "Implemented Microsoft Global Secure Access to modernize secure connectivity to enterprise resources and reduce reliance on traditional network access paths."
+      ]
+    },
+    {
+      "company": "Alex Lee",
+      "role": "IT Service Desk Agent",
+      "scope": "",
+      "dates": "2021-2022",
+      "bullets": [
+        "Led UiPath automation and onboarding/offboarding process redesign to standardize workflows and reduce manual service-desk effort.",
+        "Administered Freshservice workflows, automations, service requests, and integrations supporting repeatable service delivery and process automation.",
+        "Built MDT -> Password Manager Pro automation for unique device administrator credentials, reducing manual credential handling and improving consistency.",
+        "Supported transition of device credential management to Intune as part of the broader Autopilot modernization."
+      ]
+    }
+  ],
+  "education": {
+    "school": "University of North Carolina at Pembroke",
+    "degree": "Bachelor of Science in Computer Science",
+    "dates": "2016-2020"
+  }
+}

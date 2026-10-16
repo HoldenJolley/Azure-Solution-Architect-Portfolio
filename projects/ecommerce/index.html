@@ -3,16 +3,209 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Azure E-Commerce Platform reference architecture by Holden Jolley">
+  <meta name="description" content="Detailed Azure e-commerce reference architecture by Holden Jolley covering distributed systems, consistency, security, resiliency, observability, failure modes, and Infrastructure as Code.">
+  <meta name="theme-color" content="#0078d4">
   <title>E-Commerce Platform | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div></header>
-  <main class="content" style="margin-left:0;width:100%;max-width:1000px;margin-right:auto;margin-left:auto;padding-top:50px">
-    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><strong>E-Commerce Platform</strong></div>
-    <section class="hero"><div><div class="eyebrow">AZURE REFERENCE ARCHITECTURE</div><h1>E-Commerce Platform</h1><p class="hero-copy">A deployable, production-oriented Azure e-commerce backend reference implementation covering Infrastructure as Code, distributed inventory, asynchronous processing, security, observability, analytics, and disaster recovery.</p><div class="hero-actions"><a class="button primary" href="platform/README.md">View technical package</a><a class="button" href="../../">Back to portfolio</a></div></div><div class="hero-panel"><div class="panel-header"><span>Architecture focus</span><span class="panel-menu">•••</span></div><div class="info-card" style="box-shadow:none;border:0;padding:0"><div><span>Edge</span><strong>Front Door + WAF</strong></div><div><span>Application</span><strong>App Service + Workers</strong></div><div><span>Data</span><strong>Cosmos DB + Data Lake</strong></div><div><span>Messaging</span><strong>Service Bus</strong></div><div><span>IaC</span><strong>Bicep + GitHub Actions</strong></div></div></div></section>
-    <section class="section"><div class="eyebrow">PROJECT DELIVERABLES</div><h2>What this project demonstrates</h2><div class="capability-grid"><div class="capability"><strong>Infrastructure as Code</strong><span>Modular Bicep with dev, test, and production parameter sets.</span></div><div class="capability"><strong>Distributed Commerce</strong><span>Inventory reservation, asynchronous workflows, idempotency, and failure handling.</span></div><div class="capability"><strong>Security Architecture</strong><span>Managed identity, RBAC, Key Vault, WAF, private connectivity, and least privilege.</span></div><div class="capability"><strong>Operations</strong><span>Monitoring, diagnostics, resilience testing, disaster recovery, cost, and runbooks.</span></div></div></section>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="https://github.com/HoldenJolley" target="_blank" rel="noreferrer">GitHub</a><a href="https://www.linkedin.com/in/holden-jolley/" target="_blank" rel="noreferrer">LinkedIn</a><a href="mailto:Jolleyholden@gmail.com">Contact</a></div>
+  </header>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>E-Commerce Platform</strong></div>
+
+    <section class="hero">
+      <div>
+        <div class="project-kicker"><div class="eyebrow">RELIABILITY · DISTRIBUTED SYSTEMS</div></div>
+        <h1>Distributed E-Commerce Platform</h1>
+        <p class="hero-copy">A production-oriented Azure reference architecture for a commerce backend that balances responsive checkout, inventory consistency, asynchronous processing, private connectivity, observability, and regional resilience without defaulting to Kubernetes complexity.</p>
+        <div class="project-status"><span class="status-chip success">Dev / Test / Prod Bicep validated</span><span class="status-chip success">ARM What-If validated</span></div>
+        <div class="hero-actions"><a class="button primary" href="#architecture">Architecture deep dive</a><a class="button" href="#quality">Quality attributes</a><a class="button" href="#reliability">Failure modes</a></div>
+      </div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Architecture at a glance</span><span class="status-chip success">Azure preflight green</span></div>
+        <div class="hero-topology" aria-label="E-commerce architecture summary"><span>Front Door<br>+ WAF</span><i>→</i><span class="accent">App Service<br>API + workers</span><i>→</i><span>Cosmos DB<br>+ Service Bus</span></div>
+        <div class="validation-list">
+          <div><span>Availability</span><strong>2-region compute reference</strong></div>
+          <div><span>Consistency</span><strong>Single inventory authority</strong></div>
+          <div><span>Operations</span><strong>App Insights + Log Analytics</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="project-toc" aria-label="E-commerce case study sections">
+      <a href="#requirements">Overview</a><a href="#architecture">Architecture</a><a href="#quality">NFRs</a><a href="#reliability">Failure modes</a><a href="#decisions">Decisions</a><a href="#validation">Evidence</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="E-commerce architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Keep checkout responsive without making inventory consistency ambiguous.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Managed regional App Service plus Cosmos DB and Service Bus behind Front Door.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>API compute is multi-region; Service Bus continuity remains an explicit follow-on design problem.</strong></div>
+    </div>
+
+    <section class="section split" id="requirements">
+      <div>
+        <div class="eyebrow">REQUIREMENTS &amp; CONSTRAINTS</div>
+        <h2>Keep checkout responsive without making consistency vague.</h2>
+        <p>The customer-facing API should acknowledge work quickly while downstream inventory, payment, shipping, and analytics can proceed independently. The design therefore keeps the synchronous path small, makes inventory reservation an explicit consistency boundary, and pushes long-running work into asynchronous consumers.</p>
+        <p>The reference must also be reproducible from source control, use managed identity by default, keep data-plane services on private paths where practical, and demonstrate regional resilience without pretending every stateful dependency is automatically active-active.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Customer path</span><strong>Short synchronous checkout path</strong></div>
+        <div><span>Consistency</span><strong>Explicit inventory authority</strong></div>
+        <div><span>Security</span><strong>Managed identity + private endpoints</strong></div>
+        <div><span>Operations</span><strong>Observable failure paths + runbooks</strong></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">ARCHITECTURE CONSTRAINTS</div>
+      <h2>Requirements decide where complexity belongs.</h2>
+      <div class="capability-grid">
+        <div class="capability"><strong>No Kubernetes by default</strong><span>Regional HTTP APIs and workers need managed compute, not necessarily a Kubernetes control plane. App Service reduces platform overhead while retaining identity, VNet integration, health checks, slots, and scale options.</span></div>
+        <div class="capability"><strong>Async after acceptance</strong><span>Inventory, payment, shipping, and analytics work is decoupled through Service Bus where the business flow does not require the customer request to wait.</span></div>
+        <div class="capability"><strong>Separate operational and analytical paths</strong><span>Cosmos DB holds commerce state while business events can be projected into Data Lake without placing analytics on the checkout critical path.</span></div>
+        <div class="capability"><strong>Dependency-specific resilience</strong><span>Front Door, App Service, Cosmos DB, and Service Bus have different recovery characteristics; RTO and RPO cannot be reduced to one generic “multi-region” claim.</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="eyebrow">REQUEST &amp; EVENT FLOW</div>
+      <h2>One platform, intentionally separate failure domains.</h2>
+      <div class="architecture-flow seven" aria-label="E-commerce architecture flow">
+        <div class="flow-node">Customers</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Front Door<br>+ WAF</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Regional API<br>App Service</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Cosmos DB<br>+ Service Bus</div>
+      </div>
+      <div class="service-list" aria-label="Azure services used">
+        <span>Azure Front Door</span><span>WAF</span><span>App Service</span><span>Cosmos DB</span><span>Service Bus</span><span>Key Vault</span><span>Data Lake Storage</span><span>VNets</span><span>Private Endpoints</span><span>Private DNS</span><span>Application Insights</span><span>Log Analytics</span>
+      </div>
+    </section>
+
+    <section class="section" id="quality">
+      <div class="eyebrow">QUALITY ATTRIBUTES</div>
+      <h2>The architecture is tied to non-functional requirements, not a service checklist.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Availability</strong><p>Front Door and a secondary App Service origin are the production-reference response to regional API failure. Runtime failover behavior still needs to be exercised after deployment.</p></div>
+        <div class="decision-card"><strong>Consistency</strong><p>Inventory reservation and a single authoritative Cosmos write region keep stock ownership explicit instead of treating active-active writes as a free performance feature.</p></div>
+        <div class="decision-card"><strong>Messaging continuity</strong><p>The current single Service Bus namespace is called out as a real regional dependency. The design does not claim an async-processing RTO until continuity is deliberately implemented and tested.</p></div>
+        <div class="decision-card"><strong>Security</strong><p>Front Door/WAF is the intended ingress, data services move to private paths in the production profile, and managed identities replace reusable application secrets.</p></div>
+        <div class="decision-card"><strong>Observability</strong><p>Application Insights and Log Analytics are part of the platform because retries, dead letters, dependency failures, and regional recovery need operational evidence.</p></div>
+        <div class="decision-card"><strong>Cost &amp; maintainability</strong><p>Development stays lower-cost, production adds resilience only where requirements justify it, and App Service avoids Kubernetes operational overhead until Kubernetes-specific needs appear.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">COMPONENT RESPONSIBILITIES</div>
+      <h2>The architecture makes ownership explicit.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>API</strong><p>Owns product, cart, checkout acceptance, and order retrieval. It stays focused on the customer-facing request path rather than performing every downstream side effect inline.</p></div>
+        <div class="decision-card"><strong>Inventory worker</strong><p>Owns reservation, release, and commit transitions. Reservation is the deliberate consistency boundary used to prevent ambiguous stock ownership.</p></div>
+        <div class="decision-card"><strong>Payment worker</strong><p>Owns payment-provider interaction and requires idempotent behavior so retries do not duplicate external side effects.</p></div>
+        <div class="decision-card"><strong>Shipping worker</strong><p>Handles fulfillment transitions independently from the checkout request so shipping failures do not force the customer-facing API to remain open.</p></div>
+        <div class="decision-card"><strong>Analytics worker</strong><p>Copies business events into Data Lake. Analytics can lag or recover independently because it is intentionally outside the checkout critical path.</p></div>
+        <div class="decision-card"><strong>Platform services</strong><p>Cosmos DB holds operational state, Service Bus carries asynchronous work, Key Vault protects secrets/keys, and Application Insights + Log Analytics provide the operational evidence needed to diagnose failures.</p></div>
+      </div>
+    </section>
+
+    <section class="section split">
+      <div>
+        <div class="eyebrow">REGIONAL DESIGN</div>
+        <h2>Multi-region compute does not magically make every dependency multi-region.</h2>
+        <p>The production reference places API/worker compute in two regions behind Front Door. Cosmos DB is modeled across both regions with one authoritative write region and automatic failover. Front Door can route around an unhealthy API origin and Cosmos can promote the configured secondary region.</p>
+        <p>Service Bus continuity is intentionally treated as a separate architecture problem. A regional Service Bus outage can pause asynchronous work in the current baseline, so the project does not claim a messaging RTO that has not been designed and tested.</p>
+      </div>
+      <div class="info-card">
+        <div><span>API failover</span><strong>Front Door origin health</strong></div>
+        <div><span>Cosmos</span><strong>Single write authority + failover</strong></div>
+        <div><span>Messaging</span><strong>Regional continuity backlog</strong></div>
+        <div><span>Analytics</span><strong>Higher recovery tolerance</strong></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="failure-topology-title">
+      <div class="eyebrow">FAILURE TOPOLOGY</div>
+      <h2 id="failure-topology-title">Different failures take different recovery paths.</h2>
+      <div class="architecture-flow seven" aria-label="API regional failover path">
+        <div class="flow-node">Primary API<br>unhealthy</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Front Door<br>health routing</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Secondary API<br>origin</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Customer traffic<br>continues</div>
+      </div>
+      <div class="architecture-flow seven" aria-label="Cosmos regional failover path">
+        <div class="flow-node">Cosmos write<br>region unavailable</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Automatic<br>failover</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Secondary region<br>promoted</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Observed RTO/RPO<br>must be tested</div>
+      </div>
+      <div class="architecture-flow seven" aria-label="Service Bus regional outage path">
+        <div class="flow-node">Service Bus<br>regional outage</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Single namespace<br>dependency</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Async processing<br>pauses</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Continuity design<br>required</div>
+      </div>
+    </section>
+
+    <section class="section" id="reliability">
+      <div class="eyebrow">FAILURE BEHAVIOR</div>
+      <h2>Design for what breaks, not only for the happy path.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Primary API origin unhealthy</strong><p>Front Door routes to the healthy secondary origin in the production reference profile.</p></div>
+        <div class="decision-card"><strong>Worker crashes mid-message</strong><p>The locked message becomes available for redelivery. Consumers must be idempotent because the crash may happen after an external side effect but before message completion.</p></div>
+        <div class="decision-card"><strong>Poison message</strong><p>Retries stop at the configured limit and the message moves to the dead-letter queue for operational handling rather than retrying forever.</p></div>
+        <div class="decision-card"><strong>Payment provider unavailable</strong><p>Retry/backoff applies, the order remains incomplete, and reserved inventory must eventually be released instead of becoming permanently stranded.</p></div>
+        <div class="decision-card"><strong>Cosmos write region unavailable</strong><p>Cosmos failover promotes the configured secondary region. Observed recovery still needs to be validated under a deployed test.</p></div>
+        <div class="decision-card"><strong>Service Bus regional outage</strong><p>Asynchronous processing can pause. The current reference records that limitation instead of hiding it behind a generic multi-region label.</p></div>
+      </div>
+    </section>
+
+    <section class="section evidence-section">
+      <div class="section-heading"><div><div class="eyebrow">POST-DEPLOYMENT RESILIENCE TESTS</div><h2>What I would prove at runtime.</h2></div></div>
+      <div class="evidence-grid">
+        <div class="evidence-card"><span class="evidence-number">01</span><strong>Traffic and regional failover</strong><p>Make the primary API origin unhealthy and verify Front Door moves traffic. Exercise controlled Cosmos regional failover and record observed recovery instead of assuming the service behavior meets the target.</p></div>
+        <div class="evidence-card"><span class="evidence-number">02</span><strong>Message integrity</strong><p>Crash a worker after a side effect but before completion, prove idempotent redelivery, inject a poison event, and verify dead-letter handling and the associated runbook.</p></div>
+        <div class="evidence-card"><span class="evidence-number">03</span><strong>Business consistency</strong><p>Simulate payment timeouts and verify inventory release, then run a high-contention inventory race to prove the reservation boundary prevents overselling.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="decisions">
+      <div class="eyebrow">KEY DECISIONS</div>
+      <h2>Complexity is introduced only where the requirement earns it.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>App Service instead of AKS</strong><p>The workload needs independently deployable API and worker processes, not a Kubernetes control plane. App Service keeps the operational surface smaller while preserving scale, managed identity, VNet integration, health checks, and deployment slots.</p></div>
+        <div class="decision-card"><strong>Service Bus for asynchronous commerce work</strong><p>Payment, shipping, inventory, and analytics can fail or retry independently without forcing the customer request to wait for every downstream dependency.</p></div>
+        <div class="decision-card"><strong>Cosmos DB with a clear inventory authority</strong><p>The design prioritizes a defined inventory-consistency boundary rather than enabling multi-master writes everywhere and creating ambiguous stock ownership.</p></div>
+        <div class="decision-card"><strong>Private networking for data services</strong><p>Private endpoints and DNS keep data-plane services off unnecessary public paths while managed identities remove application secrets from service-to-service authentication.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">EVIDENCE LEVELS</div>
+      <h2>What has been proven—and what has not.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Design evidence</strong><p>Requirements, constraints, NFRs, ADRs, diagrams, security, reliability, operations, and known limitations are documented in source control.</p></div>
+        <div class="decision-card"><strong>Compiler evidence</strong><p>Dev, test, and production Bicep and parameter validation is green.</p></div>
+        <div class="decision-card"><strong>Azure control-plane evidence</strong><p>GitHub Actions authenticates with OIDC and the dev architecture completes live subscription-scope ARM What-If evaluation.</p></div>
+        <div class="decision-card"><strong>Runtime evidence</strong><p><strong>Not claimed yet.</strong> Application binaries, real failover, performance, recovery, and end-to-end business behavior still require deployment and testing.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="validation">
+      <div class="status-banner">
+        <span class="status-chip success">Cloud validated</span>
+        <div><strong>Compiler and live Azure control-plane validation are complete for the dev architecture.</strong><p>GitHub Actions lints and builds the Bicep template and all dev, test, and production parameter files, authenticates to Azure through secretless OIDC, and runs a subscription-scope Resource Manager What-If. This proves the infrastructure model can be evaluated by Azure; it does not substitute for runtime resiliency, load, integration, or recovery testing. The deployment job remains gated and has not been run.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Current boundary:</strong> this is a reference architecture package containing the architecture, Infrastructure as Code, contracts, deployment tooling, ADRs, testing guidance, and operational documentation. Application binaries, end-to-end runtime evidence, and a tested Service Bus regional-continuity design remain outside the current validated boundary.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>E-Commerce Azure Reference Architecture</span></footer>
   </main>
+  <script src="../../script.js"></script>
 </body>
 </html>
