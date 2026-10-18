@@ -60,6 +60,21 @@ Write-Host 'Foundation Deployment Stack completed.' -ForegroundColor Green
 
 if ($EvidenceDirectory) {
     New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
+    $outputs = $result.properties.outputs
+    $safeOutputs = [ordered]@{
+        platformResourceGroup = $outputs.platformResourceGroup.value
+        networkResourceGroup = $outputs.networkResourceGroup.value
+        securityResourceGroup = $outputs.securityResourceGroup.value
+        monitorResourceGroup = $outputs.monitorResourceGroup.value
+        containerEnvironmentName = $outputs.containerEnvironmentName.value
+        registryName = $outputs.registryName.value
+        registryLoginServer = $outputs.registryLoginServer.value
+        keyVaultName = $outputs.keyVaultName.value
+        encryptionKeyName = $outputs.encryptionKeyName.value
+        attestationKeyName = $outputs.attestationKeyName.value
+        redisHost = $outputs.redisHost.value
+        redisPort = $outputs.redisPort.value
+    }
     $metadata = [ordered]@{
         capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
         subscriptionId = $account.id
@@ -69,13 +84,12 @@ if ($EvidenceDirectory) {
         stackId = $result.id
         provisioningState = $result.properties.provisioningState
         actionOnUnmanage = $result.properties.actionOnUnmanage
-        outputs = $result.properties.outputs
+        outputs = $safeOutputs
+        evidenceNote = 'Application Insights connection data and identity resource IDs are intentionally omitted from the artifact.'
     }
-    $metadata | ConvertTo-Json -Depth 30 | Set-Content -Path (Join-Path $EvidenceDirectory 'foundation-stack.json') -Encoding utf8
-    az stack sub show --name $stackName --output json | Set-Content -Path (Join-Path $EvidenceDirectory 'foundation-stack-full.json') -Encoding utf8
-    if ($LASTEXITCODE -ne 0) { throw 'Foundation deployed, but evidence capture failed.' }
+    $metadata | ConvertTo-Json -Depth 20 | Set-Content -Path (Join-Path $EvidenceDirectory 'foundation-stack.json') -Encoding utf8
 }
 
 if ($result.properties.outputs) {
-    $result.properties.outputs | ConvertTo-Json -Depth 20
+    Write-Host 'Foundation outputs are available to the workflow. Sensitive operational connection data is not written to evidence artifacts.' -ForegroundColor DarkGray
 }

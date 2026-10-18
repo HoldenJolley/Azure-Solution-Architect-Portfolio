@@ -57,7 +57,20 @@ jobs:
           if ($foundation.properties.provisioningState -ne 'Succeeded') {
             throw "Foundation is not ready: $($foundation.properties.provisioningState)"
           }
-          $foundation | ConvertTo-Json -Depth 30 | Set-Content '_evidence/ageverify-dev/foundation-stack-before-runtime.json' -Encoding utf8
+          $safe = [ordered]@{
+            capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
+            name = $foundation.name
+            id = $foundation.id
+            provisioningState = $foundation.properties.provisioningState
+            registryName = $foundation.properties.outputs.registryName.value
+            keyVaultName = $foundation.properties.outputs.keyVaultName.value
+            containerEnvironmentName = $foundation.properties.outputs.containerEnvironmentName.value
+            platformResourceGroup = $foundation.properties.outputs.platformResourceGroup.value
+            networkResourceGroup = $foundation.properties.outputs.networkResourceGroup.value
+            securityResourceGroup = $foundation.properties.outputs.securityResourceGroup.value
+            monitorResourceGroup = $foundation.properties.outputs.monitorResourceGroup.value
+          }
+          $safe | ConvertTo-Json -Depth 10 | Set-Content '_evidence/ageverify-dev/foundation-before-runtime.json' -Encoding utf8
 
       - name: Build and push synthetic validation images
         shell: pwsh
@@ -166,9 +179,9 @@ jobs:
           if ($foundation) {
             $acrName = $foundation.properties.outputs.registryName.value
             az acr show --name $acrName --resource-group $platformRg --query "{name:name,sku:sku.name,publicNetworkAccess:publicNetworkAccess,networkRuleBypassOptions:networkRuleBypassOptions,adminUserEnabled:adminUserEnabled,anonymousPullEnabled:anonymousPullEnabled}" --output json | Set-Content '_evidence/ageverify-dev/registry-posture.json' -Encoding utf8
-            az containerapp env show --name ageverify-dev-cae --resource-group $platformRg --query "{name:name,provisioningState:properties.provisioningState,publicNetworkAccess:properties.publicNetworkAccess,internal:properties.vnetConfiguration.internal,zoneRedundant:properties.zoneRedundant,workloadProfiles:properties.workloadProfiles}" --output json | Set-Content '_evidence/ageverify-dev/container-environment-posture.json' -Encoding utf8
-            az containerapp show --name ageverify-dev-gateway --resource-group $platformRg --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/gateway-posture.json' -Encoding utf8
-            az containerapp show --name ageverify-dev-inference --resource-group $platformRg --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/inference-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/managedEnvironments --name ageverify-dev-cae --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,publicNetworkAccess:properties.publicNetworkAccess,internal:properties.vnetConfiguration.internal,zoneRedundant:properties.zoneRedundant,workloadProfiles:properties.workloadProfiles}" --output json | Set-Content '_evidence/ageverify-dev/container-environment-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/containerApps --name ageverify-dev-gateway --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/gateway-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/containerApps --name ageverify-dev-inference --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/inference-posture.json' -Encoding utf8
           }
 
       - name: Upload runtime validation evidence
