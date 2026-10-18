@@ -46,7 +46,9 @@ param tags object = {
   validationProfile: 'free-trial-no-front-door'
 }
 
-var suffix = uniqueString(subscription().id, workloadName, environment)
+// Rotate the validation-only resource suffix after the first failed live attempt. This avoids
+// collisions with soft-deleted globally named resources such as the purge-protected Key Vault.
+var suffix = uniqueString(subscription().id, workloadName, environment, 'validation-v2')
 var globalRgName = 'rg-${workloadName}-${environment}-global'
 var primaryRgName = 'rg-${workloadName}-${environment}-${primaryRegionCode}'
 var primaryAddressSpace = '10.10.0.0/16'
