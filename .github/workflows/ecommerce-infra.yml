@@ -22,7 +22,7 @@ on:
           - test
           - prod
       deploy:
-        description: Create/update the dev Deployment Stack after validation
+        description: Create/update the temporary dev Deployment Stack (Front Door omitted because this subscription blocks it)
         required: true
         default: false
         type: boolean

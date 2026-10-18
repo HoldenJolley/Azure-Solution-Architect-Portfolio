@@ -29,49 +29,77 @@ if ($stack.properties.provisioningState -ne 'Succeeded') {
 }
 
 $outputs = $stack.properties.outputs
-$frontDoorUrl = [string]$outputs.frontDoorUrl.value
+$frontDoorDeployed = $false
+if ($outputs.frontDoorDeployed) { $frontDoorDeployed = [bool]$outputs.frontDoorDeployed.value }
+$frontDoorUrl = if ($outputs.frontDoorUrl) { [string]$outputs.frontDoorUrl.value } else { '' }
+$runtimeEntryUrl = if ($outputs.runtimeEntryUrl) { [string]$outputs.runtimeEntryUrl.value } else { '' }
 $primaryApiHostName = [string]$outputs.primaryApiHostName.value
 $appInsightsName = [string]$outputs.applicationInsightsName.value
 $cosmosEndpoint = [string]$outputs.cosmosEndpoint.value
 $serviceBusFqdn = [string]$outputs.serviceBusNamespace.value
 
-if ([string]::IsNullOrWhiteSpace($frontDoorUrl) -or [string]::IsNullOrWhiteSpace($primaryApiHostName)) {
+if ([string]::IsNullOrWhiteSpace($runtimeEntryUrl)) {
+    if ($frontDoorDeployed -and -not [string]::IsNullOrWhiteSpace($frontDoorUrl)) {
+        $runtimeEntryUrl = $frontDoorUrl
+    } elseif (-not [string]::IsNullOrWhiteSpace($primaryApiHostName)) {
+        $runtimeEntryUrl = "https://$primaryApiHostName"
+    }
+}
+if ([string]::IsNullOrWhiteSpace($runtimeEntryUrl) -or [string]::IsNullOrWhiteSpace($primaryApiHostName)) {
     throw 'Required Deployment Stack outputs are missing.'
 }
 
-$frontDoorUrl = $frontDoorUrl.TrimEnd('/')
+$runtimeEntryUrl = $runtimeEntryUrl.TrimEnd('/')
 $headers = @{ 'X-Validation-Token' = $token }
 New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
 
-Write-Host "Waiting for Front Door health at $frontDoorUrl/health ..." -ForegroundColor Cyan
+$entryMode = $frontDoorDeployed ? 'azure-front-door' : 'direct-app-service-validation'
+Write-Host "Waiting for runtime health through $entryMode at $runtimeEntryUrl/health ..." -ForegroundColor Cyan
 $healthResponse = $null
 for ($attempt = 1; $attempt -le 40; $attempt++) {
     try {
-        $candidate = Invoke-WebRequest -Uri "$frontDoorUrl/health" -Method Get -SkipHttpErrorCheck -TimeoutSec 30
+        $candidate = Invoke-WebRequest -Uri "$runtimeEntryUrl/health" -Method Get -SkipHttpErrorCheck -TimeoutSec 30
         if ($candidate.StatusCode -ge 200 -and $candidate.StatusCode -lt 300) {
             $healthResponse = $candidate
             break
         }
-        Write-Host "Front Door health attempt $attempt returned HTTP $($candidate.StatusCode); retrying in 15 seconds..." -ForegroundColor DarkGray
+        Write-Host "Health attempt $attempt returned HTTP $($candidate.StatusCode); retrying in 15 seconds..." -ForegroundColor DarkGray
     } catch {
-        Write-Host "Front Door health attempt $attempt failed while the route converges; retrying in 15 seconds..." -ForegroundColor DarkGray
+        Write-Host "Health attempt $attempt failed while the app converges; retrying in 15 seconds..." -ForegroundColor DarkGray
     }
     Start-Sleep -Seconds 15
 }
-if (-not $healthResponse) { throw 'Front Door health endpoint did not become healthy within the validation window.' }
+if (-not $healthResponse) { throw 'Runtime health endpoint did not become healthy within the validation window.' }
 
-Write-Host 'Confirming direct App Service origin is rejected...' -ForegroundColor Cyan
 $directOriginStatus = 0
-try {
-    $directOrigin = Invoke-WebRequest -Uri "https://$primaryApiHostName/health" -Method Get -SkipHttpErrorCheck -TimeoutSec 30
-    $directOriginStatus = [int]$directOrigin.StatusCode
-    if ($directOriginStatus -ge 200 -and $directOriginStatus -lt 300) {
-        throw "Direct App Service access unexpectedly succeeded with HTTP $directOriginStatus."
+$directOriginRejected = $false
+if ($frontDoorDeployed) {
+    Write-Host 'Confirming direct App Service origin is rejected...' -ForegroundColor Cyan
+    try {
+        $directOrigin = Invoke-WebRequest -Uri "https://$primaryApiHostName/health" -Method Get -SkipHttpErrorCheck -TimeoutSec 30
+        $directOriginStatus = [int]$directOrigin.StatusCode
+        if ($directOriginStatus -ge 200 -and $directOriginStatus -lt 300) {
+            throw "Direct App Service access unexpectedly succeeded with HTTP $directOriginStatus."
+        }
+    } catch {
+        if ($_.Exception.Message -like 'Direct App Service access unexpectedly succeeded*') { throw }
+        $directOriginStatus = 0
     }
-} catch {
-    if ($_.Exception.Message -like 'Direct App Service access unexpectedly succeeded*') { throw }
-    # A network-level rejection is also acceptable evidence that the direct origin is not publicly usable.
-    $directOriginStatus = 0
+    $directOriginRejected = $true
+} else {
+    Write-Host 'Front Door runtime test intentionally omitted because this validation subscription blocks Front Door creation.' -ForegroundColor Yellow
+    $directOriginStatus = [int]$healthResponse.StatusCode
+}
+
+Write-Host 'Confirming temporary validation endpoints reject requests without the ephemeral token...' -ForegroundColor Cyan
+$unauthorized = Invoke-WebRequest `
+    -Uri "$runtimeEntryUrl/validation/run" `
+    -Method Post `
+    -ContentType 'application/json' `
+    -SkipHttpErrorCheck `
+    -TimeoutSec 30
+if ([int]$unauthorized.StatusCode -ne 401) {
+    throw "Validation endpoint without token returned HTTP $($unauthorized.StatusCode); expected 401."
 }
 
 Write-Host 'Verifying deployed data-plane authentication posture...' -ForegroundColor Cyan
@@ -127,7 +155,7 @@ $run = $null
 for ($attempt = 1; $attempt -le 40; $attempt++) {
     try {
         $response = Invoke-WebRequest `
-            -Uri "$frontDoorUrl/validation/run" `
+            -Uri "$runtimeEntryUrl/validation/run" `
             -Method Post `
             -Headers $headers `
             -ContentType 'application/json' `
@@ -138,8 +166,7 @@ for ($attempt = 1; $attempt -le 40; $attempt++) {
             $run = $response.Content | ConvertFrom-Json
             break
         }
-
-        Write-Host "Validation attempt $attempt returned HTTP $($response.StatusCode). RBAC/route propagation may still be settling; retrying in 15 seconds..." -ForegroundColor DarkGray
+        Write-Host "Validation attempt $attempt returned HTTP $($response.StatusCode). RBAC/app propagation may still be settling; retrying in 15 seconds..." -ForegroundColor DarkGray
     } catch {
         Write-Host "Validation attempt $attempt failed while Azure dependencies settle; retrying in 15 seconds..." -ForegroundColor DarkGray
     }
@@ -156,7 +183,7 @@ Write-Host "Waiting for all Service Bus subscriptions to process EventId=$eventI
 for ($attempt = 1; $attempt -le 60; $attempt++) {
     try {
         $status = Invoke-RestMethod `
-            -Uri "$frontDoorUrl/validation/status/$eventId" `
+            -Uri "$runtimeEntryUrl/validation/status/$eventId" `
             -Method Get `
             -Headers $headers `
             -TimeoutSec 30
@@ -193,7 +220,6 @@ for ($attempt = 1; $attempt -le 18; $attempt++) {
         $telemetryCount = $candidateCount
         break
     }
-
     Start-Sleep -Seconds 10
 }
 if ($telemetryCount -le 0) {
@@ -202,7 +228,7 @@ if ($telemetryCount -le 0) {
 
 Write-Host 'Cleaning synthetic Cosmos validation receipts...' -ForegroundColor Cyan
 $cleanup = Invoke-RestMethod `
-    -Uri "$frontDoorUrl/validation/status/$eventId" `
+    -Uri "$runtimeEntryUrl/validation/status/$eventId" `
     -Method Delete `
     -Headers $headers `
     -TimeoutSec 60
@@ -211,11 +237,16 @@ $evidence = [ordered]@{
     capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
     environment = $Environment
     stackName = $stackName
-    frontDoorUrl = $frontDoorUrl
-    frontDoorHealthStatus = [int]$healthResponse.StatusCode
+    runtimeEntryMode = $entryMode
+    runtimeEntryHostName = ([uri]$runtimeEntryUrl).Host
+    runtimeHealthStatus = [int]$healthResponse.StatusCode
+    frontDoorRuntimeValidated = $frontDoorDeployed
+    frontDoorOmissionReason = $frontDoorDeployed ? '' : 'Validation subscription blocks Azure Front Door resource creation.'
     directOriginHostName = $primaryApiHostName
     directOriginStatus = $directOriginStatus
-    directOriginRejected = $true
+    directOriginRejected = $directOriginRejected
+    directApiIngressTemporaryValidationException = (-not $frontDoorDeployed)
+    validationEndpointRejectsMissingToken = $true
     cosmosAccountName = $cosmosAccountName
     cosmosLocalAuthDisabled = $true
     serviceBusNamespaceName = $serviceBusNamespaceName
