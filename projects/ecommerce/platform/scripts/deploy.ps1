@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('dev','test','prod')]
+    [ValidateSet('dev')]
     [string]$Environment = 'dev',
     [string]$DeploymentLocation = 'eastus2',
     [switch]$SkipProviderRegistration,
@@ -9,8 +9,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$main = Join-Path $repoRoot 'infra/main.bicep'
-$params = Join-Path $repoRoot "infra/environments/$Environment.bicepparam"
+$main = Join-Path $repoRoot 'infra/validation.bicep'
+$params = Join-Path $repoRoot 'infra/environments/dev.validation.bicepparam'
 $stackName = "ecommerce-$Environment-validation-stack"
 
 $account = az account show --output json 2>$null | ConvertFrom-Json
@@ -19,10 +19,11 @@ if (-not $account) { throw 'Not logged into Azure. Run az login first.' }
 Write-Host "Subscription: $($account.name) [$($account.id)]" -ForegroundColor Cyan
 Write-Host "Environment:  $Environment" -ForegroundColor Cyan
 Write-Host "Stack:        $stackName" -ForegroundColor Cyan
+Write-Host 'Validation profile: Free Trial-compatible, Azure Front Door intentionally omitted.' -ForegroundColor Yellow
 
 if (-not $SkipProviderRegistration) {
     $providers = @(
-        'Microsoft.Authorization','Microsoft.Cdn','Microsoft.DocumentDB','Microsoft.Insights',
+        'Microsoft.Authorization','Microsoft.DocumentDB','Microsoft.Insights',
         'Microsoft.KeyVault','Microsoft.Network','Microsoft.OperationalInsights',
         'Microsoft.ServiceBus','Microsoft.Storage','Microsoft.Web'
     )
@@ -36,7 +37,7 @@ if (-not $SkipProviderRegistration) {
 
 $whatIfName = "ecommerce-$Environment-preflight-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
-Write-Host 'Running ARM subscription-scope what-if...' -ForegroundColor Cyan
+Write-Host 'Running ARM subscription-scope what-if against the temporary validation profile...' -ForegroundColor Cyan
 az deployment sub what-if `
     --name $whatIfName `
     --location $DeploymentLocation `
@@ -52,7 +53,7 @@ $result = az stack sub create `
     --parameters $params `
     --action-on-unmanage deleteAll `
     --deny-settings-mode none `
-    --description "Temporary portfolio validation environment for e-commerce ($Environment)." `
+    --description "Temporary portfolio validation environment for e-commerce ($Environment); Front Door omitted because the validation subscription forbids it." `
     --yes `
     --output json | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0) { throw 'Deployment Stack creation failed.' }
@@ -64,21 +65,25 @@ if ($EvidenceDirectory) {
 
     $metadata = [ordered]@{
         capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
-        subscriptionId = $account.id
         environment = $Environment
         deploymentLocation = $DeploymentLocation
         stackName = $stackName
-        stackId = $result.id
         provisioningState = $result.properties.provisioningState
         actionOnUnmanage = $result.properties.actionOnUnmanage
-        denySettings = $result.properties.denySettings
+        validationProfile = 'free-trial-compatible-no-front-door'
+        frontDoorRuntimeIncluded = $false
+        frontDoorOmissionReason = 'Validation subscription blocks Azure Front Door resource creation.'
         outputs = $result.properties.outputs
     }
 
     $metadata | ConvertTo-Json -Depth 30 | Set-Content -Path (Join-Path $EvidenceDirectory 'deployment-stack.json') -Encoding utf8
 
-    az stack sub show --name $stackName --output json | Set-Content -Path (Join-Path $EvidenceDirectory 'deployment-stack-full.json') -Encoding utf8
+    $stackSummary = az stack sub show `
+        --name $stackName `
+        --query '{name:name,provisioningState:properties.provisioningState,actionOnUnmanage:properties.actionOnUnmanage,outputs:properties.outputs}' `
+        --output json
     if ($LASTEXITCODE -ne 0) { throw 'Deployment succeeded, but evidence capture failed.' }
+    $stackSummary | Set-Content -Path (Join-Path $EvidenceDirectory 'deployment-stack-summary.json') -Encoding utf8
 
     Write-Host "Evidence written to $EvidenceDirectory" -ForegroundColor Green
 }
