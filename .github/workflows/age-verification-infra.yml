@@ -5,53 +5,82 @@ on:
     paths:
       - 'projects/age-verification/platform/infra/**'
       - 'projects/age-verification/platform/scripts/**'
+      - 'projects/age-verification/platform/src/validation/**'
+      - 'projects/age-verification/platform/docs/**'
+      - 'projects/age-verification/platform/PROJECT-CHECKLIST.md'
+      - 'projects/age-verification/platform/README.md'
       - '.github/workflows/age-verification-infra.yml'
+      - '.github/workflows/age-verification-validation-app.yml'
+      - '.github/workflows/age-verification-destroy.yml'
   workflow_dispatch:
     inputs:
       environment:
-        description: Environment
+        description: Environment to validate (live deployment is dev-only)
         required: true
         default: dev
         type: choice
-        options: [dev, test, prod]
-      run_what_if:
-        description: Run Azure what-if
+        options:
+          - dev
+          - test
+          - prod
+      deploy_foundation:
+        description: Create/update the temporary dev foundation Deployment Stack
         required: true
         default: false
         type: boolean
+      confirm_deploy:
+        description: 'Required only for live dev deployment. Enter DEPLOY-AGE-FOUNDATION-dev'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  bicep-build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
       - name: Install Bicep
         run: az bicep install
-      - name: Lint foundation
-        run: az bicep lint --file projects/age-verification/platform/infra/foundation.bicep
-      - name: Build foundation
-        run: az bicep build --file projects/age-verification/platform/infra/foundation.bicep --stdout > /dev/null
-      - name: Lint workloads
-        run: az bicep lint --file projects/age-verification/platform/infra/workloads.bicep
-      - name: Build workloads
-        run: az bicep build --file projects/age-verification/platform/infra/workloads.bicep --stdout > /dev/null
-      - name: Build parameter files
+
+      - name: Parse PowerShell scripts
         shell: pwsh
         run: |
-          foreach ($env in @('dev','test','prod')) {
-            az bicep build-params --file "projects/age-verification/platform/infra/environments/$env.foundation.bicepparam" --stdout | Out-Null
-            az bicep build-params --file "projects/age-verification/platform/infra/environments/$env.workloads.bicepparam" --stdout | Out-Null
+          foreach ($path in @(
+            './projects/age-verification/platform/scripts/validate.ps1',
+            './projects/age-verification/platform/scripts/deploy-foundation.ps1',
+            './projects/age-verification/platform/scripts/deploy-workloads.ps1',
+            './projects/age-verification/platform/scripts/approve-frontdoor-private-link.ps1',
+            './projects/age-verification/platform/scripts/destroy.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+              throw "PowerShell parse failed: $path"
+            }
           }
 
+      - name: Validate synthetic runtime JavaScript
+        run: |
+          node --check projects/age-verification/platform/src/validation/gateway/server.mjs
+          node --check projects/age-verification/platform/src/validation/inference/server.mjs
+          node --check projects/age-verification/platform/src/validation/smoke-test.mjs
+
+      - name: Lint and build Bicep
+        shell: pwsh
+        run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ inputs.environment || 'dev' }}
+
   what-if:
-    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.run_what_if == true)
-    needs: bicep-build
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    needs: validate
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
     steps:
@@ -64,6 +93,45 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Foundation what-if
+      - name: Confirm Deployment Stack CLI access
+        run: az stack sub list --output none
+      - name: Foundation ARM What-If
         shell: pwsh
         run: ./projects/age-verification/platform/scripts/validate.ps1 -Environment ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }} -RunWhatIf
+
+  deploy-foundation:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_foundation == true && inputs.environment == 'dev'
+    needs: what-if
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: age-verification-live-validation-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Confirm intentional foundation deployment
+        shell: pwsh
+        run: |
+          $expected = 'DEPLOY-AGE-FOUNDATION-dev'
+          if ('${{ inputs.confirm_deploy }}' -ne $expected) {
+            throw "Deployment confirmation did not match '$expected'."
+          }
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy temporary foundation stack
+        shell: pwsh
+        run: ./projects/age-verification/platform/scripts/deploy-foundation.ps1 -Environment dev -EvidenceDirectory '_evidence/ageverify-dev-foundation'
+      - name: Upload foundation deployment evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ageverify-dev-foundation-evidence
+          path: _evidence/ageverify-dev-foundation
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,194 @@
+name: age verification runtime validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: 'Enter DEPLOY-AGE-APP-dev to build images, deploy workloads, and run the temporary smoke test'
+        required: true
+        default: ''
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-and-validate:
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: age-verification-live-validation-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Confirm intentional runtime deployment
+        shell: pwsh
+        run: |
+          $expected = 'DEPLOY-AGE-APP-dev'
+          if ('${{ inputs.confirm_deploy }}' -ne $expected) {
+            throw "Deployment confirmation did not match '$expected'."
+          }
+
+      - name: Validate synthetic workload source
+        run: |
+          node --check projects/age-verification/platform/src/validation/gateway/server.mjs
+          node --check projects/age-verification/platform/src/validation/inference/server.mjs
+          node --check projects/age-verification/platform/src/validation/smoke-test.mjs
+
+      - name: Azure login with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify foundation and prepare evidence directory
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path '_evidence/ageverify-dev' -Force | Out-Null
+          $foundation = az stack sub show --name ageverify-dev-foundation-validation-stack --output json 2>$null | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or -not $foundation) {
+            throw 'The dev foundation Deployment Stack does not exist. Run the age verification infrastructure workflow first.'
+          }
+          if ($foundation.properties.provisioningState -ne 'Succeeded') {
+            throw "Foundation is not ready: $($foundation.properties.provisioningState)"
+          }
+          $safe = [ordered]@{
+            capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
+            name = $foundation.name
+            id = $foundation.id
+            provisioningState = $foundation.properties.provisioningState
+            registryName = $foundation.properties.outputs.registryName.value
+            keyVaultName = $foundation.properties.outputs.keyVaultName.value
+            containerEnvironmentName = $foundation.properties.outputs.containerEnvironmentName.value
+            platformResourceGroup = $foundation.properties.outputs.platformResourceGroup.value
+            networkResourceGroup = $foundation.properties.outputs.networkResourceGroup.value
+            securityResourceGroup = $foundation.properties.outputs.securityResourceGroup.value
+            monitorResourceGroup = $foundation.properties.outputs.monitorResourceGroup.value
+          }
+          $safe | ConvertTo-Json -Depth 10 | Set-Content '_evidence/ageverify-dev/foundation-before-runtime.json' -Encoding utf8
+
+      - name: Build and push synthetic validation images
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $platformRg = 'ageverify-dev-platform-rg'
+          $foundation = az stack sub show --name ageverify-dev-foundation-validation-stack --output json | ConvertFrom-Json
+          $acrName = $foundation.properties.outputs.registryName.value
+          if (-not $acrName) { throw 'Foundation stack did not expose registryName.' }
+
+          $acr = az acr show --name $acrName --resource-group $platformRg --output json | ConvertFrom-Json
+          if ($acr.publicNetworkAccess -ne 'Disabled') {
+            throw "Registry must start private. Current publicNetworkAccess: $($acr.publicNetworkAccess)"
+          }
+          if ($acr.adminUserEnabled -eq $true) { throw 'Registry admin user must remain disabled.' }
+          if ($acr.anonymousPullEnabled -eq $true) { throw 'Anonymous ACR pull must remain disabled.' }
+
+          $registryId = $acr.id
+          $loginServer = $acr.loginServer
+          $tag = '${{ github.sha }}'
+          $gatewayImage = "$loginServer/ageverify-validation-gateway:$tag"
+          $inferenceImage = "$loginServer/ageverify-validation-inference:$tag"
+
+          $bootstrap = [ordered]@{
+            capturedUtc = (Get-Date).ToUniversalTime().ToString('o')
+            registry = $acrName
+            initialPublicNetworkAccess = $acr.publicNetworkAccess
+            adminUserEnabled = $acr.adminUserEnabled
+            anonymousPullEnabled = $acr.anonymousPullEnabled
+            bootstrapException = 'Public data-plane access enabled only for Entra-authenticated image push from the GitHub runner.'
+          }
+
+          try {
+            Write-Warning 'Temporarily enabling ACR public network access for the validation-image bootstrap. Admin credentials and anonymous pull remain disabled.'
+            az resource update --ids $registryId --set properties.publicNetworkAccess=Enabled properties.networkRuleBypassOptions=AzureServices --output none
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to enable temporary ACR bootstrap access.' }
+
+            $loggedIn = $false
+            for ($attempt = 1; $attempt -le 12; $attempt++) {
+              az acr login --name $acrName --output none 2>$null
+              if ($LASTEXITCODE -eq 0) { $loggedIn = $true; break }
+              Start-Sleep -Seconds 5
+            }
+            if (-not $loggedIn) { throw 'ACR did not become reachable for the authenticated bootstrap.' }
+
+            docker build --pull --tag $gatewayImage projects/age-verification/platform/src/validation/gateway
+            if ($LASTEXITCODE -ne 0) { throw 'Gateway validation image build failed.' }
+            docker build --pull --tag $inferenceImage projects/age-verification/platform/src/validation/inference
+            if ($LASTEXITCODE -ne 0) { throw 'Inference validation image build failed.' }
+            docker push $gatewayImage
+            if ($LASTEXITCODE -ne 0) { throw 'Gateway validation image push failed.' }
+            docker push $inferenceImage
+            if ($LASTEXITCODE -ne 0) { throw 'Inference validation image push failed.' }
+          }
+          finally {
+            Write-Host 'Restoring private ACR network posture...' -ForegroundColor Yellow
+            az resource update --ids $registryId --set properties.publicNetworkAccess=Disabled properties.networkRuleBypassOptions=None --output none
+            if ($LASTEXITCODE -ne 0) { throw 'CRITICAL: failed to restore private ACR network access.' }
+          }
+
+          $after = az acr show --name $acrName --resource-group $platformRg --output json | ConvertFrom-Json
+          if ($after.publicNetworkAccess -ne 'Disabled') { throw 'ACR public network access was not restored to Disabled.' }
+          if ($after.adminUserEnabled -eq $true -or $after.anonymousPullEnabled -eq $true) { throw 'ACR authentication posture changed unexpectedly.' }
+
+          $bootstrap.restoredUtc = (Get-Date).ToUniversalTime().ToString('o')
+          $bootstrap.finalPublicNetworkAccess = $after.publicNetworkAccess
+          $bootstrap.finalNetworkRuleBypassOptions = $after.networkRuleBypassOptions
+          $bootstrap.gatewayImage = $gatewayImage
+          $bootstrap.inferenceImage = $inferenceImage
+          $bootstrap | ConvertTo-Json -Depth 10 | Set-Content '_evidence/ageverify-dev/acr-bootstrap.json' -Encoding utf8
+
+          "AGE_GATEWAY_IMAGE=$gatewayImage" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "AGE_INFERENCE_IMAGE=$inferenceImage" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Deploy temporary workload stack
+        shell: pwsh
+        run: ./projects/age-verification/platform/scripts/deploy-workloads.ps1 -Environment dev -GatewayImage "$env:AGE_GATEWAY_IMAGE" -InferenceImage "$env:AGE_INFERENCE_IMAGE" -EvidenceDirectory '_evidence/ageverify-dev'
+
+      - name: Approve Front Door private-link origin
+        shell: pwsh
+        run: ./projects/age-verification/platform/scripts/approve-frontdoor-private-link.ps1 -Environment dev
+
+      - name: Resolve validation endpoints
+        shell: pwsh
+        run: |
+          $stack = az stack sub show --name ageverify-dev-workloads-validation-stack --output json | ConvertFrom-Json
+          if ($stack.properties.provisioningState -ne 'Succeeded') { throw 'Workload stack is not in Succeeded state.' }
+          $frontDoorHost = $stack.properties.outputs.frontDoorEndpointHost.value
+          $gatewayFqdn = $stack.properties.outputs.gatewayFqdn.value
+          if (-not $frontDoorHost -or -not $gatewayFqdn) { throw 'Workload stack did not return expected endpoints.' }
+          "FRONT_DOOR_HOST=$frontDoorHost" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "GATEWAY_FQDN=$gatewayFqdn" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Run encrypted end-to-end smoke test
+        env:
+          EVIDENCE_FILE: _evidence/ageverify-dev/runtime-smoke.json
+        run: node projects/age-verification/platform/src/validation/smoke-test.mjs
+
+      - name: Capture sanitized runtime posture
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path '_evidence/ageverify-dev' -Force | Out-Null
+          $platformRg = 'ageverify-dev-platform-rg'
+          $foundation = az stack sub show --name ageverify-dev-foundation-validation-stack --output json 2>$null | ConvertFrom-Json
+          if ($foundation) {
+            $acrName = $foundation.properties.outputs.registryName.value
+            az acr show --name $acrName --resource-group $platformRg --query "{name:name,sku:sku.name,publicNetworkAccess:publicNetworkAccess,networkRuleBypassOptions:networkRuleBypassOptions,adminUserEnabled:adminUserEnabled,anonymousPullEnabled:anonymousPullEnabled}" --output json | Set-Content '_evidence/ageverify-dev/registry-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/managedEnvironments --name ageverify-dev-cae --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,publicNetworkAccess:properties.publicNetworkAccess,internal:properties.vnetConfiguration.internal,zoneRedundant:properties.zoneRedundant,workloadProfiles:properties.workloadProfiles}" --output json | Set-Content '_evidence/ageverify-dev/container-environment-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/containerApps --name ageverify-dev-gateway --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/gateway-posture.json' -Encoding utf8
+            az resource show --resource-group $platformRg --resource-type Microsoft.App/containerApps --name ageverify-dev-inference --api-version 2025-07-01 --query "{name:name,provisioningState:properties.provisioningState,externalIngress:properties.configuration.ingress.external,fqdn:properties.configuration.ingress.fqdn,identityType:identity.type}" --output json | Set-Content '_evidence/ageverify-dev/inference-posture.json' -Encoding utf8
+          }
+
+      - name: Upload runtime validation evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ageverify-dev-runtime-evidence
+          path: _evidence/ageverify-dev
+          if-no-files-found: warn
+          retention-days: 30
