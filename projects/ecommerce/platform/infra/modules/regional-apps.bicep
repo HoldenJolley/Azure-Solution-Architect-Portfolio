@@ -7,6 +7,8 @@ param appServicePlanSkuName string
 param appServicePlanSkuTier string
 param appSubnetId string
 param frontDoorId string
+@description('Restrict API ingress to Azure Front Door. Keep true for the reference architecture; temporary validation may set false when the subscription cannot provision Front Door.')
+param restrictApiToFrontDoor bool = true
 param applicationInsightsConnectionString string
 param cosmosEndpoint string
 param cosmosDatabaseName string
@@ -23,6 +25,20 @@ var workerNames = [
   'shipping'
 ]
 var runtimeEnvironment = environment == 'prod' ? 'Production' : environment == 'test' ? 'Staging' : 'Development'
+var apiIngressRestrictions = restrictApiToFrontDoor ? [
+  {
+    ipAddress: 'AzureFrontDoor.Backend'
+    tag: 'ServiceTag'
+    action: 'Allow'
+    priority: 100
+    name: 'Allow Azure Front Door'
+    headers: {
+      'x-azure-fdid': [
+        frontDoorId
+      ]
+    }
+  }
+] : []
 
 resource plan 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: planName
@@ -104,23 +120,10 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
       minTlsVersion: '1.2'
       healthCheckPath: '/health'
       vnetRouteAllEnabled: true
-      ipSecurityRestrictionsDefaultAction: 'Deny'
+      ipSecurityRestrictionsDefaultAction: restrictApiToFrontDoor ? 'Deny' : 'Allow'
       scmIpSecurityRestrictionsUseMain: false
       scmIpSecurityRestrictionsDefaultAction: 'Allow'
-      ipSecurityRestrictions: [
-        {
-          ipAddress: 'AzureFrontDoor.Backend'
-          tag: 'ServiceTag'
-          action: 'Allow'
-          priority: 100
-          name: 'Allow Azure Front Door'
-          headers: {
-            'x-azure-fdid': [
-              frontDoorId
-            ]
-          }
-        }
-      ]
+      ipSecurityRestrictions: apiIngressRestrictions
       appSettings: concat(commonAppSettings, [
         {
           name: 'APP_COMPONENT'
