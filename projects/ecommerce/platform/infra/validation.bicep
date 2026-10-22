@@ -29,10 +29,10 @@ param enablePrivateNetworking bool = false
 param cosmosDatabaseThroughput int = 1000
 
 @description('App Service plan SKU name.')
-param appServicePlanSkuName string = 'S1'
+param appServicePlanSkuName string = 'B1'
 
 @description('App Service plan SKU tier.')
-param appServicePlanSkuTier string = 'Standard'
+param appServicePlanSkuTier string = 'Basic'
 
 @description('Data Lake storage SKU.')
 param dataLakeSkuName string = 'Standard_LRS'
