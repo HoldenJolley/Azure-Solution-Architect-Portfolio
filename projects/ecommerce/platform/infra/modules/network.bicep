@@ -1,3 +1,4 @@
+// Temporary PR validation marker: exercises lint/build/What-If without changing deployed behavior.
 @description('Workload name.')
 param workloadName string
 
