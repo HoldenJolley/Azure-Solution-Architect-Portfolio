@@ -10,6 +10,7 @@ on:
       - 'projects/ecommerce/platform/README.md'
       - '.github/workflows/ecommerce-infra.yml'
       - '.github/workflows/ecommerce-destroy.yml'
+      - '.github/workflows/ecommerce-expiry-cleanup.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -26,6 +27,15 @@ on:
         required: true
         default: false
         type: boolean
+      ttl_hours:
+        description: Automatic teardown TTL for a live dev validation deployment
+        required: true
+        default: '8'
+        type: choice
+        options:
+          - '4'
+          - '8'
+          - '12'
       confirm_deploy:
         description: 'Required only for the dev live run. Enter DEPLOY-ECOMMERCE-dev'
         required: false
@@ -103,9 +113,74 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Calculate validation expiry
+        id: ttl
+        shell: pwsh
+        env:
+          TTL_HOURS: ${{ inputs.ttl_hours }}
+        run: |
+          $ttlHours = [int]$env:TTL_HOURS
+          $expiresAt = [DateTimeOffset]::UtcNow.AddHours($ttlHours).ToString('o')
+          "expires_at=$expiresAt" >> $env:GITHUB_OUTPUT
+          "VALIDATION_EXPIRES_AT_UTC=$expiresAt" >> $env:GITHUB_ENV
+          Write-Host "Validation environment will expire at $expiresAt (TTL: $ttlHours hours)."
+
       - name: Deploy temporary validation stack
         shell: pwsh
         run: ./projects/ecommerce/platform/scripts/deploy.ps1 -Environment dev -EvidenceDirectory '_evidence/ecommerce-dev'
+
+      - name: Stamp automatic teardown metadata
+        if: always()
+        shell: pwsh
+        env:
+          TTL_HOURS: ${{ inputs.ttl_hours }}
+          EXPIRES_AT: ${{ steps.ttl.outputs.expires_at }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:EXPIRES_AT)) {
+            Write-Warning 'Expiry calculation did not complete, so no TTL metadata can be stamped.'
+            exit 0
+          }
+
+          $resourceGroups = @(
+            'rg-ecommerce-dev-global',
+            'rg-ecommerce-dev-eus2'
+          )
+
+          $taggedGroups = @()
+          foreach ($resourceGroup in $resourceGroups) {
+            $exists = az group exists --name $resourceGroup
+            if ($LASTEXITCODE -ne 0 -or $exists -ne 'true') {
+              Write-Host "Resource group $resourceGroup does not exist; skipping TTL tag."
+              continue
+            }
+
+            az group update `
+              --name $resourceGroup `
+              --set `
+                "tags.validationEphemeral=true" `
+                "tags.validationExpiresAtUtc=$env:EXPIRES_AT" `
+                "tags.validationTtlHours=$env:TTL_HOURS" `
+              --output none
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to stamp TTL metadata on $resourceGroup."
+            }
+            $taggedGroups += $resourceGroup
+          }
+
+          New-Item -ItemType Directory -Path '_evidence/ecommerce-dev' -Force | Out-Null
+          [ordered]@{
+            capturedUtc = [DateTimeOffset]::UtcNow.ToString('o')
+            expiresAtUtc = $env:EXPIRES_AT
+            ttlHours = [int]$env:TTL_HOURS
+            taggedResourceGroups = $taggedGroups
+            cleanupWorkflow = 'ecommerce validation expiry cleanup'
+          } | ConvertTo-Json -Depth 10 | Set-Content '_evidence/ecommerce-dev/ttl.json' -Encoding utf8
+
+          if ($taggedGroups.Count -eq 0) {
+            Write-Warning 'No validation resource groups existed to receive TTL metadata.'
+          } else {
+            Write-Host "TTL metadata stamped on: $($taggedGroups -join ', ')"
+          }
 
       - name: Upload deployment evidence
         if: always()
