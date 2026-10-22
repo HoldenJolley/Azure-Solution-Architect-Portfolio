@@ -60,6 +60,9 @@ resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-0
     addressPrefix: privateEndpointSubnetPrefix
     privateEndpointNetworkPolicies: 'Disabled'
   }
+  dependsOn: [
+    appSubnet
+  ]
 }
 
 output vnetId string = vnet.id
