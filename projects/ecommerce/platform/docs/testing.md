@@ -25,9 +25,14 @@ Before creating resources:
 3. run the subscription-scope ARM What-If against the exact temporary validation template;
 4. use the fixed stack name `ecommerce-dev-validation-stack`;
 5. require the manual GitHub Actions confirmation `DEPLOY-ECOMMERCE-dev`;
-6. deploy only the `dev` validation environment for the portfolio validation run.
+6. deploy only the `dev` validation environment for the portfolio validation run;
+7. assign an explicit validation TTL of 4, 8, or 12 hours, with 8 hours as the default.
 
-The Deployment Stack uses `action-on-unmanage=deleteAll` and deny mode `none`. Teardown is a separate manual workflow and requires the typed confirmation `DESTROY-ECOMMERCE-dev`.
+The Deployment Stack uses `action-on-unmanage=deleteAll` and deny mode `none`. Teardown remains available as a separate manual workflow requiring the typed confirmation `DESTROY-ECOMMERCE-dev`.
+
+For live validation deployments, the infrastructure workflow also stamps the validation resource groups with `validationEphemeral=true`, `validationExpiresAtUtc=<UTC timestamp>`, and `validationTtlHours=<hours>`. The independent `e-commerce validation expiry cleanup` workflow checks every 15 minutes using the `dev` GitHub environment/OIDC identity. It only authorizes automatic teardown when the resource group is explicitly marked ephemeral, the expiry timestamp is valid and in the past, and the managed Deployment Stack exists. It then calls the same guarded `destroy.ps1` path used by manual teardown and uploads cleanup evidence. It intentionally refuses direct resource-group deletion if the Deployment Stack cannot be found.
+
+The TTL stamp runs with `if: always()` after a deployment attempt, so resource groups created by a partially failed stack can still receive expiry metadata where they exist. If no resource group exists, no TTL metadata is written.
 
 ### Infrastructure acceptance
 
@@ -39,7 +44,8 @@ Capture evidence that:
 - no unintended secondary-region resources are deployed by the validation profile;
 - deployment outputs include the direct validation API hostname and runtime entry URL;
 - Front Door is explicitly recorded as not runtime-validated because the subscription blocks its creation;
-- the GitHub Actions deployment artifact contains sanitized stack metadata captured at deployment time.
+- the GitHub Actions deployment artifact contains sanitized stack metadata captured at deployment time;
+- the deployment evidence records the configured TTL and expiration timestamp.
 
 ### Runtime acceptance
 
@@ -65,13 +71,14 @@ Synthetic test data must be obviously non-production and should be deleted after
 
 ### Teardown acceptance
 
-After evidence is captured:
+After evidence is captured, either run the separate manual destroy workflow or allow the configured TTL to expire. In either case:
 
-1. run the separate destroy workflow;
-2. delete the Deployment Stack with `action-on-unmanage=deleteAll`;
-3. verify the expected resource groups no longer exist or document any asynchronous Azure cleanup still completing;
-4. retain the cleanup artifact showing the stack identity and post-delete resource-group check;
-5. confirm Cost Management has no remaining e-commerce validation resources accruing charges.
+1. delete the Deployment Stack with `action-on-unmanage=deleteAll`;
+2. verify the expected resource groups no longer exist or document any asynchronous Azure cleanup still completing;
+3. retain the cleanup artifact showing the stack identity and post-delete resource-group check;
+4. confirm Cost Management has no remaining e-commerce validation resources accruing charges.
+
+For TTL-driven cleanup, the scheduled workflow may run shortly after the exact expiration timestamp rather than at the exact second because it evaluates expiry on a 15-minute cadence and GitHub-hosted scheduled jobs can be delayed. The expiry timestamp is therefore a minimum lifetime boundary, not a real-time scheduler guarantee.
 
 A successful run supports the claim: **the e-commerce validation infrastructure was deployed to Azure through a Deployment Stack, managed-identity Cosmos DB and Service Bus paths were functionally smoke-tested, evidence was captured, and the environment was intentionally decommissioned for cost control. Azure Front Door/WAF was not runtime-provisioned because the validation subscription forbids those resources.** It does not by itself prove the complete production e-commerce application or the two-region production profile.
 
