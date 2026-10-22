@@ -1,0 +1,105 @@
+name: e-commerce validation expiry cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ecommerce-expiry-cleanup.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cleanup-expired-dev-validation:
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: ecommerce-live-validation-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Azure login
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check validation expiry
+        id: expiry
+        shell: pwsh
+        run: |
+          $resourceGroup = 'rg-ecommerce-dev-global'
+          $stackName = 'ecommerce-dev-validation-stack'
+          "cleanup_required=false" >> $env:GITHUB_OUTPUT
+
+          $exists = az group exists --name $resourceGroup
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to determine whether $resourceGroup exists."
+          }
+          if ($exists -ne 'true') {
+            Write-Host 'No e-commerce dev validation resource group exists; nothing to clean up.'
+            exit 0
+          }
+
+          $ephemeral = (az group show --name $resourceGroup --query 'tags.validationEphemeral' --output tsv).Trim()
+          $expiresRaw = (az group show --name $resourceGroup --query 'tags.validationExpiresAtUtc' --output tsv).Trim()
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read TTL metadata from $resourceGroup."
+          }
+
+          if ($ephemeral -ne 'true' -or [string]::IsNullOrWhiteSpace($expiresRaw)) {
+            Write-Warning 'Validation resource group exists without the explicit ephemeral TTL metadata. Automatic deletion is intentionally disabled for unmarked resources.'
+            exit 0
+          }
+
+          try {
+            $expiresAt = [DateTimeOffset]::Parse(
+              $expiresRaw,
+              [Globalization.CultureInfo]::InvariantCulture,
+              [Globalization.DateTimeStyles]::RoundtripKind
+            )
+          }
+          catch {
+            throw "TTL metadata is present but invalid: '$expiresRaw'. Refusing automatic deletion."
+          }
+
+          $now = [DateTimeOffset]::UtcNow
+          Write-Host "Current UTC: $($now.ToString('o'))"
+          Write-Host "Expires UTC: $($expiresAt.ToString('o'))"
+
+          if ($now -lt $expiresAt) {
+            $remaining = $expiresAt - $now
+            Write-Host ("Validation environment is still within TTL ({0:N1} hours remaining)." -f $remaining.TotalHours)
+            exit 0
+          }
+
+          az stack sub show --name $stackName --output none 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "TTL has expired, but Deployment Stack '$stackName' was not found. Refusing direct resource-group deletion; manual investigation is required."
+            exit 0
+          }
+
+          "cleanup_required=true" >> $env:GITHUB_OUTPUT
+          Write-Host 'TTL has expired and the managed Deployment Stack exists. Automatic teardown is authorized.' -ForegroundColor Yellow
+
+      - name: Destroy expired validation stack
+        if: steps.expiry.outputs.cleanup_required == 'true'
+        shell: pwsh
+        run: ./projects/ecommerce/platform/scripts/destroy.ps1 -Environment dev -Force -EvidenceDirectory '_evidence/ecommerce-dev-expiry-cleanup'
+
+      - name: Upload automatic cleanup evidence
+        if: steps.expiry.outputs.cleanup_required == 'true' && always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ecommerce-dev-expiry-cleanup-evidence
+          path: _evidence/ecommerce-dev-expiry-cleanup
+          if-no-files-found: error
+          retention-days: 30
