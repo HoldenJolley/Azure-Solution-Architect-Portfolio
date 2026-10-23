@@ -16,7 +16,7 @@ The two replicas give the later chaos-engineering work something meaningful to d
 
 ## Azure Arc / Flux configuration
 
-After these manifests are merged to `main`, create the Flux configuration from a Windows PowerShell session authenticated to the portfolio subscription:
+Create the Flux configuration from a Windows PowerShell session authenticated to the portfolio subscription:
 
 ```powershell
 az k8s-configuration flux create `
@@ -24,12 +24,14 @@ az k8s-configuration flux create `
   --cluster-name k8s-edge-01 `
   --cluster-type connectedClusters `
   --name hybrid-lab-gitops `
-  --namespace flux-system `
+  --namespace hybrid-gitops `
   --scope cluster `
   --url https://github.com/HoldenJolley/Azure-Solution-Architect-Portfolio `
   --branch main `
   --kustomization name=hybrid-lab path=./projects/hybrid-kubernetes-chaos/gitops prune=true
 ```
+
+The Flux extension controllers run in `flux-system`; the Azure Arc Flux configuration objects are kept separately in `hybrid-gitops`.
 
 `prune=true` makes Git the authoritative desired state: resources removed from this path are removed from the cluster during reconciliation.
 
