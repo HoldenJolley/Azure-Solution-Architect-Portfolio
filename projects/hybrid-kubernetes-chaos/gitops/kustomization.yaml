@@ -6,5 +6,7 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - service.yaml
-commonLabels:
-  app.kubernetes.io/managed-by: flux
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: flux
+    includeSelectors: false
