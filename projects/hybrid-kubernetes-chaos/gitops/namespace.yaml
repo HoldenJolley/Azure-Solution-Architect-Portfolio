@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hybrid-lab
+  labels:
+    app.kubernetes.io/part-of: hybrid-kubernetes-chaos
+    portfolio.holdenjolley.com/managed-by: flux

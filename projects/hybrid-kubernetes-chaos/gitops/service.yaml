@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hybrid-demo
+  labels:
+    app.kubernetes.io/name: hybrid-demo
+    app.kubernetes.io/part-of: hybrid-kubernetes-chaos
+spec:
+  selector:
+    app.kubernetes.io/name: hybrid-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP

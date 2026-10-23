@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hybrid-demo-content
+  labels:
+    app.kubernetes.io/name: hybrid-demo
+    app.kubernetes.io/part-of: hybrid-kubernetes-chaos
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hybrid Kubernetes GitOps</title>
+        <style>
+          body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b1220; color: #e5eefc; }
+          main { max-width: 720px; padding: 3rem; }
+          h1 { margin-bottom: .5rem; }
+          p { line-height: 1.6; color: #b9c7dd; }
+          code { color: #8fd3ff; }
+        </style>
+      </head>
+      <body>
+        <main>
+          <h1>Hybrid Kubernetes is online.</h1>
+          <p>This workload is declared in Git, reconciled by Flux, and running on the physical <code>k8s-edge-01</code> cluster connected through Azure Arc.</p>
+        </main>
+      </body>
+    </html>
