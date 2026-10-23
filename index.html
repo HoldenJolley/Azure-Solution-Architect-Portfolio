@@ -19,6 +19,14 @@
   <link rel="alternate" type="text/plain" href="llms.txt" title="AI-readable portfolio summary">
   <title>Holden Jolley | Azure Solution Architect</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .impact-section{background:linear-gradient(135deg,#f8fbfd 0%,#fff 55%,#f3f9fd 100%);border:1px solid #d7e0e7;padding:26px;position:relative;overflow:hidden}
+    .impact-section::after{content:"";position:absolute;right:-85px;top:-95px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(0,120,212,.10),rgba(0,120,212,0) 68%);pointer-events:none}
+    .impact-section>*{position:relative;z-index:1}.impact-heading{align-items:flex-end}.impact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.impact-card{background:#fff;border:1px solid #d7e0e7;padding:22px;min-height:220px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}.impact-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#0078d4,#5bb9ef)}.impact-card:hover{border-color:#7eb9df;box-shadow:0 10px 26px rgba(25,80,113,.09);transform:translateY(-2px)}.impact-label{font-size:9px;letter-spacing:.09em;font-weight:700;color:#0078d4;text-transform:uppercase;margin-bottom:8px}.impact-metric{display:flex;align-items:baseline;gap:9px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #e3e9ed}.impact-metric strong{font-size:28px;line-height:1;font-weight:600;letter-spacing:-.03em;color:#17374b}.impact-metric span{font-size:11px;color:#70808b;line-height:1.35}.impact-card h3{font-size:16px;margin:0 0 8px;font-weight:600}.impact-card p{color:#60717d;line-height:1.6;margin:0;font-size:12px}.impact-tag{display:inline-flex;align-items:center;width:max-content;margin-top:16px;padding:4px 7px;border:1px solid #b8d7e9;background:#edf7fd;color:#176a9f;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}.impact-card.wide{grid-column:1/-1;min-height:0;display:grid;grid-template-columns:minmax(180px,230px) 1fr;gap:26px;align-items:center}.impact-card.wide .impact-metric{display:block;border:0;margin:0;padding:0}.impact-card.wide .impact-metric strong{display:block;margin-bottom:7px}.stakeholder-strip{margin-top:12px;border:1px solid #c9dce8;background:#eef7fc;padding:18px 20px;display:grid;grid-template-columns:180px 1fr;gap:22px;align-items:center}.stakeholder-strip strong{font-size:13px}.stakeholder-strip p{margin:0;color:#526b7a;line-height:1.6;font-size:12px}.stakeholder-strip .impact-label{margin:0 0 5px}.impact-proof{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.impact-proof span{background:#fff;border:1px solid #d2e1ea;padding:4px 7px;font-size:9px;color:#526b7a}
+    :root[data-theme="dark"] .impact-section{background:linear-gradient(135deg,#111b23,#121c24 56%,#13232d);border-color:var(--theme-line)}:root[data-theme="dark"] .impact-card{background:var(--theme-surface);border-color:var(--theme-line)}:root[data-theme="dark"] .impact-card:hover{border-color:#4b7c98;box-shadow:0 14px 32px rgba(0,0,0,.25)}:root[data-theme="dark"] .impact-label{color:var(--theme-accent)}:root[data-theme="dark"] .impact-metric{border-color:var(--theme-line)}:root[data-theme="dark"] .impact-metric strong,:root[data-theme="dark"] .impact-card h3,:root[data-theme="dark"] .stakeholder-strip strong{color:var(--theme-text)}:root[data-theme="dark"] .impact-metric span,:root[data-theme="dark"] .impact-card p,:root[data-theme="dark"] .stakeholder-strip p{color:var(--theme-muted)}:root[data-theme="dark"] .impact-tag{background:#102d3f;border-color:#438eb9;color:#8fd1f6}:root[data-theme="dark"] .stakeholder-strip{background:#112736;border-color:#35505f}:root[data-theme="dark"] .impact-proof span{background:#17232d;border-color:#334753;color:#b4c5cf}
+    @media(max-width:950px){.impact-grid{grid-template-columns:1fr}.impact-card.wide{grid-column:auto;display:block}.impact-card.wide .impact-metric{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #e3e9ed}.stakeholder-strip{grid-template-columns:1fr}}
+    @media(max-width:650px){.impact-section{padding:20px}.impact-card{min-height:0;padding:19px}.impact-metric strong{font-size:24px}}
+  </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -109,6 +117,7 @@
     </div>
     <div class="top-actions">
       <a href="#projects">Projects</a>
+      <a href="#impact">Impact</a>
       <a href="#resume">Resume</a>
       <a href="#architecture">Capabilities</a>
       <a class="icon-link" href="mailto:Jolleyholden@gmail.com" aria-label="Email">✉</a>
@@ -122,6 +131,7 @@
       <nav>
         <a class="nav-item active" href="#home"><span>⌂</span> Overview</a>
         <a class="nav-item" href="#projects"><span>▦</span> Projects</a>
+        <a class="nav-item" href="#impact"><span>↗</span> Impact</a>
         <a class="nav-item" href="#resume"><span>▤</span> Resume</a>
         <a class="nav-item" href="#architecture"><span>◇</span> Capabilities</a>
         <a class="nav-item" href="#about"><span>◎</span> About</a>
@@ -147,10 +157,10 @@
         <div>
           <div class="eyebrow">AZURE SOLUTION ARCHITECT</div>
           <h1>Architecture decisions, not just diagrams.</h1>
-          <p class="hero-copy">I design Azure solutions around security, resiliency, cost, operations, and the tradeoffs that make an architecture practical. This portfolio includes three Infrastructure-as-Code projects covering distributed commerce, privacy-preserving AI, and cost-optimized static hosting.</p>
+          <p class="hero-copy">I design Azure solutions around security, resiliency, cost, operations, and the tradeoffs that make an architecture practical. My work pairs technical depth with measurable operational outcomes and stakeholder communication, while this portfolio carries those decisions into three Infrastructure-as-Code projects.</p>
           <div class="hero-actions">
             <a class="button primary" href="#projects">Explore the projects</a>
-            <a class="button" href="resume.pdf">Download resume</a>
+            <a class="button" href="#impact">Review business impact</a>
           </div>
         </div>
         <div class="hero-panel validation-panel">
@@ -208,6 +218,64 @@
         </div>
       </section>
 
+      <section class="section impact-section" id="impact">
+        <div class="section-heading impact-heading">
+          <div>
+            <div class="eyebrow">BUSINESS &amp; STAKEHOLDER IMPACT</div>
+            <h2>Architecture measured by what changes for the business.</h2>
+            <p class="section-copy">Selected internal initiatives where architecture and automation changed service delivery, identity governance, endpoint risk, or recovery operations—not just the underlying technology.</p>
+          </div>
+          <span class="count">Operational outcomes</span>
+        </div>
+
+        <div class="impact-grid">
+          <article class="impact-card">
+            <div class="impact-label">Service delivery</div>
+            <div class="impact-metric"><strong>87–92%</strong><span>faster provisioning</span></div>
+            <h3>Provisioning automation</h3>
+            <p>Connected Freshservice, Entra ID, and Intune to reduce deployment from 2.5–3 hours to 15–20 minutes, cutting hands-on fulfillment time and accelerating endpoint readiness.</p>
+          </article>
+
+          <article class="impact-card">
+            <div class="impact-label">Identity governance</div>
+            <div class="impact-metric"><strong>~100</strong><span>stale accounts discovered</span></div>
+            <h3>Continuous account lifecycle management</h3>
+            <p>Identified dormant identities left behind by a manual-only offboarding process, then designed a weekly control that detects inactivity, disables accounts, moves them into a holding group, and removes them after a defined retention period.</p>
+            <span class="impact-tag">CIO-facing proposal</span>
+          </article>
+
+          <article class="impact-card">
+            <div class="impact-label">Risk reduction</div>
+            <div class="impact-metric"><strong>Least privilege</strong><span>instead of standing local admin</span></div>
+            <h3>Endpoint privilege modernization</h3>
+            <p>Replaced broad local administrator rights with policy-based Endpoint Privilege Management, reducing the potential endpoint blast radius while preserving approved elevation paths for users and support teams.</p>
+            <span class="impact-tag">CIO-facing proposal</span>
+          </article>
+
+          <article class="impact-card">
+            <div class="impact-label">Resilience</div>
+            <div class="impact-metric"><strong>~15 min</strong><span>initial travel removed from the recovery path</span></div>
+            <h3>Remote warehouse recovery</h3>
+            <p>Used EPM-enabled remote access to remove a warehouse drive and per-device movement from the critical recovery path. Problem resolution stays the same; recovery can begin sooner and scales better when multiple endpoints are affected.</p>
+          </article>
+
+          <article class="impact-card wide">
+            <div class="impact-metric"><strong>Ticket → install</strong><span>automated fulfillment</span></div>
+            <div>
+              <div class="impact-label">End-user experience</div>
+              <h3>Software requests without routine technician handling</h3>
+              <p>Connected service-request workflows to software deployment so approved applications can move from ticket submission to endpoint installation with less service-desk intervention, reducing user call-ins and shortening fulfillment time.</p>
+              <div class="impact-proof"><span>ITSM automation</span><span>Service-desk deflection</span><span>Faster user fulfillment</span></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="stakeholder-strip">
+          <div><div class="impact-label">Executive &amp; stakeholder communication</div><strong>Translate controls into business decisions.</strong></div>
+          <p>Presented identity lifecycle and endpoint privilege operating-model changes to CIO leadership, framing the discussion around risk reduction, usability, recovery, and operational overhead rather than product features alone.</p>
+        </div>
+      </section>
+
       <section class="section split" id="resume">
         <div>
           <div class="eyebrow">PROFESSIONAL PROFILE</div>
@@ -235,7 +303,7 @@
       </section>
 
       <section class="section split" id="about">
-        <div><div class="eyebrow">ABOUT</div><h2>From operations to architecture.</h2><p>My approach is grounded in operating real infrastructure: understand the requirement, reduce unnecessary complexity, secure the trust boundaries, automate the deployment, and document the tradeoffs so the next engineer can understand the system.</p><p>Currently based in North Carolina and open to relocation to the Bay Area for the right opportunity.</p></div>
+        <div><div class="eyebrow">ABOUT</div><h2>From operations to architecture.</h2><p>My approach is grounded in operating real infrastructure and working with the people who depend on it: understand the requirement, frame the tradeoffs, reduce unnecessary complexity, secure the trust boundaries, automate the deployment, and document the decision so technical and business stakeholders can act on it.</p><p>That includes presenting endpoint privilege and identity lifecycle changes to CIO leadership as well as leading cross-functional cloud, security, identity, endpoint, and automation work.</p><p>Currently based in North Carolina and open to relocation to the Bay Area for the right opportunity.</p></div>
         <div class="quote-card"><span>“</span><p>Build the solution, document the decisions, and make the architecture understandable.</p></div>
       </section>
 
