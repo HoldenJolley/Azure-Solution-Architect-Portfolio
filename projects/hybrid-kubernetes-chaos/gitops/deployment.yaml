@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: hybrid-demo
     app.kubernetes.io/part-of: hybrid-kubernetes-chaos
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: hybrid-demo
