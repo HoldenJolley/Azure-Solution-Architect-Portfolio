@@ -7,12 +7,12 @@ This directory is the reconciliation target for the physical `k8s-edge-01` Kuber
 The initial desired state is intentionally small and inexpensive:
 
 - `hybrid-lab` namespace
-- two-replica NGINX deployment
+- three-replica NGINX deployment
 - custom landing page from a ConfigMap
 - internal `ClusterIP` service
 - readiness/liveness probes and small CPU/memory limits
 
-The two replicas give the later chaos-engineering work something meaningful to disrupt while keeping the footprint tiny on the single-node lab.
+The three replicas provide enough redundancy for controlled failure testing while keeping the footprint tiny on the single-node lab.
 
 ## Azure Arc / Flux configuration
 
@@ -55,6 +55,10 @@ kubectl port-forward -n hybrid-lab service/hybrid-demo 8080:80
 ```
 
 Then browse to `http://localhost:8080`.
+
+## Chaos validation
+
+Repeatable availability and pod-failure experiments are maintained in `../chaos`. Those scripts collect evidence while leaving the GitOps manifests as the source of desired state.
 
 ## Next stages
 
