@@ -9,13 +9,18 @@
   const failureThreshold = 3;
 
   const byId = id => root.querySelector('#' + id);
-  const modeBanner = byId('telemetry-banner');
-  const modeTitle = byId('telemetry-title');
-  const modeDetail = byId('telemetry-detail');
+  const modeBanner = byId('telemetry-banner') || root.querySelector('.sim-banner');
+  const modeTitle = byId('telemetry-title') || modeBanner?.querySelector('strong');
+  const modeDetail = byId('telemetry-detail') || modeBanner?.querySelector('span');
   const maintenance = byId('maintenance');
   const onlineUi = byId('online-ui');
   const activity = byId('activity');
   const podGrid = byId('pod-grid');
+  const footerNote = root.querySelector('.footer-note');
+  const brandSubtitle = root.querySelector('.brand-copy span');
+  const healthLabels = root.querySelectorAll('.health-item > span');
+  const heroChips = [...root.querySelectorAll('.hero-meta .chip')];
+  const statusTiles = [...root.querySelectorAll('.status-tile strong')];
 
   let failures = 0;
   let lastSnapshot = null;
@@ -46,8 +51,14 @@
     if (modeDetail) modeDetail.textContent = detail;
   };
 
+  const chipFallbackIndex = {
+    'lab-chip': 0,
+    'arc-chip': 1,
+    'flux-chip': 2
+  };
+
   const setChip = (id, text, state) => {
-    const chip = byId(id);
+    const chip = byId(id) || heroChips[chipFallbackIndex[id]];
     if (!chip) return;
     chip.classList.remove('good', 'info', 'warn');
     chip.classList.add(state);
@@ -56,12 +67,21 @@
     else chip.append(document.createTextNode(text));
   };
 
+  const tileFallbackIndex = {
+    'node-status-value': 0,
+    'kubernetes-status-value': 1,
+    'flux-status-value': 3,
+    'service-status-value': 4
+  };
+
   const setStatusTile = (id, text, healthy) => {
-    const element = byId(id);
+    const element = byId(id) || statusTiles[tileFallbackIndex[id]];
     if (!element) return;
-    element.textContent = text;
-    const light = element.previousElementSibling;
-    if (light && light.classList.contains('status-light')) {
+    const light = element.querySelector('.status-light');
+    const textNode = [...element.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim());
+    if (textNode) textNode.nodeValue = text;
+    else element.append(document.createTextNode(text));
+    if (light) {
       light.style.background = healthy === false ? 'var(--red)' : healthy === null ? 'var(--yellow)' : 'var(--green)';
     }
   };
@@ -73,8 +93,8 @@
     const values = card.querySelectorAll('.metric strong');
     const ready = Boolean(pod.ready);
 
-    name.textContent = safeText(pod.name);
-    state.textContent = ready ? 'Ready' : safeText(pod.phase || 'Not ready');
+    if (name) name.textContent = safeText(pod.name);
+    if (state) state.textContent = ready ? 'Ready' : safeText(pod.phase || 'Not ready');
     if (!ready) card.classList.add(pod.phase === 'Running' ? 'recovering' : 'failed');
 
     if (values[0]) values[0].textContent = `${safeText(pod.cpu)} / ${safeText(pod.cpuLimit)}`;
@@ -121,22 +141,7 @@
     const clusterHealthy = data.cluster.nodeReady === true;
     const fluxHealthy = flux.ready === true;
     const degraded = Boolean(data.degraded) || !clusterHealthy || !healthyReplicas || !serviceHealthy || !fluxHealthy;
-
-    const desiredField = byId('desired-count');
-    const readyField = byId('ready-count');
-    const readyDetail = byId('ready-detail');
-    const availability = byId('availability');
-    const requestCount = byId('request-count');
-    const serviceHealth = byId('service-health');
-    const serviceDetail = byId('service-detail');
-
-    if (desiredField) desiredField.textContent = desired;
-    if (readyField) readyField.textContent = `${ready} / ${desired}`;
-    if (readyDetail) readyDetail.textContent = healthyReplicas ? 'All healthy' : `${Math.max(0, desired - ready)} replica(s) unavailable`;
-    if (availability) availability.textContent = serviceHealthy ? `HTTP ${safeText(service.statusCode)}` : 'Unreachable';
-    if (requestCount) requestCount.textContent = service.latencyMs == null ? 'Live Service probe' : `${service.latencyMs} ms latest probe`;
-    if (serviceHealth) serviceHealth.textContent = serviceHealthy ? 'Healthy' : 'Unavailable';
-    if (serviceDetail) serviceDetail.textContent = serviceHealthy ? `HTTP ${safeText(service.statusCode)} · ${safeText(service.latencyMs)} ms` : 'Probe failed';
+    const previewRunning = isPreviewExperimentRunning();
 
     setStatusTile('node-status-value', safeText(data.cluster.name), clusterHealthy);
     setStatusTile('kubernetes-status-value', safeText(data.cluster.kubernetesVersion), data.cluster.kubernetesVersion ? true : null);
@@ -147,12 +152,33 @@
     setChip('arc-chip', data.cluster.arc?.configured ? 'Azure Arc configured' : 'Arc unknown', data.cluster.arc?.configured ? 'info' : 'warn');
     setChip('flux-chip', fluxHealthy ? 'Flux reconciled' : 'Flux status unknown', fluxHealthy ? 'info' : 'warn');
 
-    if (!isPreviewExperimentRunning()) {
-      updatePods(workload.pods || []);
+    if (!previewRunning) {
+      const desiredField = byId('desired-count');
+      const readyField = byId('ready-count');
+      const readyDetail = byId('ready-detail');
+      const availability = byId('availability');
+      const requestCount = byId('request-count');
+      const serviceHealth = byId('service-health');
+      const serviceDetail = byId('service-detail');
       const runReady = byId('run-ready');
       const runService = byId('run-service');
+
+      if (desiredField) desiredField.textContent = desired;
+      if (readyField) readyField.textContent = `${ready} / ${desired}`;
+      if (readyDetail) readyDetail.textContent = healthyReplicas ? 'All healthy' : `${Math.max(0, desired - ready)} replica(s) unavailable`;
+      if (availability) availability.textContent = serviceHealthy ? `HTTP ${safeText(service.statusCode)}` : 'Unreachable';
+      if (requestCount) requestCount.textContent = service.latencyMs == null ? 'Live Service probe' : `${service.latencyMs} ms latest probe`;
+      if (serviceHealth) serviceHealth.textContent = serviceHealthy ? 'Healthy' : 'Unavailable';
+      if (serviceDetail) serviceDetail.textContent = serviceHealthy ? `HTTP ${safeText(service.statusCode)} · ${safeText(service.latencyMs)} ms` : 'Probe failed';
       if (runReady) runReady.textContent = `${ready} / ${desired}`;
       if (runService) runService.textContent = serviceHealthy ? `HTTP ${safeText(service.statusCode)}` : 'Unavailable';
+      updatePods(workload.pods || []);
+    }
+
+    if (healthLabels[2]) healthLabels[2].textContent = 'Service probe';
+    if (brandSubtitle) brandSubtitle.textContent = liveHost ? 'chaos.holdenjolley.com · live read-only telemetry' : 'chaos.holdenjolley.com · portfolio preview';
+    if (footerNote) {
+      footerNote.textContent = 'Live telemetry boundary: cluster, Flux, pod, replica, and Service-probe values come from the read-only status API. The three chaos buttons remain browser simulations until the separately permissioned chaos controller is enabled. Recorded experiment results remain historical evidence from the physical lab.';
     }
 
     const currentSnapshot = snapshot(data);
@@ -181,6 +207,10 @@
     if (!liveHost) {
       root.dataset.telemetryMode = 'simulation';
       setBanner('simulation', 'Portfolio preview mode', 'Live telemetry is only available on chaos.holdenjolley.com; chaos interactions are simulated here.');
+      if (brandSubtitle) brandSubtitle.textContent = 'chaos.holdenjolley.com · portfolio preview';
+      if (footerNote) {
+        footerNote.textContent = 'Portfolio-preview boundary: this host does not expose the lab status API, so the dashboard uses simulated values and interactions here. The production chaos subdomain will use the same UI with real read-only telemetry from the physical Kubernetes cluster.';
+      }
       if (lastMode !== 'simulation') addLog('Read-only API not present on this host; dashboard is using preview data.', 'info');
       lastMode = 'simulation';
       return;
