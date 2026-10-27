@@ -43,9 +43,21 @@ The first CPU-stress run exposed a harness issue: BusyBox `timeout` surfaced the
 
 Documented at `experiments/experiment-03-network-isolation.md`.
 
-The first recorded run showed 100% Service availability while a temporary deny-ingress NetworkPolicy selected one application pod. Because that run did not directly test the selected pod IP, it is retained as policy-injection/service-continuity evidence rather than conclusive endpoint-isolation evidence.
+Validated result:
 
-The current version of `isolate-one-pod.ps1` strengthens the experiment by creating an independent curl pod and asserting direct target-pod reachability before, during, and after policy application.
+- desired state before isolation: 3 Ready replicas
+- selected replica directly reachable before fault: HTTP 200
+- temporary deny-ingress NetworkPolicy applied to that replica
+- selected replica directly unreachable during fault: HTTP 000 / curl exit 28
+- Kubernetes still reported the selected replica Running and Ready with 0 restarts
+- isolation hold interval: 30 seconds
+- selected replica directly reachable after cleanup: HTTP 200
+- matched in-cluster Service availability samples: 100
+- successful Service requests: 100
+- failed Service requests: 0
+- observed Service availability: 100%
+
+This experiment conclusively validates the direct endpoint sequence `reachable-before -> unreachable-during -> reachable-after` while independently measuring Service continuity during the same fault window. It also demonstrates that `Ready=True` does not necessarily guarantee reachability from another workload.
 
 ## Why the availability probe runs inside Kubernetes
 
@@ -138,7 +150,7 @@ The isolation script:
 11. verifies the target pod remains Running and Ready;
 12. removes the temporary direct-endpoint probe pod in cleanup.
 
-Expected direct-validation evidence for a conclusive run resembles:
+The validated direct sequence from the recorded run was:
 
 ```text
 Direct-before reachable=True statusCode=200 exitCode=0
@@ -147,16 +159,16 @@ Direct-after reachable=True statusCode=200 exitCode=0
 RESULT=PASS direct endpoint sequence was reachable-before, unreachable-during, reachable-after.
 ```
 
-If the endpoint remains reachable while the policy is active, the script reports `RESULT=INCONCLUSIVE` rather than claiming that network isolation occurred.
+During the same test window, the Service availability probe recorded 100 successful requests out of 100 attempts.
 
 ## Experiment progression
 
-The experiments cover three distinct failure modes:
+The experiments now cover three distinct failure modes:
 
 - Experiment 01: complete loss of one application pod followed by Kubernetes self-healing.
 - Experiment 02: a degraded-but-still-running pod under bounded CPU pressure.
-- Experiment 03: selective network isolation of a still-running pod using NetworkPolicy, with direct endpoint validation and simultaneous Service availability measurement.
+- Experiment 03: selective network isolation of a still-running pod, with direct endpoint validation and simultaneous Service availability measurement.
 
-Experiments 01 and 02 maintained 100% observed in-cluster Service availability in their recorded runs. The initial Experiment 03 policy-injection run also maintained 100% availability, but the strengthened direct-endpoint version should be used before claiming that the selected endpoint was definitively isolated.
+All three recorded experiments maintained 100% observed in-cluster Service availability in their validated runs. Experiment 03 additionally showed that Kubernetes readiness can remain true even while another pod cannot reach the target directly.
 
 Node-level failure testing should wait until the cluster has an additional worker node because all current application replicas run on the same physical host.
