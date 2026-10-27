@@ -36,7 +36,7 @@ spec:
             - name: FLUX_NAMESPACE
               value: hybrid-gitops
             - name: FLUX_NAME
-              value: hybrid-lab
+              value: hybrid-lab-gitops-hybrid-lab
             - name: LAB_SERVICE_URL
               value: http://hybrid-demo.hybrid-lab.svc.cluster.local
           ports:
