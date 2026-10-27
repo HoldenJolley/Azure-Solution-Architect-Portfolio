@@ -121,16 +121,13 @@
     <section class="section">
       <div class="eyebrow">EVIDENCE IN SOURCE CONTROL</div>
       <h2>The scripts and experiment records are reviewable with the architecture.</h2>
-      <div class="status-banner">
-        <span class="status-chip success">Runtime evidence captured</span>
-        <div><strong>GitOps manifests, chaos scripts, and experiment reports live alongside the portfolio.</strong><p>See <code>projects/hybrid-kubernetes-chaos/gitops</code> for desired state and <code>projects/hybrid-kubernetes-chaos/chaos</code> for the availability probe, controlled fault scripts, and recorded experiment reports. Results are described only for the conditions actually exercised.</p></div>
-      </div>
+      <div class="status-banner"><span class="status-chip success">Runtime evidence captured</span><div><strong>GitOps manifests, chaos scripts, and experiment reports live alongside the portfolio.</strong><p>See <code>projects/hybrid-kubernetes-chaos/gitops</code> for desired state and <code>projects/hybrid-kubernetes-chaos/chaos</code> for the availability probe, controlled fault scripts, and recorded experiment reports. Results are described only for the conditions actually exercised.</p></div></div>
     </section>
 
     <section class="section callout"><strong>Current boundary:</strong> this project demonstrates a live Azure Arc-connected physical Kubernetes cluster, Flux-based GitOps, and measured pod/service resilience. It does not yet claim node-level high availability because the current topology contains one physical Kubernetes node.</section>
-
     <footer><span>© 2026 Holden Jolley</span><span>Hybrid Kubernetes · Azure Arc · GitOps · Chaos Engineering</span></footer>
   </main>
   <script src="../../script.js"></script>
+  <script src="../../portfolio-live-k8s.js"></script>
 </body>
 </html>
