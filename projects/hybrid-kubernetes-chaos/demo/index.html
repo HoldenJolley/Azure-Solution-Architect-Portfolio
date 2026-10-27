@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive frontend prototype for the Hybrid Kubernetes Chaos Lab, showing live-style cluster status, guarded chaos controls, recovery telemetry, and maintenance behavior.">
+  <meta name="theme-color" content="#08111d">
+  <title>Hybrid Kubernetes Chaos Lab | Interactive Preview</title>
+  <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#08111d;
+      --panel:#0d1826;
+      --panel-2:#111f30;
+      --panel-3:#15263a;
+      --line:#24384d;
+      --line-strong:#31516f;
+      --text:#eaf2f8;
+      --muted:#8ea2b4;
+      --subtle:#5f7488;
+      --azure:#3aa7f5;
+      --azure-soft:#102c43;
+      --green:#62d28f;
+      --green-soft:#102c20;
+      --yellow:#f4c65d;
+      --yellow-soft:#302712;
+      --red:#ff7d85;
+      --red-soft:#35161b;
+      --purple:#a996ff;
+      --shadow:0 24px 70px rgba(0,0,0,.26);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(circle at 75% -10%,rgba(58,167,245,.15),transparent 32%),linear-gradient(180deg,#08111d,#09131f 42%,#08111d);color:var(--text);font-family:"Segoe UI",Inter,Arial,sans-serif;min-height:100vh}
+    button,a{font:inherit}
+    button{color:inherit}
+    .shell{max-width:1460px;margin:0 auto;padding:0 26px 46px}
+    .topbar{min-height:66px;border-bottom:1px solid rgba(118,153,183,.18);display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;background:rgba(8,17,29,.9);backdrop-filter:blur(16px)}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .mark{width:31px;height:31px;display:grid;place-items:center;border:1px solid #2d6b97;background:linear-gradient(145deg,#0f3f61,#0b2336);font-weight:800;color:#75c7ff;letter-spacing:-.08em}
+    .brand-copy{min-width:0}
+    .brand-copy strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand-copy span{display:block;color:var(--muted);font-size:10px;margin-top:2px;letter-spacing:.05em;text-transform:uppercase}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .quiet-link,.top-button{border:1px solid var(--line);background:#0c1724;color:#cbd8e2;text-decoration:none;padding:8px 11px;font-size:11px;cursor:pointer}
+    .quiet-link:hover,.top-button:hover{border-color:#42739c;background:#102235}
+    .top-button.warning{border-color:#735d2f;color:#f1d28d;background:#211c10}
+    main{padding-top:26px}
+    .eyebrow{font-size:9px;letter-spacing:.15em;color:#74c7ff;font-weight:800;text-transform:uppercase}
+    .hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(330px,.6fr);gap:18px;align-items:stretch;margin-bottom:18px}
+    .hero-main,.hero-side,.panel{background:linear-gradient(155deg,rgba(16,31,48,.96),rgba(10,22,35,.96));border:1px solid var(--line);box-shadow:var(--shadow)}
+    .hero-main{padding:30px;position:relative;overflow:hidden}
+    .hero-main:after{content:"";position:absolute;right:-130px;top:-130px;width:330px;height:330px;border-radius:50%;background:radial-gradient(circle,rgba(58,167,245,.16),transparent 68%);pointer-events:none}
+    h1{font-size:34px;line-height:1.08;margin:8px 0 11px;letter-spacing:-.035em;font-weight:650;max-width:760px}
+    .hero-copy{max-width:760px;color:#a8bac9;font-size:14px;line-height:1.65;margin:0}
+    .hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+    .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);padding:6px 8px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#0b1723;color:#a9bac8}
+    .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--subtle)}
+    .chip.good{border-color:#23563a;background:var(--green-soft);color:#9fe6b9}.chip.good .dot{background:var(--green);box-shadow:0 0 0 4px rgba(98,210,143,.08)}
+    .chip.info{border-color:#285b7c;background:var(--azure-soft);color:#9bd7ff}.chip.info .dot{background:var(--azure)}
+    .chip.warn{border-color:#67562e;background:var(--yellow-soft);color:#f0d083}.chip.warn .dot{background:var(--yellow)}
+    .hero-side{display:grid;grid-template-rows:auto 1fr}
+    .panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border-bottom:1px solid var(--line);font-size:11px}
+    .panel-title strong{font-weight:650}.panel-title span{font-size:9px;color:var(--muted)}
+    .health-grid{padding:10px 15px 13px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+    .health-item{background:#0d1826;padding:13px;min-width:0}
+    .health-item span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+    .health-item strong{font-size:16px;font-weight:650;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .health-item small{display:block;color:var(--subtle);font-size:9px;margin-top:4px}
+    .status-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:18px}
+    .status-tile{border:1px solid var(--line);background:#0b1724;padding:13px 14px;min-width:0}
+    .status-tile span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+    .status-tile strong{font-size:13px;font-weight:650;display:flex;align-items:center;gap:7px;min-width:0}
+    .status-light{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(98,210,143,.07);flex:0 0 auto}
+    .layout{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(360px,.72fr);gap:18px;align-items:start}
+    .stack{display:grid;gap:18px;min-width:0}
+    .panel{min-width:0}
+    .panel-body{padding:16px}
+    .topology{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .pod{border:1px solid var(--line);background:#0a1622;padding:14px;position:relative;overflow:hidden;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+    .pod:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green)}
+    .pod-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:12px}
+    .pod-name{font-family:Consolas,"SFMono-Regular",monospace;font-size:10px;color:#d8e5ef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .state{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#8fdca9}
+    .pod-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .metric{border-top:1px solid #1b2c3e;padding-top:8px}
+    .metric span{display:block;color:var(--subtle);font-size:8px;text-transform:uppercase;margin-bottom:4px}
+    .metric strong{font-size:11px;font-weight:600}
+    .pod.recovering{border-color:#6b5830;background:#1b190f}.pod.recovering:before{background:var(--yellow)}.pod.recovering .state{color:#efd277}
+    .pod.failed{border-color:#70323b;background:#211115}.pod.failed:before{background:var(--red)}.pod.failed .state{color:#ff9ca3}
+    .pod.isolated{border-color:#725fbd;background:#17132a}.pod.isolated:before{background:var(--purple)}.pod.isolated .state{color:#c5baff}
+    .service-path{margin-top:13px;border:1px solid var(--line);background:#0a1521;padding:13px;display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center}
+    .service-icon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #2d5f81;background:#102b40;color:#80ccff;font-weight:800;font-size:11px}
+    .service-path strong{font-size:11px;display:block}.service-path span{font-size:9px;color:var(--muted);display:block;margin-top:4px}
+    .service-value{text-align:right}.service-value strong{font-size:18px;color:#a4e5ba}.service-value span{font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+    .experiment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .experiment{border:1px solid var(--line);background:#0a1622;padding:15px;display:flex;flex-direction:column;min-width:0;min-height:198px}
+    .experiment .icon{font-size:18px;margin-bottom:14px;color:#8ccfff}
+    .experiment strong{font-size:12px;margin-bottom:6px}.experiment p{font-size:10px;line-height:1.55;color:var(--muted);margin:0 0 14px;flex:1}
+    .experiment-meta{font-size:8px;color:var(--subtle);text-transform:uppercase;letter-spacing:.055em;margin-bottom:9px}
+    .experiment button{border:1px solid #32698f;background:#11314a;color:#bfe5ff;padding:9px 10px;cursor:pointer;font-size:10px;font-weight:700;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .experiment button:hover:not(:disabled){background:#17415f;border-color:#4c91bf}.experiment button:disabled{cursor:not-allowed;opacity:.42}
+    .experiment button span:last-child{font-size:14px}
+    .active-run{border:1px solid var(--line);background:#0a1622;padding:15px;display:grid;gap:13px}
+    .run-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .run-title strong{display:block;font-size:12px}.run-title span{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+    .run-status{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8edfa9}
+    .progress{height:5px;background:#17283a;overflow:hidden}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3aa7f5,#62d28f);transition:width .2s linear}
+    .run-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .run-stat{background:#0d1b29;border:1px solid #1d3043;padding:10px}.run-stat span{display:block;color:var(--subtle);font-size:8px;text-transform:uppercase;margin-bottom:5px}.run-stat strong{font-size:12px}
+    .activity{max-height:382px;overflow:auto;padding:6px 0}
+    .activity-row{display:grid;grid-template-columns:68px 8px 1fr;gap:9px;padding:8px 14px;border-bottom:1px solid #172739;font-size:9px;align-items:start}
+    .activity-row time{color:var(--subtle);font-family:Consolas,monospace}.activity-dot{width:6px;height:6px;border-radius:50%;background:#527187;margin-top:3px}.activity-row.good .activity-dot{background:var(--green)}.activity-row.warn .activity-dot{background:var(--yellow)}.activity-row.bad .activity-dot{background:var(--red)}.activity-row.info .activity-dot{background:var(--azure)}
+    .activity-row span:last-child{color:#a9bbc9;line-height:1.45}.activity-row strong{color:#e5edf4;font-weight:600}
+    .recent{display:grid;gap:8px}
+    .recent-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;border:1px solid #1d3043;background:#0a1622;padding:11px 12px}
+    .recent-row strong{font-size:10px}.recent-row span{font-size:8px;color:var(--muted)}
+    .recent-pass{color:#8fe0aa!important;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+    .maintenance{display:none;border:1px solid #5f4f2a;background:linear-gradient(145deg,#241e10,#15150f);padding:28px;margin-bottom:18px}
+    .maintenance.visible{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+    .maintenance-icon{width:48px;height:48px;display:grid;place-items:center;border:1px solid #806a35;color:#f1ce73;font-size:22px}
+    .maintenance h2{font-size:20px;margin:2px 0 7px}.maintenance p{color:#c2b793;font-size:11px;line-height:1.6;margin:0;max-width:740px}
+    .maintenance-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.maintenance-actions button,.maintenance-actions a{border:1px solid #725f34;background:#2e2614;color:#f0d184;padding:8px 10px;text-decoration:none;font-size:9px;cursor:pointer}
+    .footer-note{color:var(--subtle);font-size:9px;line-height:1.6;margin-top:18px;padding:13px 0;border-top:1px solid var(--line)}
+    .sim-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #5d512d;background:#211c10;padding:9px 12px;margin-bottom:18px;color:#e5cb86;font-size:9px}
+    .sim-banner strong{font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+    .sim-banner span{color:#b9aa7f}
+    @media(max-width:1080px){.hero,.layout{grid-template-columns:1fr}.status-strip{grid-template-columns:repeat(3,1fr)}.experiment-grid{grid-template-columns:1fr}.experiment{min-height:0}.topology{grid-template-columns:1fr 1fr}.run-stats{grid-template-columns:1fr 1fr}}
+    @media(max-width:720px){.shell{padding:0 14px 30px}.topbar{position:static;padding:10px 0}.quiet-link{display:none}.hero-main{padding:22px}.hero-side{min-width:0}h1{font-size:28px}.status-strip{grid-template-columns:1fr 1fr}.topology{grid-template-columns:1fr}.health-grid{grid-template-columns:1fr 1fr}.service-path{grid-template-columns:auto 1fr}.service-value{grid-column:1/-1;text-align:left;border-top:1px solid #1c3044;padding-top:10px}.recent-row{grid-template-columns:1fr auto}.recent-row span:last-child{grid-column:1/-1}.maintenance.visible{grid-template-columns:1fr}.run-stats{grid-template-columns:1fr 1fr}.sim-banner{align-items:flex-start;flex-direction:column}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="shell" id="chaos-demo">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">K8</div>
+        <div class="brand-copy"><strong>Hybrid Kubernetes Chaos Lab</strong><span>chaos.holdenjolley.com · frontend preview</span></div>
+      </div>
+      <div class="top-actions">
+        <a class="quiet-link" href="../">Case study</a>
+        <button class="top-button warning" id="toggle-maintenance" type="button">Preview offline state</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="sim-banner"><strong>Frontend simulation</strong><span>No live cluster actions are performed from this preview. The UI is modeling the controller API we will connect later.</span></div>
+
+      <section class="maintenance" id="maintenance" aria-live="polite">
+        <div class="maintenance-icon" aria-hidden="true">⌁</div>
+        <div>
+          <div class="eyebrow">HYBRID LAB STATUS</div>
+          <h2>Physical lab temporarily offline</h2>
+          <p>The public demo is normally served by a physical Kubernetes cluster connected to Azure through Azure Arc. The lab may be powered down for maintenance, hardware work, or energy savings. Recorded architecture and chaos results remain available while the origin is offline.</p>
+          <div class="maintenance-actions"><button type="button" id="restore-preview">Restore online preview</button><a href="../#results">View recorded results</a></div>
+        </div>
+      </section>
+
+      <div id="online-ui">
+        <section class="hero">
+          <div class="hero-main">
+            <div class="eyebrow">LIVE HYBRID RESILIENCE DEMO</div>
+            <h1>Break a replica. Watch Kubernetes recover.</h1>
+            <p class="hero-copy">This control surface is designed to expose a deliberately small set of guarded chaos experiments while keeping Kubernetes administration private. Visitors can observe workload health, trigger one bounded experiment at a time, and watch the Service continue—or recover—in real time.</p>
+            <div class="hero-meta">
+              <span class="chip good"><i class="dot"></i>Lab online</span>
+              <span class="chip info"><i class="dot"></i>Azure Arc connected</span>
+              <span class="chip info"><i class="dot"></i>Flux reconciled</span>
+              <span class="chip warn"><i class="dot"></i>Single-node topology</span>
+            </div>
+          </div>
+          <aside class="hero-side">
+            <div class="panel-title"><strong>Cluster health</strong><span>preview data</span></div>
+            <div class="health-grid">
+              <div class="health-item"><span>Desired</span><strong id="desired-count">3</strong><small>Deployment replicas</small></div>
+              <div class="health-item"><span>Ready</span><strong id="ready-count">3 / 3</strong><small id="ready-detail">All healthy</small></div>
+              <div class="health-item"><span>Availability</span><strong id="availability">100%</strong><small id="request-count">128 / 128 requests</small></div>
+              <div class="health-item"><span>Experiment</span><strong id="experiment-health">Idle</strong><small id="experiment-detail">Controls available</small></div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="status-strip" aria-label="Live-style platform status">
+          <div class="status-tile"><span>Node</span><strong><i class="status-light"></i>k8s-edge-01</strong></div>
+          <div class="status-tile"><span>Kubernetes</span><strong>v1.37.1</strong></div>
+          <div class="status-tile"><span>Management</span><strong>Azure Arc</strong></div>
+          <div class="status-tile"><span>Desired state</span><strong>Flux / GitHub</strong></div>
+          <div class="status-tile"><span>Service probe</span><strong><i class="status-light"></i>Healthy</strong></div>
+        </section>
+
+        <div class="layout">
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-title"><strong>Workload topology</strong><span>namespace: hybrid-lab</span></div>
+              <div class="panel-body">
+                <div class="topology" id="pod-grid">
+                  <article class="pod" data-pod="a"><div class="pod-head"><span class="pod-name">hybrid-demo-c7nhq</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>18m / 250m</strong></div><div class="metric"><span>Memory</span><strong>24 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.103</strong></div></div></article>
+                  <article class="pod" data-pod="b"><div class="pod-head"><span class="pod-name">hybrid-demo-l5j8v</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>21m / 250m</strong></div><div class="metric"><span>Memory</span><strong>25 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.101</strong></div></div></article>
+                  <article class="pod" data-pod="c"><div class="pod-head"><span class="pod-name">hybrid-demo-rgc8q</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>17m / 250m</strong></div><div class="metric"><span>Memory</span><strong>23 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.104</strong></div></div></article>
+                </div>
+                <div class="service-path">
+                  <div class="service-icon">SVC</div>
+                  <div><strong>hybrid-demo.hybrid-lab.svc.cluster.local</strong><span>ClusterIP · traffic distributed across healthy endpoints</span></div>
+                  <div class="service-value"><strong id="service-health">Healthy</strong><span id="service-detail">3 endpoints</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title"><strong>Controlled chaos experiments</strong><span>one experiment at a time · guarded actions only</span></div>
+              <div class="panel-body experiment-grid">
+                <article class="experiment"><div class="icon">⌫</div><strong>Delete one pod</strong><p>Randomly remove one healthy replica and watch the Deployment restore the three-replica desired state.</p><div class="experiment-meta">Expected duration · 5–15 sec</div><button type="button" data-experiment="pod">Run preview <span>→</span></button></article>
+                <article class="experiment"><div class="icon">↯</div><strong>Saturate one pod CPU</strong><p>Drive one container to its configured 250m CPU limit for a bounded interval while the other replicas remain available.</p><div class="experiment-meta">Bounded duration · 30 sec</div><button type="button" data-experiment="cpu">Run preview <span>→</span></button></article>
+                <article class="experiment"><div class="icon">⇄</div><strong>Isolate one pod</strong><p>Apply a temporary deny-ingress NetworkPolicy and compare Kubernetes readiness with direct endpoint reachability.</p><div class="experiment-meta">Bounded duration · 30 sec</div><button type="button" data-experiment="network">Run preview <span>→</span></button></article>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title"><strong>Active experiment</strong><span id="run-clock">No experiment running</span></div>
+              <div class="panel-body">
+                <div class="active-run">
+                  <div class="run-head"><div class="run-title"><strong id="run-name">Lab idle</strong><span id="run-description">Choose a controlled experiment above to preview the recovery workflow.</span></div><div class="run-status" id="run-status">Ready</div></div>
+                  <div class="progress" aria-label="Experiment progress"><i id="progress-bar"></i></div>
+                  <div class="run-stats"><div class="run-stat"><span>Target</span><strong id="run-target">—</strong></div><div class="run-stat"><span>Ready replicas</span><strong id="run-ready">3 / 3</strong></div><div class="run-stat"><span>Service</span><strong id="run-service">100%</strong></div><div class="run-stat"><span>Recovery</span><strong id="run-recovery">—</strong></div></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="stack">
+            <section class="panel">
+              <div class="panel-title"><strong>Activity log</strong><span>preview event stream</span></div>
+              <div class="activity" id="activity" aria-live="polite"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-title"><strong>Recent validated experiments</strong><span>recorded evidence</span></div>
+              <div class="panel-body recent">
+                <div class="recent-row"><div><strong>Pod failure</strong><br><span>Recovered desired state</span></div><span class="recent-pass">Pass</span><span>6.89s · 109/109</span></div>
+                <div class="recent-row"><div><strong>CPU saturation</strong><br><span>250m limit · zero restarts</span></div><span class="recent-pass">Pass</span><span>30.73s · 110/110</span></div>
+                <div class="recent-row"><div><strong>Network isolation</strong><br><span>reachable → blocked → reachable</span></div><span class="recent-pass">Pass</span><span>30s · 100/100</span></div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      <div class="footer-note">Prototype boundary: all values that change when you press an experiment button are simulated in the browser. The three “Recent validated experiments” values are recorded results from the physical lab. The production version will replace the simulated state with a small read-only status API plus tightly scoped experiment endpoints behind Cloudflare protection.</div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.getElementById('chaos-demo');
+      if (!root || root.dataset.initialized === 'true') return;
+      root.dataset.initialized = 'true';
+
+      const activity = root.querySelector('#activity');
+      const buttons = [...root.querySelectorAll('[data-experiment]')];
+      const pods = [...root.querySelectorAll('.pod')];
+      const progress = root.querySelector('#progress-bar');
+      const maintenance = root.querySelector('#maintenance');
+      const onlineUi = root.querySelector('#online-ui');
+      const maintenanceToggle = root.querySelector('#toggle-maintenance');
+      const restorePreview = root.querySelector('#restore-preview');
+
+      const fields = Object.fromEntries([
+        'ready-count','ready-detail','availability','request-count','experiment-health','experiment-detail','service-health','service-detail','run-clock','run-name','run-description','run-status','run-target','run-ready','run-service','run-recovery'
+      ].map(id => [id, root.querySelector('#' + id)]));
+
+      let running = false;
+      let timers = [];
+      let samples = 128;
+
+      const now = () => new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const addLog = (message, type='info') => {
+        const row = document.createElement('div');
+        row.className = 'activity-row ' + type;
+        const time = document.createElement('time');
+        time.textContent = now();
+        const dot = document.createElement('i');
+        dot.className = 'activity-dot';
+        const text = document.createElement('span');
+        text.innerHTML = message;
+        row.append(time,dot,text);
+        activity.prepend(row);
+        while (activity.children.length > 14) activity.lastElementChild.remove();
+      };
+      const later = (ms, fn) => { const id = window.setTimeout(fn, ms); timers.push(id); return id; };
+      const disableButtons = value => buttons.forEach(button => button.disabled = value);
+      const setProgress = value => { progress.style.width = Math.max(0,Math.min(100,value)) + '%'; };
+      const clearPodStates = () => pods.forEach(pod => { pod.classList.remove('failed','recovering','isolated'); pod.querySelector('.state').textContent = 'Ready'; });
+      const pickPod = () => pods[Math.floor(Math.random() * pods.length)];
+      const podName = pod => pod.querySelector('.pod-name').textContent;
+
+      const begin = (name, description, target) => {
+        running = true;
+        disableButtons(true);
+        fields['experiment-health'].textContent = 'Running';
+        fields['experiment-detail'].textContent = name;
+        fields['run-clock'].textContent = 'Experiment in progress';
+        fields['run-name'].textContent = name;
+        fields['run-description'].textContent = description;
+        fields['run-status'].textContent = 'Running';
+        fields['run-target'].textContent = target;
+        fields['run-recovery'].textContent = '—';
+        setProgress(4);
+        addLog('<strong>' + name + '</strong> requested from public demo preview.','info');
+        addLog('Guardrails passed: one experiment at a time, healthy baseline, bounded action.','good');
+      };
+
+      const finish = recovery => {
+        clearPodStates();
+        fields['ready-count'].textContent = '3 / 3';
+        fields['ready-detail'].textContent = 'All healthy';
+        fields['service-health'].textContent = 'Healthy';
+        fields['service-detail'].textContent = '3 endpoints';
+        fields['run-ready'].textContent = '3 / 3';
+        fields['run-service'].textContent = '100%';
+        fields['run-recovery'].textContent = recovery;
+        fields['run-status'].textContent = 'Pass';
+        fields['experiment-health'].textContent = 'Idle';
+        fields['experiment-detail'].textContent = 'Controls available';
+        fields['run-clock'].textContent = 'Experiment complete';
+        setProgress(100);
+        samples += 7;
+        fields['request-count'].textContent = samples + ' / ' + samples + ' requests';
+        addLog('Experiment completed. Service availability remained <strong>100%</strong> in the preview.','good');
+        later(900, () => { running = false; disableButtons(false); });
+      };
+
+      const runPod = () => {
+        const target = pickPod();
+        begin('Single-pod failure','Delete one healthy replica and observe Deployment self-healing.',podName(target));
+        later(600, () => { target.classList.add('failed'); target.querySelector('.state').textContent = 'Deleted'; fields['ready-count'].textContent = '2 / 3'; fields['ready-detail'].textContent = 'Replacement pending'; fields['run-ready'].textContent = '2 / 3'; fields['service-detail'].textContent = '2 healthy endpoints'; setProgress(28); addLog('Pod <strong>' + podName(target) + '</strong> deleted. Ready replicas: 2 / 3.','bad'); });
+        later(1800, () => { target.classList.remove('failed'); target.classList.add('recovering'); target.querySelector('.state').textContent = 'Starting'; setProgress(56); addLog('Deployment controller created a replacement replica.','warn'); });
+        later(3400, () => { target.querySelector('.pod-name').textContent = 'hybrid-demo-' + Math.random().toString(36).slice(2,7); target.querySelector('.state').textContent = 'Ready'; setProgress(84); addLog('Replacement pod passed readiness checks.','good'); });
+        later(4300, () => finish('6.9s preview'));
+      };
+
+      const runCpu = () => {
+        const target = pickPod();
+        begin('Bounded CPU saturation','Drive one replica to its 250m CPU limit while observing Service continuity.',podName(target));
+        later(600, () => { target.classList.add('recovering'); target.querySelector('.state').textContent = 'CPU stressed'; target.querySelector('.metric strong').textContent = '250m / 250m'; fields['run-ready'].textContent = '3 / 3'; setProgress(24); addLog('CPU worker started inside <strong>' + podName(target) + '</strong>.','warn'); });
+        later(1500, () => { fields['run-service'].textContent = '100%'; setProgress(48); addLog('Target remains Running and Ready. No container restart observed.','good'); });
+        later(2800, () => { setProgress(76); addLog('Bounded stress interval reached 30 seconds in the simulated timeline.','info'); });
+        later(3800, () => { target.querySelector('.metric strong').textContent = '20m / 250m'; finish('30.7s bounded'); });
+      };
+
+      const runNetwork = () => {
+        const target = pickPod();
+        begin('Single-pod network isolation','Apply temporary deny-ingress policy and compare readiness with direct reachability.',podName(target));
+        later(600, () => { addLog('Direct endpoint baseline: <strong>HTTP 200</strong>.','good'); setProgress(18); });
+        later(1350, () => { target.classList.add('isolated'); target.querySelector('.state').textContent = 'Ready · isolated'; fields['run-ready'].textContent = '3 / 3'; setProgress(42); addLog('Temporary deny-ingress NetworkPolicy applied to <strong>' + podName(target) + '</strong>.','warn'); });
+        later(2200, () => { setProgress(63); addLog('Direct endpoint probe: <strong>unreachable</strong> while Kubernetes still reports Ready=True.','bad'); });
+        later(3100, () => { fields['run-service'].textContent = '100%'; addLog('Kubernetes Service remains healthy through the other replicas.','good'); setProgress(82); });
+        later(4100, () => { addLog('NetworkPolicy removed. Direct endpoint restored to <strong>HTTP 200</strong>.','good'); finish('30s bounded'); });
+      };
+
+      const runExperiment = type => {
+        if (running) return;
+        if (type === 'pod') runPod();
+        if (type === 'cpu') runCpu();
+        if (type === 'network') runNetwork();
+      };
+
+      buttons.forEach(button => button.addEventListener('click', () => runExperiment(button.dataset.experiment)));
+
+      const showMaintenance = value => {
+        maintenance.classList.toggle('visible', value);
+        onlineUi.hidden = value;
+        maintenanceToggle.textContent = value ? 'Return to online preview' : 'Preview offline state';
+        if (value) addLog('Maintenance preview enabled. Live origin would be replaced by the edge fallback page.','warn');
+      };
+      maintenanceToggle.addEventListener('click', () => showMaintenance(!maintenance.classList.contains('visible')));
+      restorePreview.addEventListener('click', () => showMaintenance(false));
+
+      addLog('Frontend preview loaded. Cluster state is simulated; recorded experiment history is real.','info');
+      addLog('Baseline healthy: <strong>3 / 3 Ready</strong>, Service availability 100%.','good');
+    })();
+  </script>
+</body>
+</html>
