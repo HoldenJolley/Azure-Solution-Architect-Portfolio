@@ -1,8 +1,6 @@
 # Controlled Chaos Experiments
 
-This directory contains the first repeatable chaos-engineering checks for the physical `k8s-edge-01` cluster.
-
-The initial experiment deliberately stays simple: measure availability through the real Kubernetes `hybrid-demo` Service, delete one randomly selected application pod, and verify that the Deployment restores the desired replica count.
+This directory contains repeatable chaos-engineering checks for the physical `k8s-edge-01` cluster.
 
 ## Recorded results
 
@@ -32,34 +30,57 @@ For chaos measurement, `availability-probe.ps1` therefore creates a short-lived 
 - `kubectl get pods -n hybrid-lab` shows three healthy `hybrid-demo` replicas.
 - The portfolio repository is cloned locally on the Windows management machine.
 
-## 1. Start the availability probe
+## Experiment 01 - pod failure
 
-In PowerShell window 1, from this directory:
+Start the availability probe in PowerShell window 1:
 
 ```powershell
 ./availability-probe.ps1 -DurationSeconds 120
 ```
 
-The probe creates an ephemeral `curlimages/curl` pod inside the cluster, requests the `hybrid-demo` Service once per second, and writes timestamped CSV evidence under `./evidence`. The script removes the probe pod after collecting the logs.
-
-## 2. Inject a controlled failure
-
-While the availability probe is running, use PowerShell window 2:
+While the probe is running, use PowerShell window 2:
 
 ```powershell
 ./delete-random-pod.ps1
 ```
 
-The script:
+The failure script deletes one randomly selected application pod and measures how long the Deployment takes to restore its desired Ready replica count.
 
-1. verifies the Deployment's desired and ready replica counts;
-2. randomly selects one running `hybrid-demo` pod;
-3. deletes it without waiting for termination;
-4. polls the Deployment until the desired number of replicas are Ready again;
-5. records measured recovery time under `./evidence`.
+## Experiment 02 - bounded CPU saturation
 
-## Expected result
+The second experiment keeps the target pod alive and deliberately saturates one CPU worker inside its NGINX container. The workload currently has a `250m` CPU limit, so the busy loop should be throttled by the container's cgroup rather than consuming an unrestricted CPU core.
 
-Kubernetes should create a replacement pod automatically and return the Deployment to its GitOps-declared three-replica state. Because the availability probe reaches the actual ClusterIP Service rather than a port-forwarded individual pod, this test measures whether healthy service endpoints continued serving requests during the failure.
+First pull the latest scripts, then start the same in-cluster availability probe:
 
-This establishes a measurable baseline before adding a dedicated chaos platform and more disruptive scenarios such as network loss, CPU/memory stress, node failure, and dependency faults.
+```powershell
+./availability-probe.ps1 -DurationSeconds 120
+```
+
+While the probe is running, execute the bounded CPU experiment in another PowerShell window:
+
+```powershell
+./stress-one-pod.ps1 -StressSeconds 30
+```
+
+`stress-one-pod.ps1`:
+
+1. verifies that multiple application replicas are Ready;
+2. randomly selects one Ready `hybrid-demo` pod;
+3. records the pod, node, and configured CPU limit;
+4. runs one CPU-bound BusyBox shell loop for 30 seconds using `timeout`;
+5. verifies that the target pod remains Running and Ready afterward;
+6. saves timestamped evidence under `./evidence`.
+
+The 5-120 second guardrail and in-container `timeout` keep this experiment bounded even if the management session is interrupted.
+
+### What to compare
+
+For Experiment 02, compare the new availability CSV with Experiment 01. Useful signals are:
+
+- request success rate during CPU saturation;
+- average latency during the observation window;
+- whether readiness or liveness fails;
+- whether the container restarts;
+- whether the other replicas preserve service availability.
+
+This establishes a progression from explicit pod failure to degraded-but-still-running behavior before moving to network disruption, memory pressure, node failure, or a dedicated chaos platform.
