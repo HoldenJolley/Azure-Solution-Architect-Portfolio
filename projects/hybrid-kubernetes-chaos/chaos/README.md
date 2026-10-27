@@ -4,7 +4,9 @@ This directory contains repeatable chaos-engineering checks for the physical `k8
 
 ## Recorded results
 
-Experiment 01 is documented at `experiments/experiment-01-pod-failure.md`.
+### Experiment 01 - single-pod failure
+
+Documented at `experiments/experiment-01-pod-failure.md`.
 
 Validated result:
 
@@ -17,6 +19,25 @@ Validated result:
 - observed service availability: 100%
 
 A prior port-forward-based availability result was discarded as a measurement artifact and is documented in the experiment report.
+
+### Experiment 02 - bounded CPU saturation
+
+Documented at `experiments/experiment-02-cpu-saturation.md`.
+
+Validated result:
+
+- desired state before stress: 3 Ready replicas
+- injected degradation: one CPU-bound worker inside a randomly selected application container
+- target container CPU limit: 250m
+- bounded stress duration: 30.73 seconds
+- target pod after stress: Running and Ready
+- target container restarts: 0
+- in-cluster availability samples: 110
+- successful requests: 110
+- failed requests: 0
+- observed service availability: 100%
+
+The first CPU-stress run exposed a harness issue: BusyBox `timeout` surfaced the expected end of the bounded stress process as exit code 143 (SIGTERM). The script now accepts that code only when elapsed time confirms the requested stress duration completed.
 
 ## Why the availability probe runs inside Kubernetes
 
@@ -48,9 +69,9 @@ The failure script deletes one randomly selected application pod and measures ho
 
 ## Experiment 02 - bounded CPU saturation
 
-The second experiment keeps the target pod alive and deliberately saturates one CPU worker inside its NGINX container. The workload currently has a `250m` CPU limit, so the busy loop should be throttled by the container's cgroup rather than consuming an unrestricted CPU core.
+The second experiment keeps the target pod alive and deliberately saturates one CPU worker inside its NGINX container. The workload currently has a `250m` CPU limit, so the busy loop is constrained by the container's cgroup rather than consuming an unrestricted CPU core.
 
-First pull the latest scripts, then start the same in-cluster availability probe:
+Start the same in-cluster availability probe:
 
 ```powershell
 ./availability-probe.ps1 -DurationSeconds 120
@@ -73,14 +94,13 @@ While the probe is running, execute the bounded CPU experiment in another PowerS
 
 The 5-120 second guardrail and in-container `timeout` keep this experiment bounded even if the management session is interrupted.
 
-### What to compare
+## Experiment progression
 
-For Experiment 02, compare the new availability CSV with Experiment 01. Useful signals are:
+The first two experiments establish two different failure modes:
 
-- request success rate during CPU saturation;
-- average latency during the observation window;
-- whether readiness or liveness fails;
-- whether the container restarts;
-- whether the other replicas preserve service availability.
+- Experiment 01: complete loss of one application pod followed by Kubernetes self-healing.
+- Experiment 02: a degraded-but-still-running pod under bounded CPU pressure.
 
-This establishes a progression from explicit pod failure to degraded-but-still-running behavior before moving to network disruption, memory pressure, node failure, or a dedicated chaos platform.
+Both maintained 100% observed in-cluster Service availability in their recorded runs.
+
+The next useful tier is a fault that affects request handling or endpoint health more directly, such as network disruption or memory pressure. Node-level failure testing should wait until the cluster has an additional worker node because all current application replicas run on the same physical host.
