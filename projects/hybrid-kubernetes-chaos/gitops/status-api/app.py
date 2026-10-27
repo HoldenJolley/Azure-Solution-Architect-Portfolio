@@ -12,7 +12,7 @@ NAMESPACE = os.getenv("LAB_NAMESPACE", "hybrid-lab")
 DEPLOYMENT = os.getenv("LAB_DEPLOYMENT", "hybrid-demo")
 NODE_NAME = os.getenv("LAB_NODE_NAME", "k8s-edge-01")
 FLUX_NAMESPACE = os.getenv("FLUX_NAMESPACE", "hybrid-gitops")
-FLUX_NAME = os.getenv("FLUX_NAME", "hybrid-lab")
+FLUX_NAME = os.getenv("FLUX_NAME", "hybrid-lab-gitops-hybrid-lab")
 SERVICE_URL = os.getenv(
     "LAB_SERVICE_URL",
     "http://hybrid-demo.hybrid-lab.svc.cluster.local",
