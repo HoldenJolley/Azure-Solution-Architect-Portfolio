@@ -1,8 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$Url = 'http://localhost:8080',
+    [string]$Namespace = 'hybrid-lab',
+    [string]$ServiceUrl = 'http://hybrid-demo.hybrid-lab.svc.cluster.local',
     [int]$DurationSeconds = 120,
-    [int]$IntervalMilliseconds = 1000,
+    [int]$IntervalSeconds = 1,
     [string]$OutputDirectory = './evidence'
 )
 
@@ -12,83 +13,136 @@ if ($DurationSeconds -lt 1) {
     throw 'DurationSeconds must be at least 1.'
 }
 
-if ($IntervalMilliseconds -lt 100) {
-    throw 'IntervalMilliseconds must be at least 100.'
+if ($IntervalSeconds -lt 1) {
+    throw 'IntervalSeconds must be at least 1.'
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$podName = "hybrid-availability-$timestamp".ToLowerInvariant()
 $outputPath = Join-Path $OutputDirectory "availability-$timestamp.csv"
+$podTimeoutSeconds = $DurationSeconds + 90
 
-$handler = [System.Net.Http.HttpClientHandler]::new()
-$client = [System.Net.Http.HttpClient]::new($handler)
-$client.Timeout = [TimeSpan]::FromSeconds(5)
+$template = @'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: __POD_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: hybrid-availability-probe
+    app.kubernetes.io/part-of: hybrid-kubernetes-chaos
+spec:
+  restartPolicy: Never
+  containers:
+    - name: probe
+      image: curlimages/curl:8.23.0
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+      command:
+        - /bin/sh
+        - -c
+      args:
+        - |
+          end=$(( $(date +%s) + __DURATION__ ))
+          echo 'TimestampUtc,Success,StatusCode,LatencyMs,Error'
+          while [ "$(date +%s)" -lt "$end" ]; do
+            ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            error_file=/tmp/curl-error
+            metrics=$(curl -sS -o /dev/null -w '%{http_code},%{time_total}' --max-time 5 '__SERVICE_URL__' 2>"$error_file")
+            rc=$?
+            status=$(printf '%s' "$metrics" | cut -d, -f1)
+            seconds=$(printf '%s' "$metrics" | cut -d, -f2)
+            latency_ms=$(awk -v t="$seconds" 'BEGIN { printf "%.2f", t * 1000 }')
+            error=$(tr '\n' ' ' < "$error_file" | sed 's/"/''/g; s/,/;/g')
 
-$started = Get-Date
-$deadline = $started.AddSeconds($DurationSeconds)
-$results = [System.Collections.Generic.List[object]]::new()
+            success=False
+            if [ "$rc" -eq 0 ] && [ -n "$status" ] && [ "$status" -ge 200 ] 2>/dev/null && [ "$status" -lt 400 ] 2>/dev/null; then
+              success=True
+            fi
 
-Write-Host "Probing $Url for $DurationSeconds seconds..."
-Write-Host "Evidence: $outputPath"
+            printf '%s,%s,%s,%s,"%s"\n' "$ts" "$success" "$status" "$latency_ms" "$error"
+            sleep __INTERVAL__
+          done
+'@
+
+$manifest = $template.Replace('__POD_NAME__', $podName).
+    Replace('__NAMESPACE__', $Namespace).
+    Replace('__DURATION__', $DurationSeconds.ToString()).
+    Replace('__INTERVAL__', $IntervalSeconds.ToString()).
+    Replace('__SERVICE_URL__', $ServiceUrl)
+
+Write-Host "Starting in-cluster availability probe against $ServiceUrl"
+Write-Host "Probe pod: $Namespace/$podName"
+Write-Host "Duration:  $DurationSeconds seconds"
+Write-Host "Evidence:  $outputPath"
+Write-Host ''
 
 try {
-    while ((Get-Date) -lt $deadline) {
-        $sampleTime = Get-Date
-        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $success = $false
-        $statusCode = $null
-        $errorMessage = $null
-
-        try {
-            $response = $client.GetAsync($Url).GetAwaiter().GetResult()
-            $stopwatch.Stop()
-            $statusCode = [int]$response.StatusCode
-            $success = $response.IsSuccessStatusCode
-            $response.Dispose()
-        }
-        catch {
-            $stopwatch.Stop()
-            $errorMessage = $_.Exception.Message
-        }
-
-        $result = [pscustomobject]@{
-            TimestampUtc = $sampleTime.ToUniversalTime().ToString('o')
-            Success      = $success
-            StatusCode   = $statusCode
-            LatencyMs    = [math]::Round($stopwatch.Elapsed.TotalMilliseconds, 2)
-            Error        = $errorMessage
-        }
-
-        $results.Add($result)
-        $result | Export-Csv -Path $outputPath -NoTypeInformation -Append
-
-        $state = if ($success) { 'OK' } else { 'FAIL' }
-        Write-Host ("{0:u} {1,-4} status={2} latency={3}ms" -f $sampleTime, $state, $statusCode, $result.LatencyMs)
-
-        Start-Sleep -Milliseconds $IntervalMilliseconds
+    $manifest | kubectl apply -f -
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Failed to create the in-cluster availability probe pod.'
     }
+
+    $deadline = (Get-Date).AddSeconds($podTimeoutSeconds)
+    $lastPhase = $null
+
+    while ((Get-Date) -lt $deadline) {
+        $phase = kubectl get pod $podName -n $Namespace -o jsonpath='{.status.phase}' 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Start-Sleep -Seconds 2
+            continue
+        }
+
+        if ($phase -ne $lastPhase) {
+            Write-Host "Probe pod phase: $phase"
+            $lastPhase = $phase
+        }
+
+        if ($phase -eq 'Succeeded' -or $phase -eq 'Failed') {
+            break
+        }
+
+        Start-Sleep -Seconds 2
+    }
+
+    if ($lastPhase -ne 'Succeeded') {
+        kubectl describe pod $podName -n $Namespace
+        throw "Availability probe pod did not complete successfully within ${podTimeoutSeconds}s. Final phase: $lastPhase"
+    }
+
+    kubectl logs $podName -n $Namespace | Set-Content -Path $outputPath -Encoding utf8
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Failed to retrieve availability probe logs.'
+    }
+
+    $data = @(Import-Csv $outputPath)
+    $total = $data.Count
+    $successful = @($data | Where-Object { $_.Success -eq 'True' }).Count
+    $failed = $total - $successful
+    $availability = if ($total -gt 0) { [math]::Round(($successful / $total) * 100, 3) } else { 0 }
+    $successfulLatencies = @($data | Where-Object { $_.Success -eq 'True' -and $_.LatencyMs } | ForEach-Object { [double]$_.LatencyMs })
+    $averageLatency = if ($successfulLatencies.Count -gt 0) {
+        [math]::Round(($successfulLatencies | Measure-Object -Average).Average, 2)
+    } else {
+        $null
+    }
+
+    Write-Host ''
+    Write-Host '=== In-cluster availability summary ==='
+    Write-Host "Samples:      $total"
+    Write-Host "Successful:   $successful"
+    Write-Host "Failed:       $failed"
+    Write-Host "Availability: $availability%"
+    Write-Host "Avg latency:  $averageLatency ms"
+    Write-Host "Evidence:     $outputPath"
 }
 finally {
-    $client.Dispose()
-    $handler.Dispose()
+    kubectl delete pod $podName -n $Namespace --ignore-not-found=true --wait=false | Out-Null
 }
-
-$total = $results.Count
-$successful = @($results | Where-Object Success).Count
-$failed = $total - $successful
-$availability = if ($total -gt 0) { [math]::Round(($successful / $total) * 100, 3) } else { 0 }
-$successfulLatencies = @($results | Where-Object Success | Select-Object -ExpandProperty LatencyMs)
-$averageLatency = if ($successfulLatencies.Count -gt 0) {
-    [math]::Round(($successfulLatencies | Measure-Object -Average).Average, 2)
-} else {
-    $null
-}
-
-Write-Host ''
-Write-Host '=== Availability summary ==='
-Write-Host "Samples:      $total"
-Write-Host "Successful:   $successful"
-Write-Host "Failed:       $failed"
-Write-Host "Availability: $availability%"
-Write-Host "Avg latency:  $averageLatency ms"
-Write-Host "Evidence:     $outputPath"
