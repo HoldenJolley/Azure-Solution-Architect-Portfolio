@@ -17,7 +17,7 @@ The API reads:
 - pods in `hybrid-lab` with `app.kubernetes.io/name=hybrid-demo`;
 - optional pod metrics when the Metrics API is available;
 - node `k8s-edge-01` and Kubernetes `/version`;
-- Flux Kustomization `hybrid-gitops/hybrid-lab-gitops`;
+- Flux Kustomization `hybrid-gitops/hybrid-lab`;
 - the application Service directly through `http://hybrid-demo.hybrid-lab.svc.cluster.local`.
 
 Azure Arc is reported only as a configured architecture fact in this first API version. The endpoint does not call Azure APIs and therefore does not claim that the Arc control plane is live based on this response alone.
