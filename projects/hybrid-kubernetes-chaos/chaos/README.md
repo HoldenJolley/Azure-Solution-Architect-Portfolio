@@ -4,6 +4,22 @@ This directory contains the first repeatable chaos-engineering checks for the ph
 
 The initial experiment deliberately stays simple: measure availability through the real Kubernetes `hybrid-demo` Service, delete one randomly selected application pod, and verify that the Deployment restores the desired replica count.
 
+## Recorded results
+
+Experiment 01 is documented at `experiments/experiment-01-pod-failure.md`.
+
+Validated result:
+
+- desired state before failure: 3/3 Ready replicas
+- injected failure: one randomly selected application pod deleted
+- recovery: 3/3 Ready and Available in 6.89 seconds
+- in-cluster availability samples: 109
+- successful requests: 109
+- failed requests: 0
+- observed service availability: 100%
+
+A prior port-forward-based availability result was discarded as a measurement artifact and is documented in the experiment report.
+
 ## Why the availability probe runs inside Kubernetes
 
 `kubectl port-forward service/...` is useful for interactive access, but it is not a valid service-availability measurement during pod deletion. `kubectl port-forward` selects a backend pod; if that selected pod terminates, the forwarding session ends even when the Kubernetes Service still has other healthy endpoints.
