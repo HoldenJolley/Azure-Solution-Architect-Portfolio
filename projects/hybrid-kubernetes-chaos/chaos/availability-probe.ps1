@@ -60,7 +60,7 @@ spec:
             status=$(printf '%s' "$metrics" | cut -d, -f1)
             seconds=$(printf '%s' "$metrics" | cut -d, -f2)
             latency_ms=$(awk -v t="$seconds" 'BEGIN { printf "%.2f", t * 1000 }')
-            error=$(tr '\n' ' ' < "$error_file" | sed 's/"/''/g; s/,/;/g')
+            error=$(tr '\n' ' ' < "$error_file" | tr -d '"' | sed 's/,/;/g')
 
             success=False
             if [ "$rc" -eq 0 ] && [ -n "$status" ] && [ "$status" -ge 200 ] 2>/dev/null && [ "$status" -lt 400 ] 2>/dev/null; then
