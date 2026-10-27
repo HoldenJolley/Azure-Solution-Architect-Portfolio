@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Holden Jolley — Azure Solution Architect portfolio featuring secure, resilient, cost-aware Azure reference architectures and Infrastructure as Code.">
+  <meta name="description" content="Holden Jolley — Azure Solution Architect portfolio featuring secure, resilient, cost-aware Azure and hybrid-cloud reference architectures, Infrastructure as Code, GitOps, and measured runtime evidence.">
   <meta name="author" content="Holden Jolley">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <meta name="theme-color" content="#0078d4">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Holden Jolley | Azure Solution Architect Portfolio">
-  <meta property="og:description" content="Azure architecture portfolio focused on security, resiliency, cost, operations, Infrastructure as Code, and documented tradeoffs.">
+  <meta property="og:description" content="Azure and hybrid-cloud architecture portfolio focused on security, resiliency, cost, operations, Infrastructure as Code, GitOps, and documented tradeoffs.">
   <meta property="og:site_name" content="Holden Jolley | Azure Solution Architect Portfolio">
   <meta property="profile:first_name" content="Holden">
   <meta property="profile:last_name" content="Jolley">
@@ -19,6 +19,9 @@
   <link rel="alternate" type="text/plain" href="llms.txt" title="AI-readable portfolio summary">
   <title>Holden Jolley | Azure Solution Architect</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    @media (min-width:951px){.portal-shell .project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -47,7 +50,7 @@
         "name": "Holden Jolley",
         "givenName": "Holden",
         "familyName": "Jolley",
-        "description": "Azure-focused cloud infrastructure and security professional with 5+ years of experience across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation, with a portfolio of Azure solution architecture reference implementations.",
+        "description": "Azure-focused cloud infrastructure and security professional with 5+ years of experience across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, Kubernetes, and automation, with a portfolio of Azure solution architecture reference implementations and runtime-tested hybrid-cloud work.",
         "jobTitle": "Endpoint And IS Security Specialist / Cloud Infrastructure & Security Lead",
         "worksFor": {
           "@type": "Organization",
@@ -74,6 +77,10 @@
           "GitHub Actions",
           "OpenID Connect",
           "Hybrid infrastructure",
+          "Kubernetes",
+          "Azure Arc-enabled Kubernetes",
+          "Flux GitOps",
+          "Chaos engineering",
           "Automation"
         ],
         "subjectOf": [
@@ -91,6 +98,11 @@
             "@type": "CreativeWork",
             "name": "Privacy-Preserving AI Age Assurance",
             "url": "/projects/age-verification/"
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Hybrid Kubernetes Chaos Lab",
+            "url": "/projects/hybrid-kubernetes-chaos/"
           }
         ]
       }
@@ -147,7 +159,7 @@
         <div>
           <div class="eyebrow">AZURE SOLUTION ARCHITECT</div>
           <h1>Architecture decisions, not just diagrams.</h1>
-          <p class="hero-copy">I design Azure solutions around security, resiliency, cost, operations, and the tradeoffs that make an architecture practical. This portfolio includes three Infrastructure-as-Code projects covering distributed commerce, privacy-preserving AI, and cost-optimized static hosting.</p>
+          <p class="hero-copy">I design Azure and hybrid-cloud solutions around security, resiliency, cost, operations, and the tradeoffs that make an architecture practical. This portfolio includes four projects covering distributed commerce, privacy-preserving AI, cost-optimized static hosting, and a physical Kubernetes lab connected to Azure Arc with GitOps and measured chaos-engineering evidence.</p>
           <div class="hero-actions">
             <a class="button primary" href="#projects">Explore the projects</a>
             <a class="button" href="resume.pdf">Download resume</a>
@@ -156,18 +168,18 @@
         <div class="hero-panel validation-panel">
           <div class="panel-header"><span>Portfolio validation</span><span class="status-chip success">Azure connected</span></div>
           <div class="validation-list">
-            <div><span>Projects</span><strong>3 Azure architectures</strong></div>
-            <div><span>Infrastructure</span><strong>Bicep + ARM What-If</strong></div>
-            <div><span>Delivery</span><strong>GitHub Actions · secretless OIDC</strong></div>
-            <div><span>Deployment</span><strong>Portfolio hosting live on Azure</strong></div>
+            <div><span>Projects</span><strong>4 Azure / hybrid architectures</strong></div>
+            <div><span>Infrastructure</span><strong>Bicep · Kubernetes · GitOps</strong></div>
+            <div><span>Delivery</span><strong>GitHub Actions · OIDC · Flux</strong></div>
+            <div><span>Runtime</span><strong>Portfolio live · hybrid chaos tested</strong></div>
           </div>
         </div>
       </section>
 
       <section class="section" id="projects">
         <div class="section-heading">
-          <div><div class="eyebrow">PORTFOLIO</div><h2>Featured Azure projects</h2><p class="section-copy">Each project starts with requirements and constraints, connects them to quality attributes and tradeoffs, and then carries those decisions through Infrastructure as Code, Azure control-plane validation, failure analysis, and explicit known limitations.</p></div>
-          <span class="count">3 projects</span>
+          <div><div class="eyebrow">PORTFOLIO</div><h2>Featured Azure projects</h2><p class="section-copy">Each project starts with requirements and constraints, connects them to quality attributes and tradeoffs, and then carries those decisions through Infrastructure as Code, Azure control-plane validation, runtime evidence where available, failure analysis, and explicit known limitations.</p></div>
+          <span class="count">4 projects</span>
         </div>
         <div class="project-grid">
           <a class="project-card" href="projects/resume/">
@@ -196,6 +208,15 @@
             <div class="card-status"><span class="status-chip success">Foundation ARM preflight</span><span class="status-note">Workloads compile validated</span></div>
             <div class="tags"><span>Container Apps</span><span>Key Vault</span><span>Private Link</span></div>
           </a>
+
+          <a class="project-card" href="projects/hybrid-kubernetes-chaos/">
+            <div class="card-top"><span class="number">04 · HYBRID RESILIENCE</span><span class="arrow">→</span></div>
+            <div class="card-arch" aria-hidden="true"><span>GitHub</span><i></i><span class="accent">Arc + Flux</span><i></i><span>Kubernetes</span></div>
+            <h3>Hybrid Kubernetes Chaos Lab</h3>
+            <p>Physical kubeadm Kubernetes connected to Azure Arc and reconciled through Flux GitOps, with repeatable pod-failure, CPU-saturation, and NetworkPolicy experiments backed by in-cluster availability evidence.</p>
+            <div class="card-status"><span class="status-chip success">Runtime chaos validated</span><span class="status-note">Arc connected · GitOps live</span></div>
+            <div class="tags"><span>Kubernetes</span><span>Azure Arc</span><span>Flux</span><span>Calico</span></div>
+          </a>
         </div>
       </section>
 
@@ -203,8 +224,8 @@
         <div class="section-heading"><div><div class="eyebrow">ARCHITECTURE EVIDENCE</div><h2>Designed to be reviewed, challenged, and operated.</h2></div></div>
         <div class="evidence-grid">
           <div class="evidence-card"><span class="evidence-number">01</span><strong>Requirements &amp; quality attributes</strong><p>Each case study starts with hard constraints and ties availability, security, privacy, consistency, cost, recovery, and maintainability back to an explicit design response.</p></div>
-          <div class="evidence-card"><span class="evidence-number">02</span><strong>Decisions &amp; failure modes</strong><p>ADRs explain why services were selected or omitted, while failure-path diagrams show what degrades, what fails over, and where the architecture deliberately fails closed.</p></div>
-          <div class="evidence-card"><span class="evidence-number">03</span><strong>Validation without overclaiming</strong><p>Runtime evidence is recorded only where it has actually been exercised: the portfolio hosting stack is live, while the e-commerce and age-assurance projects continue to separate compiler/control-plane validation from future runtime proof.</p></div>
+          <div class="evidence-card"><span class="evidence-number">02</span><strong>Decisions &amp; failure modes</strong><p>ADRs and experiment notes explain why services were selected or omitted, while failure-path evidence shows what degrades, what recovers, and where the architecture deliberately accepts a limitation.</p></div>
+          <div class="evidence-card"><span class="evidence-number">03</span><strong>Validation without overclaiming</strong><p>Evidence levels stay explicit: the portfolio is live, the hybrid Kubernetes lab has measured runtime chaos results, and the e-commerce and age-assurance references continue to separate compiler/control-plane validation from future runtime proof.</p></div>
         </div>
       </section>
 
@@ -212,14 +233,14 @@
         <div>
           <div class="eyebrow">PROFESSIONAL PROFILE</div>
           <h2>Resume</h2>
-          <p>Cloud &amp; security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, and automation—now applying that operational background to solution architecture and Infrastructure as Code.</p>
+          <p>Cloud &amp; security professional with 5+ years across Azure, Entra ID, Intune, endpoint security, hybrid infrastructure, Kubernetes, and automation—applying that operational background to solution architecture, Infrastructure as Code, GitOps, and resilience testing.</p>
           <div class="hero-actions compact-actions"><a class="button primary" href="resume.pdf">Download resume</a><a class="button" href="#projects">Review projects</a></div>
         </div>
         <div class="info-card">
-          <div><span>Architecture</span><strong>Azure · Hybrid Cloud</strong></div>
+          <div><span>Architecture</span><strong>Azure · Hybrid Cloud · Kubernetes</strong></div>
           <div><span>Security</span><strong>Entra ID · RBAC · Private Link</strong></div>
-          <div><span>Infrastructure as Code</span><strong>Bicep · PowerShell</strong></div>
-          <div><span>Delivery</span><strong>GitHub Actions · OIDC</strong></div>
+          <div><span>Infrastructure as Code</span><strong>Bicep · PowerShell · GitOps</strong></div>
+          <div><span>Delivery</span><strong>GitHub Actions · OIDC · Flux</strong></div>
         </div>
       </section>
 
@@ -227,10 +248,10 @@
         <div class="eyebrow">CAPABILITIES</div>
         <h2>Architecture capabilities</h2>
         <div class="capability-grid">
-          <div class="capability"><strong>Platform &amp; Networking</strong><span>Azure Front Door · WAF · App Service · Container Apps · VNets · Private Link · Private DNS</span></div>
+          <div class="capability"><strong>Platform &amp; Networking</strong><span>Azure Front Door · WAF · App Service · Container Apps · Kubernetes · Calico · VNets · Private Link · Private DNS</span></div>
           <div class="capability"><strong>Data &amp; Integration</strong><span>Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake · distributed workflow patterns</span></div>
-          <div class="capability"><strong>Identity &amp; Security</strong><span>Entra ID · Managed Identity · RBAC · Key Vault · HSM-backed keys · OIDC · application security controls</span></div>
-          <div class="capability"><strong>Delivery &amp; Operations</strong><span>Bicep · GitHub Actions · PowerShell · monitoring · disaster recovery · cost optimization · runbooks</span></div>
+          <div class="capability"><strong>Identity &amp; Security</strong><span>Entra ID · Managed Identity · RBAC · Key Vault · HSM-backed keys · OIDC · NetworkPolicy · application security controls</span></div>
+          <div class="capability"><strong>Delivery &amp; Operations</strong><span>Bicep · GitHub Actions · PowerShell · Azure Arc · Flux GitOps · monitoring · chaos testing · disaster recovery · cost optimization · runbooks</span></div>
         </div>
       </section>
 
@@ -240,7 +261,7 @@
       </section>
 
       <section class="section contact-section" id="contact">
-        <div><div class="eyebrow">GET IN TOUCH</div><h2>Contact</h2><p>Interested in discussing Azure architecture, cloud security, or one of these projects?</p></div>
+        <div><div class="eyebrow">GET IN TOUCH</div><h2>Contact</h2><p>Interested in discussing Azure architecture, hybrid cloud, Kubernetes, cloud security, or one of these projects?</p></div>
         <div class="hero-actions compact-actions">
           <a class="button primary" href="mailto:Jolleyholden@gmail.com">Email me</a>
           <a class="button" href="https://www.linkedin.com/in/holden-jolley/" target="_blank" rel="me noreferrer">LinkedIn</a>
