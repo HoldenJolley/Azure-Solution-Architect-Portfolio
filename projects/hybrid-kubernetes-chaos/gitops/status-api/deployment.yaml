@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hybrid-status-api
+  namespace: hybrid-lab
+  labels:
+    app.kubernetes.io/name: hybrid-status-api
+    app.kubernetes.io/component: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hybrid-status-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hybrid-status-api
+        app.kubernetes.io/component: observability
+    spec:
+      serviceAccountName: hybrid-status-api
+      automountServiceAccountToken: true
+      containers:
+        - name: api
+          image: python:3.13-alpine
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-B", "/app/app.py"]
+          env:
+            - name: PORT
+              value: "8080"
+            - name: LAB_NAMESPACE
+              value: hybrid-lab
+            - name: LAB_DEPLOYMENT
+              value: hybrid-demo
+            - name: LAB_NODE_NAME
+              value: k8s-edge-01
+            - name: FLUX_NAMESPACE
+              value: hybrid-gitops
+            - name: FLUX_NAME
+              value: hybrid-lab-gitops
+            - name: LAB_SERVICE_URL
+              value: http://hybrid-demo.hybrid-lab.svc.cluster.local
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 15m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 96Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: app
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: app
+          configMap:
+            name: hybrid-status-api-code
+            defaultMode: 0444
