@@ -3,10 +3,16 @@ kind: Kustomization
 namespace: hybrid-lab
 resources:
   - namespace.yaml
-  - configmap.yaml
   - deployment.yaml
   - service.yaml
   - status-api
+configMapGenerator:
+  - name: hybrid-demo-content
+    files:
+      - ../demo/index.html
+      - ../demo/live-status.js
+generatorOptions:
+  disableNameSuffixHash: false
 labels:
   - pairs:
       app.kubernetes.io/managed-by: flux
