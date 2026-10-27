@@ -49,7 +49,7 @@ rules:
     verbs: ["get"]
   - apiGroups: ["kustomize.toolkit.fluxcd.io"]
     resources: ["kustomizations"]
-    resourceNames: ["hybrid-lab-gitops"]
+    resourceNames: ["hybrid-lab"]
     verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
