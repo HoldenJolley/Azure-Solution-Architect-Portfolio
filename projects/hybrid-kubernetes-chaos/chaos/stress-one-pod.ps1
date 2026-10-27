@@ -51,7 +51,7 @@ Write-Evidence "Selected pod=$podName node=$nodeName cpuLimit=$cpuLimit"
 
 kubectl exec -n $Namespace $podName -c $Container -- sh -c 'command -v timeout >/dev/null 2>&1'
 if ($LASTEXITCODE -ne 0) {
-    throw "The target container does not provide the BusyBox timeout command required for a bounded stress run."
+    throw 'The target container does not provide the BusyBox timeout command required for a bounded stress run.'
 }
 
 Write-Evidence "Injecting one busy-loop CPU worker for ${StressSeconds}s. The pod remains alive; the container CPU limit should throttle it."
@@ -61,11 +61,25 @@ $stressCommand = "timeout ${StressSeconds}s sh -c 'while :; do :; done'"
 kubectl exec -n $Namespace $podName -c $Container -- sh -c $stressCommand | Tee-Object -FilePath $outputPath -Append
 $stressExit = $LASTEXITCODE
 $stressStopwatch.Stop()
+$stressElapsedSeconds = $stressStopwatch.Elapsed.TotalSeconds
 
-# BusyBox timeout commonly returns 124 when the timeout expires; treat 0 or 124 as an expected bounded completion.
-if ($stressExit -ne 0 -and $stressExit -ne 124) {
-    Write-Evidence "RESULT=FAIL kubectlExecExit=$stressExit"
-    throw "CPU stress command exited unexpectedly with code $stressExit."
+# Timeout implementations can surface bounded completion differently through kubectl exec.
+# GNU timeout commonly returns 124; BusyBox/container signal propagation can surface SIGTERM as 143.
+# Only accept timeout-style codes when the command actually ran for approximately the requested duration.
+$minimumExpectedDuration = [math]::Max(1, $StressSeconds - 2)
+$boundedTimeoutExit = ($stressExit -eq 124 -or $stressExit -eq 143) -and ($stressElapsedSeconds -ge $minimumExpectedDuration)
+$expectedStressCompletion = ($stressExit -eq 0) -or $boundedTimeoutExit
+
+if (-not $expectedStressCompletion) {
+    Write-Evidence "RESULT=FAIL kubectlExecExit=$stressExit elapsedSeconds=$([math]::Round($stressElapsedSeconds, 2))"
+    throw "CPU stress command exited unexpectedly with code $stressExit after $([math]::Round($stressElapsedSeconds, 2)) seconds."
+}
+
+if ($stressExit -eq 143) {
+    Write-Evidence "Bounded stress ended by expected SIGTERM timeout (exit 143) after $([math]::Round($stressElapsedSeconds, 2))s."
+}
+elseif ($stressExit -eq 124) {
+    Write-Evidence "Bounded stress ended by expected timeout (exit 124) after $([math]::Round($stressElapsedSeconds, 2))s."
 }
 
 $postJson = kubectl get pod $podName -n $Namespace -o json
@@ -82,7 +96,7 @@ $postPhase = $postPod.status.phase
 
 kubectl get pods -n $Namespace -l $LabelSelector -o wide | Tee-Object -FilePath $outputPath -Append
 
-Write-Evidence "Post-chaos podPhase=$postPhase ready=$postReady restartCount=$postRestarts elapsedSeconds=$([math]::Round($stressStopwatch.Elapsed.TotalSeconds, 2))"
+Write-Evidence "Post-chaos podPhase=$postPhase ready=$postReady restartCount=$postRestarts elapsedSeconds=$([math]::Round($stressElapsedSeconds, 2))"
 
 if ($postPhase -ne 'Running' -or -not $postReady) {
     Write-Evidence 'RESULT=FAIL target pod was not Ready after the bounded CPU stress period.'
