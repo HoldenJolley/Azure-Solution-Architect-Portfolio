@@ -94,13 +94,49 @@ While the probe is running, execute the bounded CPU experiment in another PowerS
 
 The 5-120 second guardrail and in-container `timeout` keep this experiment bounded even if the management session is interrupted.
 
+## Experiment 03 - single-pod network isolation
+
+The third experiment uses a temporary Kubernetes `NetworkPolicy` to isolate one randomly selected application pod from normal pod-originated ingress traffic while leaving the pod process itself running.
+
+Start the in-cluster availability probe:
+
+```powershell
+./availability-probe.ps1 -DurationSeconds 120
+```
+
+Once the probe pod is Running, execute the network isolation experiment in another PowerShell window:
+
+```powershell
+./isolate-one-pod.ps1 -IsolationSeconds 30
+```
+
+`isolate-one-pod.ps1`:
+
+1. verifies that multiple application replicas are Ready;
+2. randomly selects one Ready `hybrid-demo` pod;
+3. applies a temporary chaos-only label to that pod;
+4. creates a deny-ingress `NetworkPolicy` selecting only that label;
+5. holds the isolation for a bounded period;
+6. removes the NetworkPolicy and temporary label in a `finally` cleanup block;
+7. verifies that the target pod is Running and Ready after cleanup;
+8. writes timestamped evidence under `./evidence`.
+
+The experiment result reports whether the fault was injected and cleaned up successfully. Application availability is evaluated separately from the availability-probe CSV.
+
+### Why Experiment 03 may show request failures
+
+A NetworkPolicy can block pod-to-pod traffic to the selected application replica while traffic originating from that pod's local node remains allowed by Kubernetes NetworkPolicy semantics. As a result, the kubelet's node-originated readiness probe may continue to report the isolated pod as Ready even though another pod cannot reach it. If that happens, the Service can continue considering the isolated replica an eligible endpoint, and some requests from the in-cluster availability probe may time out.
+
+That outcome is useful evidence rather than a failed experiment: it demonstrates a failure mode that simple local readiness probes do not necessarily detect.
+
 ## Experiment progression
 
-The first two experiments establish two different failure modes:
+The experiments now cover three distinct failure modes:
 
 - Experiment 01: complete loss of one application pod followed by Kubernetes self-healing.
 - Experiment 02: a degraded-but-still-running pod under bounded CPU pressure.
+- Experiment 03: selective network isolation of a still-running pod using NetworkPolicy.
 
-Both maintained 100% observed in-cluster Service availability in their recorded runs.
+Experiments 01 and 02 maintained 100% observed in-cluster Service availability in their recorded runs. Experiment 03 intentionally tests a condition where readiness and real request reachability may diverge.
 
-The next useful tier is a fault that affects request handling or endpoint health more directly, such as network disruption or memory pressure. Node-level failure testing should wait until the cluster has an additional worker node because all current application replicas run on the same physical host.
+Node-level failure testing should wait until the cluster has an additional worker node because all current application replicas run on the same physical host.
