@@ -1,13 +1,13 @@
 # Holden Jolley
 
-> Azure-focused cloud infrastructure and security professional building solution-architecture reference implementations around security, reliability, cost, operations, and documented tradeoffs.
+> Azure-focused cloud infrastructure and security professional building solution-architecture reference implementations around security, reliability, cost, hybrid cloud, operations, and documented tradeoffs.
 
 ## Identity
 
 - Name: Holden Jolley
 - Canonical personal site: https://holdenjolley.com/
 - Current role: Endpoint And IS Security Specialist / Cloud Infrastructure & Security Lead
-- Portfolio focus: Azure solution architecture, cloud infrastructure, identity, security, Infrastructure as Code, and automation
+- Portfolio focus: Azure solution architecture, cloud infrastructure, hybrid Kubernetes, identity, security, Infrastructure as Code, GitOps, and automation
 - Location: North Carolina
 - Relocation: Open to the Bay Area
 - GitHub: https://github.com/HoldenJolley
@@ -25,17 +25,21 @@
 - Privacy-Preserving AI Age Assurance: https://holdenjolley.com/projects/age-verification/
   Azure reference architecture using client-side envelope encryption, private Container Apps inference, Key Vault Premium/HSM-backed keys, anti-replay state, Private Link, managed identity, and no intentional image retention. Foundation/workload Bicep validates, and the dev foundation has passed live ARM What-If through GitHub OIDC.
 
+- Hybrid Kubernetes Chaos Lab: https://holdenjolley.com/projects/hybrid-kubernetes-chaos/
+  Physical kubeadm Kubernetes cluster on Ubuntu Server connected to Azure through Arc-enabled Kubernetes and managed through Flux GitOps. The lab uses containerd and Calico and includes measured runtime chaos evidence: a deleted replica recovered from 2/3 to 3/3 Ready in 6.89 seconds with 109/109 successful Service requests; a replica remained Running/Ready with zero restarts during 30.73 seconds of bounded CPU saturation with 110/110 successful Service requests; and a NetworkPolicy experiment proved a selected pod IP reachable before, unreachable during, and reachable after isolation while the Service completed 100/100 requests successfully. All current application replicas run on one physical node, so node-level high availability is not claimed.
+
 ## Validation boundary
 
-- Infrastructure is authored as Bicep and compiler-validated.
+- Infrastructure is authored and validated using project-appropriate controls: Bicep/ARM What-If for Azure reference architectures and Kubernetes manifests/Flux reconciliation for the hybrid lab.
 - GitHub Actions authenticates to Azure through secretless OpenID Connect workload identity federation.
-- All three projects have live Azure Resource Manager What-If evidence.
 - The portfolio hosting project is deployed to Azure Static Web Apps Free and is the live origin for the public portfolio.
-- The e-commerce and age-assurance projects are reference architecture packages, not claims of complete production customer applications.
+- The hybrid Kubernetes lab is a live physical cluster connected through Azure Arc with Flux GitOps and recorded runtime chaos experiments.
+- The e-commerce and age-assurance projects remain reference architecture packages with compiler/control-plane evidence; they are not presented as complete production customer applications.
+- Runtime evidence is reported only for conditions that were actually exercised. The hybrid lab currently proves pod/service behavior, not physical node resilience.
 
 ## Professional background
 
-Holden has 5+ years of experience across Azure, Microsoft Entra ID, Intune, endpoint security, hybrid infrastructure, and automation. Work described in the resume includes Azure VM migration and operations, endpoint modernization from on-premises management to Entra ID/Intune/Autopilot, identity lifecycle automation, least-privilege endpoint security, and workflow automation.
+Holden has 5+ years of experience across Azure, Microsoft Entra ID, Intune, endpoint security, hybrid infrastructure, and automation. Work described in the resume includes Azure VM migration and operations, endpoint modernization from on-premises management to Entra ID/Intune/Autopilot, identity lifecycle automation, least-privilege endpoint security, and workflow automation. The portfolio additionally demonstrates hands-on Kubernetes, Azure Arc, Flux GitOps, Calico networking, and controlled resilience testing.
 
 ## Machine-readable identity
 
