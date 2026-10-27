@@ -17,8 +17,10 @@ The API reads:
 - pods in `hybrid-lab` with `app.kubernetes.io/name=hybrid-demo`;
 - optional pod metrics when the Metrics API is available;
 - node `k8s-edge-01` and Kubernetes `/version`;
-- Flux Kustomization `hybrid-gitops/hybrid-lab`;
+- Flux Kustomization `hybrid-gitops/hybrid-lab-gitops-hybrid-lab`;
 - the application Service directly through `http://hybrid-demo.hybrid-lab.svc.cluster.local`.
+
+The in-cluster Flux object name is generated from the Azure Arc Flux configuration name (`hybrid-lab-gitops`) and its named Kustomization (`hybrid-lab`), resulting in `hybrid-lab-gitops-hybrid-lab`.
 
 Azure Arc is reported only as a configured architecture fact in this first API version. The endpoint does not call Azure APIs and therefore does not claim that the Arc control plane is live based on this response alone.
 
@@ -31,11 +33,12 @@ Useful proof checks:
 ```powershell
 kubectl auth can-i get deployment/hybrid-demo -n hybrid-lab --as=system:serviceaccount:hybrid-lab:hybrid-status-api
 kubectl auth can-i list pods -n hybrid-lab --as=system:serviceaccount:hybrid-lab:hybrid-status-api
+kubectl auth can-i get kustomization/hybrid-lab-gitops-hybrid-lab -n hybrid-gitops --api-group=kustomize.toolkit.fluxcd.io --as=system:serviceaccount:hybrid-lab:hybrid-status-api
 kubectl auth can-i delete pods -n hybrid-lab --as=system:serviceaccount:hybrid-lab:hybrid-status-api
 kubectl auth can-i patch deployment/hybrid-demo -n hybrid-lab --as=system:serviceaccount:hybrid-lab:hybrid-status-api
 ```
 
-The first two should return `yes`; the mutation checks should return `no`.
+The first three should return `yes`; the mutation checks should return `no`.
 
 ## Local validation
 
