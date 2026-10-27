@@ -12,8 +12,11 @@ NAMESPACE = os.getenv("LAB_NAMESPACE", "hybrid-lab")
 DEPLOYMENT = os.getenv("LAB_DEPLOYMENT", "hybrid-demo")
 NODE_NAME = os.getenv("LAB_NODE_NAME", "k8s-edge-01")
 FLUX_NAMESPACE = os.getenv("FLUX_NAMESPACE", "hybrid-gitops")
-FLUX_NAME = os.getenv("FLUX_NAME", "hybrid-lab-gitops")
-SERVICE_URL = os.getenv("LAB_SERVICE_URL", "http://hybrid-demo.hybrid-lab.svc.cluster.local")
+FLUX_NAME = os.getenv("FLUX_NAME", "hybrid-lab")
+SERVICE_URL = os.getenv(
+    "LAB_SERVICE_URL",
+    "http://hybrid-demo.hybrid-lab.svc.cluster.local",
+)
 PORT = int(os.getenv("PORT", "8080"))
 TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 CA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
@@ -63,14 +66,17 @@ def condition_true(conditions, condition_type):
     return False
 
 
-def get_metrics(errors):
+def get_metrics():
     selector = urlencode({"labelSelector": "app.kubernetes.io/name=hybrid-demo"})
-    data = safe_kube(
-        f"/apis/metrics.k8s.io/v1beta1/namespaces/{quote(NAMESPACE)}/pods?{selector}",
-        errors,
-        "Pod metrics",
+    path = (
+        f"/apis/metrics.k8s.io/v1beta1/namespaces/{quote(NAMESPACE)}/pods?"
+        f"{selector}"
     )
-    if not data:
+    try:
+        data = kube_json(path)
+    except Exception:
+        # Metrics Server is optional in this low-cost lab. Missing metrics must
+        # not make otherwise healthy cluster status appear degraded.
         return {}
 
     metrics = {}
@@ -173,7 +179,7 @@ def build_status():
         "Node",
     )
     version = safe_kube("/version", errors, "Kubernetes version")
-    metrics = get_metrics(errors)
+    metrics = get_metrics()
 
     pod_items = []
     for pod in (pods_data or {}).get("items", []):
