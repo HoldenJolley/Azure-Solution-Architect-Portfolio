@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hybrid-status-api
+  namespace: hybrid-lab
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: hybrid-status-reader
+  namespace: hybrid-lab
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["hybrid-demo"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hybrid-status-reader
+  namespace: hybrid-lab
+subjects:
+  - kind: ServiceAccount
+    name: hybrid-status-api
+    namespace: hybrid-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: hybrid-status-reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hybrid-status-cluster-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    resourceNames: ["k8s-edge-01"]
+    verbs: ["get"]
+  - nonResourceURLs: ["/version"]
+    verbs: ["get"]
+  - apiGroups: ["kustomize.toolkit.fluxcd.io"]
+    resources: ["kustomizations"]
+    resourceNames: ["hybrid-lab-gitops"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hybrid-status-cluster-reader
+subjects:
+  - kind: ServiceAccount
+    name: hybrid-status-api
+    namespace: hybrid-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hybrid-status-cluster-reader
