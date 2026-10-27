@@ -6,6 +6,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - status-api
+  - cloudflared.yaml
 configMapGenerator:
   - name: hybrid-demo-content
     files:
