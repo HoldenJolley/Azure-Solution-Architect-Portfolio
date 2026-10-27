@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Hybrid Kubernetes chaos engineering case study by Holden Jolley using a physical kubeadm cluster, Azure Arc, Flux GitOps, Calico, and measured resilience experiments.">
+  <meta name="theme-color" content="#0078d4">
+  <title>Hybrid Kubernetes Chaos Lab | Holden Jolley</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="azure-mark" aria-hidden="true"><span></span><span></span></div><div><div class="brand-title">Holden Jolley</div><div class="brand-subtitle">Azure Solution Architect</div></div></div>
+    <div class="top-actions"><a href="../../#projects">All projects</a><a href="../../resume.pdf">Resume</a><a href="https://github.com/HoldenJolley" target="_blank" rel="noreferrer">GitHub</a><a href="https://www.linkedin.com/in/holden-jolley/" target="_blank" rel="noreferrer">LinkedIn</a><a href="mailto:Jolleyholden@gmail.com">Contact</a><button class="profile" aria-label="Profile">HJ</button></div>
+  </header>
+
+  <main class="content project-page">
+    <div class="breadcrumb"><a href="../../">Home</a><span>/</span><a href="../../#projects">Projects</a><span>/</span><strong>Hybrid Kubernetes Chaos Lab</strong></div>
+
+    <section class="hero">
+      <div>
+        <div class="project-kicker"><div class="eyebrow">HYBRID CLOUD · KUBERNETES · RESILIENCE</div></div>
+        <h1>Hybrid Kubernetes Chaos Lab</h1>
+        <p class="hero-copy">A physical Kubernetes environment connected to Azure through Arc and managed through Flux GitOps, built to turn resilience claims into measured runtime evidence. The lab runs kubeadm Kubernetes on Ubuntu Server with containerd and Calico, then deliberately injects pod, CPU, and network faults while an in-cluster probe measures service behavior.</p>
+        <div class="project-status"><span class="status-chip success">Azure Arc connected</span><span class="status-chip success">Flux GitOps live</span><span class="status-chip success">3 chaos experiments validated</span></div>
+        <div class="hero-actions"><a class="button primary" href="#results">Measured results</a><a class="button" href="#architecture">Architecture</a><a class="button" href="#limitations">Limitations</a></div>
+      </div>
+      <div class="hero-panel validation-panel">
+        <div class="panel-header"><span>Lab at a glance</span><span class="status-chip success">Runtime tested</span></div>
+        <div class="validation-list">
+          <div><span>Cluster</span><strong>kubeadm · Kubernetes v1.37.1</strong></div>
+          <div><span>Hybrid management</span><strong>Azure Arc-enabled Kubernetes</strong></div>
+          <div><span>Desired state</span><strong>GitHub → Flux → cluster</strong></div>
+          <div><span>Runtime evidence</span><strong>Pod · CPU · network faults</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="project-toc" aria-label="Hybrid Kubernetes case study sections">
+      <a href="#requirements">Overview</a><a href="#architecture">Architecture</a><a href="#gitops">GitOps</a><a href="#results">Chaos results</a><a href="#method">Method</a><a href="#limitations">Limitations</a>
+    </nav>
+
+    <div class="project-summary-strip" aria-label="Hybrid Kubernetes architecture summary">
+      <div class="project-summary-item"><span>Problem</span><strong>Prove hybrid Kubernetes operations and resilience without paying for an always-on cloud cluster.</strong></div>
+      <div class="project-summary-item"><span>Decision</span><strong>Run Kubernetes on physical hardware, connect it to Azure Arc, and use Flux for GitOps reconciliation.</strong></div>
+      <div class="project-summary-item"><span>Key tradeoff</span><strong>A single physical node can prove pod/service behavior, but not node-level high availability.</strong></div>
+    </div>
+
+    <section class="section split" id="requirements">
+      <div>
+        <div class="eyebrow">REQUIREMENTS &amp; CONSTRAINTS</div>
+        <h2>Build a real hybrid environment without turning the lab into a recurring cloud bill.</h2>
+        <p>The lab was intentionally built on a physical Lenovo P620 with 32 GB of DDR4 and Ubuntu Server. It runs headless and is administered remotely, keeping the hardware useful as a persistent on-premises-style Kubernetes target without requiring paid managed-cluster compute.</p>
+        <p>The design goal is not simply to show a green Kubernetes dashboard. The cluster must be remotely manageable through Azure, reconcile desired state from Git, and generate repeatable evidence for how workloads behave when individual components are deliberately degraded or removed.</p>
+      </div>
+      <div class="info-card">
+        <div><span>Host</span><strong>Lenovo P620 · 32 GB RAM</strong></div>
+        <div><span>Operating system</span><strong>Ubuntu Server · headless</strong></div>
+        <div><span>Runtime</span><strong>containerd · systemd cgroups</strong></div>
+        <div><span>Networking</span><strong>Calico · 10.244.0.0/16</strong></div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="eyebrow">HYBRID ARCHITECTURE</div>
+      <h2>GitHub is the source of truth; Azure provides the hybrid control plane.</h2>
+      <div class="architecture-flow seven" aria-label="Hybrid Kubernetes architecture flow">
+        <div class="flow-node">GitHub<br>portfolio repo</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Azure Arc<br>+ Flux</div><div class="flow-arrow">→</div>
+        <div class="flow-node">Physical kubeadm<br>cluster</div><div class="flow-arrow">→</div>
+        <div class="flow-node accent">Calico + Service<br>workloads</div>
+      </div>
+      <div class="service-list" aria-label="Technologies used">
+        <span>Kubernetes</span><span>kubeadm</span><span>containerd</span><span>Calico</span><span>Azure Arc</span><span>Flux</span><span>GitHub</span><span>PowerShell</span><span>Ubuntu Server</span><span>NetworkPolicy</span>
+      </div>
+    </section>
+
+    <section class="section" id="gitops">
+      <div class="eyebrow">GITOPS &amp; OPERATIONS</div>
+      <h2>The cluster is operated through desired state, not one-off deployment commands.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Azure Arc-enabled Kubernetes</strong><p>The physical cluster is registered in Azure as <code>k8s-edge-01</code>, providing a cloud control-plane view and remote Cluster Connect path without moving the workload into AKS.</p></div>
+        <div class="decision-card"><strong>Flux reconciliation</strong><p>Flux watches the portfolio repository and applies the workload manifests under <code>projects/hybrid-kubernetes-chaos/gitops</code>. A Git change from two to three replicas reconciled automatically without a manual <code>kubectl apply</code>.</p></div>
+        <div class="decision-card"><strong>Three-replica service baseline</strong><p>The <code>hybrid-demo</code> NGINX workload runs three replicas behind a ClusterIP Service with readiness/liveness probes and explicit CPU/memory requests and limits.</p></div>
+        <div class="decision-card"><strong>Remote management boundary</strong><p>Azure Arc Cluster Connect is demonstrated as a remote administration path. The proxy session is intentionally treated as a management dependency, not as the application data path used for availability measurement.</p></div>
+      </div>
+    </section>
+
+    <section class="section evidence-section" id="results">
+      <div class="section-heading"><div><div class="eyebrow">MEASURED CHAOS RESULTS</div><h2>Three different failure modes, measured at runtime.</h2><p class="section-copy">Each experiment pairs a bounded fault with independent service measurements so the portfolio distinguishes observed behavior from design assumptions.</p></div></div>
+      <div class="evidence-grid">
+        <div class="evidence-card"><span class="evidence-number">01 · POD FAILURE</span><strong>Self-healing in 6.89 seconds</strong><p>One replica was deleted from a healthy 3/3 Deployment. Capacity dropped to 2/3, Kubernetes created a replacement, and the Deployment returned to 3/3 Ready and Available in 6.89 seconds. The in-cluster probe recorded 109/109 successful requests: 100% observed availability.</p></div>
+        <div class="evidence-card"><span class="evidence-number">02 · CPU SATURATION</span><strong>30.73 seconds under the 250m CPU limit</strong><p>One running replica was deliberately CPU-saturated for 30.73 seconds. The pod remained Running and Ready with zero restarts, while the Service completed 110/110 probe requests successfully: 100% observed availability.</p></div>
+        <div class="evidence-card"><span class="evidence-number">03 · NETWORK ISOLATION</span><strong>Endpoint unreachable; Service still available</strong><p>An independent probe verified the selected pod IP as reachable before the policy, unreachable during the 30-second deny-ingress NetworkPolicy, and reachable again after cleanup. The pod still reported Ready=True with zero restarts, while the Service completed 100/100 requests successfully.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="method">
+      <div class="eyebrow">MEASUREMENT METHOD</div>
+      <h2>The test harness was corrected when the first metric measured the wrong thing.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>In-cluster availability probe</strong><p>A temporary curl pod calls <code>http://hybrid-demo.hybrid-lab.svc.cluster.local</code> through normal Kubernetes DNS and Service routing. This measures the application Service path rather than the management workstation.</p></div>
+        <div class="decision-card"><strong>Discarded port-forward artifact</strong><p>An early test reported 56.82% availability because <code>kubectl port-forward service/...</code> was tied to a backend pod that was deleted. That result was rejected because it measured tunnel survivability, not Kubernetes Service availability.</p></div>
+        <div class="decision-card"><strong>Direct network assertion</strong><p>The network experiment creates a separate curl pod and verifies the target pod IP directly: HTTP 200 before isolation, timeout/HTTP 000 during isolation, and HTTP 200 after cleanup.</p></div>
+        <div class="decision-card"><strong>Bounded fault injection</strong><p>CPU and network experiments use explicit time limits and cleanup paths. The scripts write timestamped local evidence so each result can be tied to a specific run rather than a screenshot-only claim.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="limitations">
+      <div class="eyebrow">KNOWN LIMITATIONS</div>
+      <h2>The strongest current limitation is physical, not Kubernetes-specific.</h2>
+      <div class="decision-grid">
+        <div class="decision-card"><strong>Single-node cluster</strong><p>All application replicas currently run on <code>k8s-edge-01</code>. The lab therefore proves pod-level self-healing and Service continuity, but a physical node failure would remove every replica. Node-level resilience requires at least one additional worker.</p></div>
+        <div class="decision-card"><strong>Readiness is not end-to-end reachability</strong><p>During the NetworkPolicy experiment the target pod stayed Ready even though an independent workload could not reach its pod IP. That is useful evidence that local health checks alone do not represent every client network path.</p></div>
+        <div class="decision-card"><strong>Arc proxy is a management session</strong><p>Cluster Connect uses a temporary localhost proxy. If that process stops, remote kubectl commands fail until the proxy is restarted; this does not indicate that the Kubernetes workload itself is unhealthy.</p></div>
+        <div class="decision-card"><strong>Next resilience tier</strong><p>Node-failure testing should wait for another physical worker. After that, a dedicated chaos platform can add richer scheduling and fault types without replacing the simple scripts that establish the baseline.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="eyebrow">EVIDENCE IN SOURCE CONTROL</div>
+      <h2>The scripts and experiment records are reviewable with the architecture.</h2>
+      <div class="status-banner">
+        <span class="status-chip success">Runtime evidence captured</span>
+        <div><strong>GitOps manifests, chaos scripts, and experiment reports live alongside the portfolio.</strong><p>See <code>projects/hybrid-kubernetes-chaos/gitops</code> for desired state and <code>projects/hybrid-kubernetes-chaos/chaos</code> for the availability probe, controlled fault scripts, and recorded experiment reports. Results are described only for the conditions actually exercised.</p></div>
+      </div>
+    </section>
+
+    <section class="section callout"><strong>Current boundary:</strong> this project demonstrates a live Azure Arc-connected physical Kubernetes cluster, Flux-based GitOps, and measured pod/service resilience. It does not yet claim node-level high availability because the current topology contains one physical Kubernetes node.</section>
+
+    <footer><span>© 2026 Holden Jolley</span><span>Hybrid Kubernetes · Azure Arc · GitOps · Chaos Engineering</span></footer>
+  </main>
+  <script src="../../script.js"></script>
+</body>
+</html>
