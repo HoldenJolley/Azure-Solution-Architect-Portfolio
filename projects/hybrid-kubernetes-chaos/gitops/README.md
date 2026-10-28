@@ -8,23 +8,25 @@ The desired state remains intentionally small and inexpensive:
 
 - `hybrid-lab` namespace
 - three-replica NGINX `hybrid-demo` Deployment
-- custom landing page from a ConfigMap
+- dashboard content generated from `../demo/index.html` and `../demo/live-status.js`
 - internal `hybrid-demo` ClusterIP Service
 - readiness/liveness probes and small CPU/memory limits
 - one-replica read-only `hybrid-status-api` for the interactive dashboard
+- one-replica `cloudflared` connector for outbound-only public access
+- Metrics Server installed by Flux HelmRelease for live pod CPU and memory telemetry
 
 The three application replicas provide enough redundancy for controlled pod-level failure testing while keeping the footprint tiny on the single-node lab. The status API is separate from the application workload so dashboard observation does not require exposing the Kubernetes API itself.
 
 ## Read-only status API
 
-`status-api/` contains the first backend for `chaos.holdenjolley.com`.
+`status-api/` contains the read-only backend for `chaos.holdenjolley.com`.
 
 It exposes only:
 
 - `GET /healthz`
 - `GET /api/status`
 
-The API reads the `hybrid-demo` Deployment and pods, node `k8s-edge-01`, Kubernetes version, Flux Kustomization status, optional pod metrics, and direct Service reachability. Its service account has no Kubernetes mutation permissions.
+The API reads the `hybrid-demo` Deployment and pods, node `k8s-edge-01`, Kubernetes version, Flux Kustomization status, pod metrics when the Metrics API is available, and direct Service reachability. Its service account has no Kubernetes mutation permissions.
 
 The internal Service is:
 
@@ -48,6 +50,30 @@ $status | ConvertTo-Json -Depth 10
 ```
 
 See `status-api/README.md` for the response boundary and RBAC proof checks.
+
+## Metrics Server
+
+`metrics-server.yaml` declares the official Metrics Server Helm repository and pins chart `3.14.0` (Metrics Server `v0.9.0`). Flux installs the release into `kube-system` while the HelmRepository and HelmRelease desired state remain in `hybrid-lab`.
+
+The lab currently passes `--kubelet-insecure-tls` because this kubeadm lab uses kubelet serving certificates that are not being treated as a production PKI trust path. This is an explicit lab-only tradeoff, not a production recommendation. A future hardening step is to issue and validate kubelet serving certificates against a trusted CA and remove this flag.
+
+Validation:
+
+```powershell
+kubectl get helmrepository,helmrelease -n hybrid-lab
+kubectl get deployment metrics-server -n kube-system
+kubectl get apiservice v1beta1.metrics.k8s.io
+kubectl top node
+kubectl top pods -n hybrid-lab
+```
+
+Once the Metrics API responds, `/api/status` automatically begins returning real `cpu` and `memory` values for the `hybrid-demo` pods; no status API mutation permissions are added.
+
+## Cloudflare Tunnel
+
+`cloudflared.yaml` runs the outbound-only Cloudflare connector without a Kubernetes API token. The tunnel credential is intentionally excluded from Git and supplied as the namespace-scoped Secret `cloudflared-tunnel-token`.
+
+The public dashboard and read-only API are routed through `chaos.holdenjolley.com`; no inbound router port is required on the physical lab network.
 
 ## Azure Arc / Flux configuration
 
@@ -97,4 +123,4 @@ Repeatable availability, pod-failure, CPU-saturation, and NetworkPolicy experime
 
 ## Next stages
 
-The read-only status API is the first public-demo backend. After its live data is verified, the frontend can consume `/api/status` through a same-origin Cloudflare route. Mutation endpoints will remain a separate phase with their own service account, stricter RBAC, experiment lock, cooldown, bounded durations, and abuse protection.
+With public read-only telemetry and resource metrics in place, the next phase is a separate chaos-controller service with its own narrowly scoped service account. The first public mutation will be bounded single-pod deletion, followed by additional experiments only after lock, cooldown, automatic cleanup, rate limiting, and abuse protections are proven.
