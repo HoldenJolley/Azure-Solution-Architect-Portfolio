@@ -165,7 +165,7 @@
             <p class="hero-copy">This control surface is designed to expose a deliberately small set of guarded chaos experiments while keeping Kubernetes administration private. Visitors can observe workload health, trigger one bounded experiment at a time, and watch the Service continue—or recover—in real time.</p>
             <div class="hero-meta">
               <span class="chip good"><i class="dot"></i>Lab online</span>
-              <span class="chip info"><i class="dot"></i>Azure Arc connected</span>
+              <span class="chip info"><i class="dot"></i>Azure Arc configured</span>
               <span class="chip info"><i class="dot"></i>Flux reconciled</span>
               <span class="chip warn"><i class="dot"></i>Single-node topology</span>
             </div>
@@ -195,9 +195,9 @@
               <div class="panel-title"><strong>Workload topology</strong><span>namespace: hybrid-lab</span></div>
               <div class="panel-body">
                 <div class="topology" id="pod-grid">
-                  <article class="pod" data-pod="a"><div class="pod-head"><span class="pod-name">hybrid-demo-c7nhq</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>18m / 250m</strong></div><div class="metric"><span>Memory</span><strong>24 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.103</strong></div></div></article>
-                  <article class="pod" data-pod="b"><div class="pod-head"><span class="pod-name">hybrid-demo-l5j8v</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>21m / 250m</strong></div><div class="metric"><span>Memory</span><strong>25 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.101</strong></div></div></article>
-                  <article class="pod" data-pod="c"><div class="pod-head"><span class="pod-name">hybrid-demo-rgc8q</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>17m / 250m</strong></div><div class="metric"><span>Memory</span><strong>23 / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Pod IP</span><strong>10.244.199.104</strong></div></div></article>
+                  <article class="pod" data-pod="a"><div class="pod-head"><span class="pod-name">hybrid-demo-c7nhq</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>18m / 250m</strong></div><div class="metric"><span>Memory</span><strong>24 Mi / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Node</span><strong>k8s-edge-01</strong></div></div></article>
+                  <article class="pod" data-pod="b"><div class="pod-head"><span class="pod-name">hybrid-demo-l5j8v</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>21m / 250m</strong></div><div class="metric"><span>Memory</span><strong>25 Mi / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Node</span><strong>k8s-edge-01</strong></div></div></article>
+                  <article class="pod" data-pod="c"><div class="pod-head"><span class="pod-name">hybrid-demo-rgc8q</span><span class="state">Ready</span></div><div class="pod-metrics"><div class="metric"><span>CPU</span><strong>17m / 250m</strong></div><div class="metric"><span>Memory</span><strong>23 Mi / 128 Mi</strong></div><div class="metric"><span>Restarts</span><strong>0</strong></div><div class="metric"><span>Node</span><strong>k8s-edge-01</strong></div></div></article>
                 </div>
                 <div class="service-path">
                   <div class="service-icon">SVC</div>
