@@ -13,7 +13,7 @@ The desired state remains intentionally small and inexpensive:
 - readiness/liveness probes and small CPU/memory limits
 - one-replica read-only `hybrid-status-api` for the interactive dashboard
 - one-replica `cloudflared` connector for outbound-only public access
-- Metrics Server installed by Flux HelmRelease for live pod CPU and memory telemetry
+- Metrics Server installed by a separate Arc/Flux platform Kustomization for live pod CPU and memory telemetry
 
 The three application replicas provide enough redundancy for controlled pod-level failure testing while keeping the footprint tiny on the single-node lab. The status API is separate from the application workload so dashboard observation does not require exposing the Kubernetes API itself.
 
@@ -53,14 +53,16 @@ See `status-api/README.md` for the response boundary and RBAC proof checks.
 
 ## Metrics Server
 
-`metrics-server.yaml` declares the official Metrics Server Helm repository and pins chart `3.14.0` (Metrics Server `v0.9.0`). Flux installs the release into `kube-system` while the HelmRepository and HelmRelease desired state remain in `hybrid-lab`.
+`platform/` contains Flux platform objects that must live in the same namespace as the Azure Arc Flux configuration (`hybrid-gitops`). This avoids Azure Arc Flux multi-tenancy impersonation failures involving the default `flux-applier` service account.
+
+`platform/metrics-server.yaml` declares the official Metrics Server Helm repository and pins chart `3.14.0` (Metrics Server `v0.9.0`). The `HelmRepository`, `HelmRelease`, and Helm release storage live in `hybrid-gitops`; the actual Metrics Server workload is installed into `kube-system` through `spec.targetNamespace`.
 
 The lab currently passes `--kubelet-insecure-tls` because this kubeadm lab uses kubelet serving certificates that are not being treated as a production PKI trust path. This is an explicit lab-only tradeoff, not a production recommendation. A future hardening step is to issue and validate kubelet serving certificates against a trusted CA and remove this flag.
 
 Validation:
 
 ```powershell
-kubectl get helmrepository,helmrelease -n hybrid-lab
+kubectl get helmrepository,helmrelease -n hybrid-gitops
 kubectl get deployment metrics-server -n kube-system
 kubectl get apiservice v1beta1.metrics.k8s.io
 kubectl top node
@@ -92,14 +94,34 @@ az k8s-configuration flux create `
   --kustomization name=hybrid-lab path=./projects/hybrid-kubernetes-chaos/gitops prune=true
 ```
 
-The Flux extension controllers run in `flux-system`; the Azure Arc Flux configuration objects are kept separately in `hybrid-gitops`.
+Add the platform Kustomization separately so Flux platform objects are reconciled from the configuration namespace instead of being rewritten into `hybrid-lab` by the application Kustomize namespace transformer:
 
-`prune=true` makes Git the authoritative desired state: resources removed from this path are removed from the cluster during reconciliation.
+```powershell
+az k8s-configuration flux kustomization create `
+  --resource-group rg-k8s-hybrid-lab `
+  --cluster-name k8s-edge-01 `
+  --cluster-type connectedClusters `
+  --name hybrid-lab-gitops `
+  --kustomization-name platform `
+  --path ./projects/hybrid-kubernetes-chaos/gitops/platform `
+  --prune true
+```
+
+The Flux extension controllers run in `flux-system`; the Azure Arc Flux configuration objects are kept in `hybrid-gitops`. The application Kustomization manages workload resources in `hybrid-lab`, while the platform Kustomization manages Flux/Helm control objects from `hybrid-gitops` and can target cluster infrastructure such as `kube-system` because the Arc Flux configuration uses cluster scope.
+
+`prune=true` makes Git the authoritative desired state for each Kustomization.
 
 ## Validate reconciliation
 
 ```powershell
 az k8s-configuration flux show `
+  --resource-group rg-k8s-hybrid-lab `
+  --cluster-name k8s-edge-01 `
+  --cluster-type connectedClusters `
+  --name hybrid-lab-gitops `
+  --output table
+
+az k8s-configuration flux kustomization list `
   --resource-group rg-k8s-hybrid-lab `
   --cluster-name k8s-edge-01 `
   --cluster-type connectedClusters `
