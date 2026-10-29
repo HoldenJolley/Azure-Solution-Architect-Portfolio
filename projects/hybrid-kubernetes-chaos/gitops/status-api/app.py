@@ -204,7 +204,6 @@ def build_status():
                     int(container.get("restartCount") or 0)
                     for container in container_statuses
                 ),
-                "podIP": status.get("podIP"),
                 "node": spec.get("nodeName"),
                 "cpu": (metrics.get(name) or {}).get("cpu"),
                 "memory": (metrics.get(name) or {}).get("memory"),
