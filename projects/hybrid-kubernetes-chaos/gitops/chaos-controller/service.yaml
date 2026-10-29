@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hybrid-chaos-controller
+  namespace: hybrid-lab
+  labels:
+    app.kubernetes.io/name: hybrid-chaos-controller
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: hybrid-chaos-controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
