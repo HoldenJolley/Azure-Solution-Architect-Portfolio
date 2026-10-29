@@ -7,7 +7,6 @@ resources:
   - service.yaml
   - status-api
   - cloudflared.yaml
-  - metrics-server.yaml
 configMapGenerator:
   - name: hybrid-demo-content
     files:
