@@ -29,6 +29,28 @@
   const safeText = value => value === null || value === undefined || value === '' ? '—' : String(value);
   const now = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 
+  const formatCpu = value => {
+    if (!value) return '—';
+    const text = String(value);
+    const match = text.match(/^([0-9.]+)(n|u|m)?$/);
+    if (!match) return text;
+    const number = Number(match[1]);
+    const unit = match[2] || '';
+    const millicores = unit === 'n' ? number / 1e6 : unit === 'u' ? number / 1e3 : unit === 'm' ? number : number * 1000;
+    return `${millicores < 10 ? millicores.toFixed(2) : millicores.toFixed(1)}m`;
+  };
+
+  const formatMemory = value => {
+    if (!value) return '—';
+    const text = String(value);
+    const match = text.match(/^([0-9.]+)(Ki|Mi|Gi)?$/i);
+    if (!match) return text;
+    const number = Number(match[1]);
+    const unit = (match[2] || 'Ki').toLowerCase();
+    const mebibytes = unit === 'gi' ? number * 1024 : unit === 'mi' ? number : number / 1024;
+    return `${mebibytes < 10 ? mebibytes.toFixed(1) : mebibytes.toFixed(0)} Mi`;
+  };
+
   const addLog = (message, type = 'info') => {
     if (!activity) return;
     const row = document.createElement('div');
@@ -86,10 +108,23 @@
     }
   };
 
+  const sanitizeStaticPodCards = () => {
+    [...root.querySelectorAll('.pod')].forEach(card => {
+      const metrics = card.querySelectorAll('.metric');
+      if (metrics[3]) {
+        const label = metrics[3].querySelector('span');
+        const value = metrics[3].querySelector('strong');
+        if (label) label.textContent = 'Node';
+        if (value) value.textContent = 'k8s-edge-01';
+      }
+    });
+  };
+
   const updatePodCard = (card, pod) => {
     card.classList.remove('failed', 'recovering', 'isolated');
     const name = card.querySelector('.pod-name');
     const state = card.querySelector('.state');
+    const metrics = card.querySelectorAll('.metric');
     const values = card.querySelectorAll('.metric strong');
     const ready = Boolean(pod.ready);
 
@@ -97,10 +132,14 @@
     if (state) state.textContent = ready ? 'Ready' : safeText(pod.phase || 'Not ready');
     if (!ready) card.classList.add(pod.phase === 'Running' ? 'recovering' : 'failed');
 
-    if (values[0]) values[0].textContent = `${safeText(pod.cpu)} / ${safeText(pod.cpuLimit)}`;
-    if (values[1]) values[1].textContent = `${safeText(pod.memory)} / ${safeText(pod.memoryLimit)}`;
+    if (values[0]) values[0].textContent = `${formatCpu(pod.cpu)} / ${safeText(pod.cpuLimit)}`;
+    if (values[1]) values[1].textContent = `${formatMemory(pod.memory)} / ${safeText(pod.memoryLimit)}`;
     if (values[2]) values[2].textContent = safeText(pod.restarts);
-    if (values[3]) values[3].textContent = safeText(pod.podIP);
+    if (metrics[3]) {
+      const label = metrics[3].querySelector('span');
+      if (label) label.textContent = 'Node';
+    }
+    if (values[3]) values[3].textContent = safeText(pod.node);
   };
 
   const updatePods = pods => {
@@ -178,7 +217,7 @@
     if (healthLabels[2]) healthLabels[2].textContent = 'Service probe';
     if (brandSubtitle) brandSubtitle.textContent = liveHost ? 'chaos.holdenjolley.com · live read-only telemetry' : 'chaos.holdenjolley.com · portfolio preview';
     if (footerNote) {
-      footerNote.textContent = 'Live telemetry boundary: cluster, Flux, pod, replica, and Service-probe values come from the read-only status API. The three chaos buttons remain browser simulations until the separately permissioned chaos controller is enabled. Recorded experiment results remain historical evidence from the physical lab.';
+      footerNote.textContent = 'Live telemetry boundary: cluster, Flux, pod, replica, resource-usage, and Service-probe values come from the read-only status API. Internal pod IP addresses are intentionally omitted from the public response. The three chaos buttons remain browser simulations until the separately permissioned chaos controller is enabled.';
     }
 
     const currentSnapshot = snapshot(data);
@@ -209,7 +248,7 @@
       setBanner('simulation', 'Portfolio preview mode', 'Live telemetry is only available on chaos.holdenjolley.com; chaos interactions are simulated here.');
       if (brandSubtitle) brandSubtitle.textContent = 'chaos.holdenjolley.com · portfolio preview';
       if (footerNote) {
-        footerNote.textContent = 'Portfolio-preview boundary: this host does not expose the lab status API, so the dashboard uses simulated values and interactions here. The production chaos subdomain will use the same UI with real read-only telemetry from the physical Kubernetes cluster.';
+        footerNote.textContent = 'Portfolio-preview boundary: this host does not expose the lab status API, so the dashboard uses simulated values and interactions here. Internal pod IP addresses are intentionally not shown on the public interface.';
       }
       if (lastMode !== 'simulation') addLog('Read-only API not present on this host; dashboard is using preview data.', 'info');
       lastMode = 'simulation';
@@ -242,6 +281,7 @@
     }
   };
 
+  sanitizeStaticPodCards();
   poll();
   window.setInterval(poll, pollIntervalMs);
 })();
