@@ -3,6 +3,4 @@ kind: Lease
 metadata:
   name: hybrid-chaos-lock
   namespace: hybrid-lab
-  annotations:
-    chaos.holdenjolley.com/state: idle
 spec: {}
