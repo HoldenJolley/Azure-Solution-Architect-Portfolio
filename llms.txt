@@ -13,6 +13,9 @@
 - GitHub: https://github.com/HoldenJolley
 - LinkedIn: https://www.linkedin.com/in/holden-jolley/
 - Resume: https://holdenjolley.com/resume.pdf
+- Certification: Microsoft Certified: Azure Administrator Associate (AZ-104), earned November 2026
+- Official Microsoft Learn credential: https://learn.microsoft.com/api/credentials/share/en-us/HoldenJolley-7407/C4C1BFA6BC04DD9F?sharingId=D4A96A9FB8A3DD93
+- In progress: AZ-305 (Designing Microsoft Azure Infrastructure Solutions)
 
 ## Portfolio projects
 

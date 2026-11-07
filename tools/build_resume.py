@@ -1,5 +1,6 @@
 import argparse
 import json
+from html import escape
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -125,7 +126,14 @@ def build(source_path: Path, output_path: Path):
 
     story += section('Certifications')
     for certification in data['certifications']:
-        story.append(Paragraph(f'• {certification}', small_style))
+        if isinstance(certification, str):
+            description = escape(certification)
+        else:
+            description = f"{escape(certification['name'])} - {escape(certification['status'])}"
+            if certification.get('verification_url'):
+                url = escape(certification['verification_url'], quote=True)
+                description += f' | <link href="{url}" color="#0078D4"><u>Verify credential</u></link>'
+        story.append(Paragraph(f'• {description}', small_style))
 
     story += section('Architecture & Technology')
     technology_rows = [[Paragraph(label, tech_label), Paragraph(value, tech_body)] for label, value in data['technologies']]

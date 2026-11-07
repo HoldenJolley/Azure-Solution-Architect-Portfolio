@@ -44,6 +44,9 @@ jobs:
               'Azure E-Commerce Reference Architecture',
               'Privacy-Preserving AI Age Assurance Platform',
               'Cost-Optimized Azure Static Portfolio',
+              'Microsoft Certified: Azure Administrator Associate',
+              'Earned November 2026',
+              'Verify credential',
               'University of North Carolina at Pembroke',
           ]
           missing = [item for item in required if item.casefold() not in normalized]

@@ -26,14 +26,33 @@
     }
   ],
   "certifications": [
-    "Microsoft Azure Administrator Associate (AZ-104) - In progress",
-    "Microsoft Azure Solutions Architect Expert (AZ-305) - In progress"
+    {
+      "name": "Microsoft Certified: Azure Administrator Associate (AZ-104)",
+      "status": "Earned November 2026",
+      "verification_url": "https://learn.microsoft.com/api/credentials/share/en-us/HoldenJolley-7407/C4C1BFA6BC04DD9F?sharingId=D4A96A9FB8A3DD93"
+    },
+    {
+      "name": "AZ-305: Designing Microsoft Azure Infrastructure Solutions",
+      "status": "In progress"
+    }
   ],
   "technologies": [
-    ["Azure Architecture", "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"],
-    ["Data & Integration", "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"],
-    ["Identity & Security", "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"],
-    ["IaC & Automation", "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"]
+    [
+      "Azure Architecture",
+      "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"
+    ],
+    [
+      "Data & Integration",
+      "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"
+    ],
+    [
+      "Identity & Security",
+      "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"
+    ],
+    [
+      "IaC & Automation",
+      "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"
+    ]
   ],
   "experience": [
     {
