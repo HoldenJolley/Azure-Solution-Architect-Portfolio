@@ -49,7 +49,29 @@ jobs:
           missing = [item for item in required if item.casefold() not in normalized]
           if missing:
               raise SystemExit(f'Missing expected resume content: {missing}')
-          print('Resume verification passed: 2 pages and required sections present.')
+          import json
+          from pathlib import Path
+
+          source = json.loads(Path('resume-source.json').read_text(encoding='utf-8'))
+          az104 = next(
+              (cert for cert in source['certifications']
+               if isinstance(cert, dict) and 'AZ-104' in cert.get('title', '')),
+              None,
+          )
+          if not az104 or az104.get('status') != 'Completed':
+              raise SystemExit('AZ-104 certification must be marked Completed in resume source')
+          if 'AZ-104' not in text or 'Completed' not in text:
+              raise SystemExit('Completed AZ-104 certification not found in PDF text')
+          verification_url = az104['verification_url']
+          pdf_links = {
+              annot.get_object().get('/A', {}).get('/URI')
+              for page in reader.pages
+              for annot in page.get('/Annots', [])
+              if annot.get_object().get('/A')
+          }
+          if verification_url not in pdf_links:
+              raise SystemExit('AZ-104 credential verification link not embedded in PDF')
+          print('Resume verification passed: 2 pages, required sections, and AZ-104 verification hyperlink.')
           PY
 
       - name: Commit generated PDF

@@ -1,6 +1,7 @@
 import argparse
 import json
 from pathlib import Path
+from html import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -125,7 +126,19 @@ def build(source_path: Path, output_path: Path):
 
     story += section('Certifications')
     for certification in data['certifications']:
-        story.append(Paragraph(f'• {certification}', small_style))
+        if isinstance(certification, str):
+            certification_text = escape(certification)
+        else:
+            certification_text = escape(certification['title'])
+            verification_url = certification.get('verification_url')
+            if verification_url:
+                safe_url = escape(verification_url, quote=True)
+                certification_text = f'<link href="{safe_url}" color="#0078D4"><u>{certification_text}</u></link>'
+            if certification.get('status'):
+                certification_text += f" - {escape(certification['status'])}"
+            if verification_url:
+                certification_text += f' (<link href="{safe_url}" color="#0078D4"><u>Verify</u></link>)'
+        story.append(Paragraph(f'• {certification_text}', small_style))
 
     story += section('Architecture & Technology')
     technology_rows = [[Paragraph(label, tech_label), Paragraph(value, tech_body)] for label, value in data['technologies']]

@@ -26,14 +26,30 @@
     }
   ],
   "certifications": [
-    "Microsoft Certified: Azure Administrator Associate (AZ-104) - Completed",
+    {
+      "title": "Microsoft Certified: Azure Administrator Associate (AZ-104)",
+      "status": "Completed",
+      "verification_url": "https://learn.microsoft.com/en-us/users/holdenjolley-7407/credentials/c4c1bfa6bc04dd9f"
+    },
     "Microsoft Azure Solutions Architect Expert (AZ-305) - In progress"
   ],
   "technologies": [
-    ["Azure Architecture", "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"],
-    ["Data & Integration", "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"],
-    ["Identity & Security", "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"],
-    ["IaC & Automation", "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"]
+    [
+      "Azure Architecture",
+      "Front Door · WAF · App Service · Container Apps · Static Web Apps · Azure VMs · VNets · Private Link · VPN · Azure Monitor · Cost Optimization"
+    ],
+    [
+      "Data & Integration",
+      "Cosmos DB · Service Bus · Azure Managed Redis · Storage · Data Lake"
+    ],
+    [
+      "Identity & Security",
+      "Microsoft Entra ID · Managed Identity · RBAC · Key Vault · Conditional Access · MFA · EPM · JIT · LAPS · BitLocker"
+    ],
+    [
+      "IaC & Automation",
+      "Bicep · PowerShell · GitHub Actions · OIDC · Intune · Autopilot · Freshservice · UiPath"
+    ]
   ],
   "experience": [
     {
