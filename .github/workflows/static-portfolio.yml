@@ -10,6 +10,7 @@ on:
       - 'easter-eggs.css'
       - 'theme.css'
       - 'script.js'
+      - 'portfolio-live-k8s.js'
       - 'favicon.svg'
       - 'robots.txt'
       - 'llms.txt'
@@ -30,6 +31,7 @@ on:
       - 'easter-eggs.css'
       - 'theme.css'
       - 'script.js'
+      - 'portfolio-live-k8s.js'
       - 'favicon.svg'
       - 'robots.txt'
       - 'llms.txt'
@@ -90,6 +92,8 @@ jobs:
           test -f robots.txt
           test -f llms.txt
           test -f sitemap.xml
+          test -f projects/hybrid-kubernetes-chaos/index.html
+          test -f portfolio-live-k8s.js
           grep -q 'script src="../../script.js"' projects/resume/index.html
           grep -q 'script src="../../script.js"' projects/ecommerce/index.html
           grep -q 'script src="../../script.js"' projects/age-verification/index.html
@@ -184,11 +188,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css theme.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification dist/projects/hybrid-kubernetes-chaos
+          cp index.html 404.html styles.css easter-eggs.css theme.css script.js portfolio-live-k8s.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
+          cp projects/hybrid-kubernetes-chaos/index.html dist/projects/hybrid-kubernetes-chaos/index.html
       - name: Retrieve deployment token at runtime
         if: steps.swa.outputs.exists == 'true'
         shell: bash
@@ -229,11 +234,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification
-          cp index.html 404.html styles.css easter-eggs.css theme.css script.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
+          mkdir -p dist/projects/resume dist/projects/ecommerce dist/projects/age-verification dist/projects/hybrid-kubernetes-chaos
+          cp index.html 404.html styles.css easter-eggs.css theme.css script.js portfolio-live-k8s.js favicon.svg robots.txt llms.txt sitemap.xml resume.pdf staticwebapp.config.json dist/
           cp projects/resume/index.html dist/projects/resume/index.html
           cp projects/ecommerce/index.html dist/projects/ecommerce/index.html
           cp projects/age-verification/index.html dist/projects/age-verification/index.html
+          cp projects/hybrid-kubernetes-chaos/index.html dist/projects/hybrid-kubernetes-chaos/index.html
       - name: Retrieve deployment token at runtime
         shell: bash
         run: |
